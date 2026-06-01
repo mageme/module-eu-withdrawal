@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Email:etc/email_templates.xsd">
+    <!-- Customer notification templates — single canonical HTML per type with {{trans}} -->
+    <template id="mageme_eu_withdrawal_notifications_submitted_template"
+              label="MageMe EU Withdrawal — Submission Notification"
+              file="notification.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_approved_template"
+              label="MageMe EU Withdrawal — Approved"
+              file="approved.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_denied_template"
+              label="MageMe EU Withdrawal — Denied"
+              file="denied.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_cancelled_admin_template"
+              label="MageMe EU Withdrawal — Cancelled by Admin"
+              file="cancelled_admin.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_cancelled_self_template"
+              label="MageMe EU Withdrawal — Cancelled by Customer"
+              file="cancelled_self.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_receipt_template"
+              label="MageMe EU Withdrawal — Receipt"
+              file="receipt.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_waiver_confirmation_template"
+              label="MageMe EU Withdrawal — Digital Waiver Confirmation (legacy ID)"
+              file="waiver_confirmation_consumer.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_digital_waiver_email_template"
+              label="MageMe EU Withdrawal — Digital Waiver Confirmation"
+              file="waiver_confirmation_consumer.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <!-- Backward-compat IDs from earlier phases (point to same canonical HTMLs) -->
+    <template id="mageme_eu_withdrawal_request_approved"
+              label="MageMe EU Withdrawal — Approved (legacy ID)"
+              file="approved.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_request_denied"
+              label="MageMe EU Withdrawal — Denied (legacy ID)"
+              file="denied.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_request_cancelled_admin"
+              label="MageMe EU Withdrawal — Cancelled by Admin (legacy ID)"
+              file="cancelled_admin.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_request_cancelled_self"
+              label="MageMe EU Withdrawal — Cancelled by Customer (legacy ID)"
+              file="cancelled_self.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <!-- Waiver confirmation (already canonical, unchanged) -->
+    <template id="mageme_eu_withdrawal_waiver_confirmation_consumer"
+              label="MageMe EU Withdrawal — Digital Waiver Confirmation"
+              file="waiver_confirmation_consumer.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_waiver_confirmation_merchant_bcc"
+              label="MageMe EU Withdrawal — Digital Waiver Confirmation (Merchant BCC)"
+              file="waiver_confirmation_merchant_bcc.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <!-- DLQ alert (phase-05, unchanged) -->
+    <template id="mageme_eu_withdrawal_dlq_alert"
+              label="MageMe EU Withdrawal — Receipt DLQ Alert"
+              file="dlq_alert.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="adminhtml"/>
+    <!-- Admin alert: new request submitted (merchant-facing). ID follows
+         Magento's `Source\Email\Template` path-convention:
+         section_group_subgroup_field → str_replace('/', '_'). -->
+    <template id="mageme_eu_withdrawal_admin_notifications_new_request_template"
+              label="MageMe EU Withdrawal — Admin Alert: New Request"
+              file="admin_alert_new_request.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="adminhtml"/>
+    <!-- Sales / Shipment overrides — vanilla Magento `Magento_Sales::email/order_new.html`
+         + one extra `<tr class="email-withdrawal">` row that surfaces the
+         withdrawal CTA injected by `Observer\Email\AppendWithdrawalCtaToOrderEmails`.
+         Opt-in via Marketing → Email Templates → New Template → Template = "MageMe EU Withdrawal — …".
+         The CTA URL is resolved through `WithdrawalLinkResolverInterface`:
+         Default → lookup-form URL; Pro `MageMe_EUWithdrawalMagicLink`
+         override → tokenised one-click URL. -->
+    <template id="mageme_eu_withdrawal_sales_email_order_template"
+              label="MageMe EU Withdrawal — Order Confirmation (with withdrawal link)"
+              file="sales_order_new.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_sales_email_order_guest_template"
+              label="MageMe EU Withdrawal — Guest Order Confirmation (with withdrawal link)"
+              file="sales_order_new_guest.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_sales_email_shipment_template"
+              label="MageMe EU Withdrawal — Shipment Notification (with withdrawal link)"
+              file="sales_shipment_new.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+    <template id="mageme_eu_withdrawal_sales_email_shipment_guest_template"
+              label="MageMe EU Withdrawal — Guest Shipment Notification (with withdrawal link)"
+              file="sales_shipment_new_guest.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
+</config>

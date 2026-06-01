@@ -1,0 +1,54 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$order = $block->getOrder();
+if ($order === null) {
+    return;
+}
+$svgPackage  = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-4 9 4v10l-9 4-9-4z"/><polyline points="3 9 12 13 21 9"/><line x1="12" y1="13" x2="12" y2="22"/></svg>';
+$svgTruck    = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h12v9H3z"/><path d="M15 10h4l2 3v2h-6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>';
+$svgReceipt  = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-3 2-3-2-3 2-2-2V3z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/></svg>';
+?>
+<div class="mm-eu-w-order-bar">
+    <div class="mm-eu-w-order-bar-col">
+        <span class="mm-eu-w-order-bar-icon" aria-hidden="true"><?= /* @noEscape */ $svgPackage ?></span>
+        <div>
+            <div class="mm-eu-w-order-bar-label">
+                <?= $escaper->escapeHtml(__('Order #%1', $block->getOrderIncrementId())) ?>
+            </div>
+            <div class="mm-eu-w-order-bar-value">
+                <?= $escaper->escapeHtml(__('Placed on %1', $block->getPlacedAt())) ?>
+            </div>
+        </div>
+    </div>
+    <div class="mm-eu-w-order-bar-col">
+        <span class="mm-eu-w-order-bar-icon" aria-hidden="true"><?= /* @noEscape */ $svgTruck ?></span>
+        <div>
+            <div class="mm-eu-w-order-bar-label">
+                <?php if ($block->isAwaitingDelivery()): ?>
+                    <?= $escaper->escapeHtml(__('Awaiting delivery')) ?>
+                <?php else: ?>
+                    <?= $escaper->escapeHtml(__('Delivered on %1', $block->getDeliveredAt())) ?>
+                <?php endif; ?>
+            </div>
+            <div class="mm-eu-w-order-bar-value">
+                <?= $escaper->escapeHtml(__('Delivery: %1', $block->getShippingMethodLabel())) ?>
+            </div>
+        </div>
+    </div>
+    <div class="mm-eu-w-order-bar-col mm-eu-w-order-bar-col--right">
+        <span class="mm-eu-w-order-bar-icon" aria-hidden="true"><?= /* @noEscape */ $svgReceipt ?></span>
+        <div>
+            <div class="mm-eu-w-order-bar-label">
+                <?= $escaper->escapeHtml(__('Total paid')) ?>
+            </div>
+            <div class="mm-eu-w-order-bar-value mm-eu-w-order-bar-value--strong">
+                <?= $escaper->escapeHtml($block->getGrandTotalFormatted()) ?>
+            </div>
+        </div>
+    </div>
+</div>

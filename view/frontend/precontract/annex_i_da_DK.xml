@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version DA.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">De har ret til at træde tilbage fra denne aftale uden begrundelse inden for {period_days} dage.</section>
+        <section id="period_start">Fortrydelsesfristen udløber {period_days} dage efter den dag, hvor De eller en af Dem angiven tredjemand, dog ikke befragteren, får varerne i fysisk besiddelse. For digitalt indhold, der ikke leveres på et fysisk medium, udløber fristen 14 dage efter aftalens indgåelse (medmindre De har givet afkald på denne ret ved købet).</section>
+        <section id="how_to_exercise">For at udøve fortrydelsesretten skal De meddele os — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — Deres beslutning om at fortryde denne aftale i en utvetydig erklæring (f.eks. ved postbesørget brev, fax eller e-mail). De kan benytte standardfortrydelsesformularen nedenfor, men det er ikke obligatorisk.</section>
+        <section id="effects">Hvis De udøver Deres fortrydelsesret i denne aftale, refunderer vi Dem alle betalinger modtaget fra Dem, herunder omkostninger ved standardlevering (dog ikke ekstra omkostninger som følge af Deres eget valg af en anden leveringsform end den billigste form for standardlevering, som vi tilbyder) uden unødig forsinkelse og under alle omstændigheder senest 14 dage fra den dato, hvor vi har modtaget meddelelse om Deres beslutning om at fortryde denne aftale. Vi gennemfører tilbagebetalingen med samme betalingsmiddel, som De benyttede ved den oprindelige transaktion.</section>
+        <section id="return_address">Varerne skal returneres til: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>STANDARDFORTRYDELSESFORMULAR
+(denne formular udfyldes og returneres kun, hvis fortrydelsesretten gøres gældende)
+
+— Til: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Jeg/vi (*) meddeler herved, at jeg/vi (*) ønsker at gøre fortrydelsesretten gældende i forbindelse med min/vores (*) købsaftale om følgende varer (*)/levering af følgende tjenesteydelser (*):
+
+— Bestilt den (*)/modtaget den (*):
+
+— Forbrugerens navn (Forbrugernes navne):
+
+— Forbrugerens adresse (Forbrugernes adresse):
+
+— Forbrugerens underskrift (Forbrugernes underskrifter) (kun hvis formularens indhold meddeles på papir):
+
+— Dato:
+
+(*) Det ikke-relevante udstreges.
+
+—
+Dette er den officielle standardfortrydelsesformular foreskrevet i bilag I, litra B, til direktiv 2011/83/EU. Anvendelsen af denne formular er VALGFRI — De kan også meddele os Deres beslutning om at fortryde i en hvilken som helst anden utvetydig erklæring (brev, fax eller e-mail), der sendes til kontakten ovenfor.</annex_ib>
+</config>

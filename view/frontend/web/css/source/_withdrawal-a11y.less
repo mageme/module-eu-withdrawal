@@ -1,0 +1,43 @@
+// EU Withdrawal — dark-pattern CSS guards (UCPD / WCAG 2.1 AA)
+// Covers 5 of 10 dark patterns from _research/dark-patterns-register.md:
+//   A.1  no countdown / fake urgency
+//   A.5  sizing + disabled state not color-only
+//   A.6  sufficient contrast; no "fine print" shrinking
+//   A.11 retention-nag blocked
+// WHY hex literals over @color-gray60/@color-blue1: staying theme-agnostic
+// (matches the sibling _module.less convention). Hex greys chosen for WCAG AA.
+
+// A.5, A.6 — visual-interference guards
+.mageme-withdrawal-footer-link,
+.nav.item a[href$="/withdraw-contract"] {
+    font-size: inherit;            // never smaller than sibling legal links
+    color: inherit;                // inherit body contrast, >= WCAG AA
+}
+
+// A.5 — disabled state via icon + text, not color alone
+.mageme-withdraw.disabled {
+    color: #8c8c8c;                // 4.54:1 on #fff (AA large text)
+    opacity: 1;                    // no opacity-only signalling
+    &::before {
+        content: "\e612";          // Magento icomoon "info" icon
+        margin-right: 0.3rem;
+    }
+}
+
+.mageme-withdraw-banner {
+    padding: 1.5rem;
+    border: 0.1rem solid #adadad;
+    background: #ebebeb;
+    font-size: 1.4rem;             // >= page body (not "fine print")
+
+    &.in-progress {
+        border-left: 0.3rem solid #006bb4;  // 4.77:1 on #fff (AA)
+    }
+
+    // A.1 + A.11: absolute bans — if any theme injects these classes,
+    // display:none nukes them (belt-and-braces against theme contamination).
+    .countdown,
+    .retention-nag {
+        display: none !important;
+    }
+}

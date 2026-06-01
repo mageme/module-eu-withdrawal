@@ -1,0 +1,69 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Adminhtml\Request\Notes $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$notes    = $block->getNotes();
+$id       = $block->getRequestId();
+$terminal = $block->isTerminal();
+$ajaxConfig = json_encode([
+    'MageMe_EUWithdrawal/js/add-note' => [
+        'action'        => $block->getAddNoteUrl(),
+        'listSelector'  => '.mm-eu-w-notes-list',
+        'emptySelector' => '.mm-eu-w-no-notes',
+    ],
+], JSON_UNESCAPED_SLASHES);
+?>
+<div class="admin__page-section-item mm-eu-w-col-left">
+    <div class="admin__page-section-item-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Notes for this Request')) ?></span>
+    </div>
+    <div class="admin__page-section-item-content">
+                <p class="mm-eu-w-notes-hint">
+                    <?= $escaper->escapeHtml(__('Internal notes — visible to admin staff only. Not sent to the customer.')) ?>
+                </p>
+
+                <?php if (!$terminal): ?>
+                    <div class="mm-eu-w-note-form"
+                         data-mage-init='<?= /* @noEscape */ $escaper->escapeHtmlAttr($ajaxConfig) ?>'>
+                        <?= $block->getBlockHtml('formkey') ?>
+                        <div class="admin__field">
+                            <label class="admin__field-label" for="mm-eu-w-note">
+                                <span><?= $escaper->escapeHtml(__('Comment')) ?></span>
+                            </label>
+                            <div class="admin__field-control">
+                                <textarea id="mm-eu-w-note" name="note_text"
+                                          class="admin__control-textarea"
+                                          rows="3" maxlength="2000"
+                                          placeholder="<?= $escaper->escapeHtmlAttr(__('Add internal note (max 2000 chars)')) ?>"></textarea>
+                            </div>
+                        </div>
+                        <div class="mm-eu-w-note-submit-wrap">
+                            <button type="button" class="action-default scalable action-save action-secondary">
+                                <span><?= $escaper->escapeHtml(__('Submit Comment')) ?></span>
+                            </button>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <p class="mm-eu-w-no-notes" <?= empty($notes) ? '' : 'style="display:none"' ?>>
+                    <em><?= $escaper->escapeHtml(__('No comments added yet.')) ?></em>
+                </p>
+                <ul class="mm-eu-w-notes-list">
+                    <?php foreach ($notes as $note): ?>
+                        <?php $actor = $block->getAuthorLabel($note); ?>
+                        <li class="mm-eu-w-note-item">
+                            <div class="mm-eu-w-note-meta">
+                                <span class="mm-eu-w-note-when"><?= $escaper->escapeHtml($block->formatIsoDate($note->getCreatedAt())) ?></span>
+                                <span class="mm-eu-w-note-by">
+                                    <?= $escaper->escapeHtml(__(' by %1', $actor)) ?>
+                                </span>
+                            </div>
+                            <div class="mm-eu-w-note-text"><?= /* @noEscape */ nl2br($escaper->escapeHtml($note->getNoteText())) ?></div>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+    </div>
+</div>

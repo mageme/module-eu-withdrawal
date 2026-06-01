@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="MageMe\EUWithdrawal\Block\Withdraw\ProgressStepper"
+                   name="mageme_eu_withdrawal.stepper.step1a"
+                   template="MageMe_EUWithdrawal::withdraw/progress_stepper.phtml">
+                <arguments>
+                    <argument name="active_step" xsi:type="number">1</argument>
+                </arguments>
+            </block>
+            <block class="MageMe\EUWithdrawal\Block\Withdraw\FindOrderForm"
+                   name="mageme_eu_withdrawal.find_order_form"
+                   template="MageMe_EUWithdrawal::withdraw/step1a_find_order.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,278 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$states = $block->getStates();
+if ($states === null) {
+    return;
+}
+$pending   = (array) $block->getData('pending_requests');
+$cancelUrl = (string) $block->getData('cancel_url');
+$formKey   = (string) $block->getData('form_key_html');
+?>
+<table class="mm-eu-w-items-table">
+    <thead>
+        <tr>
+            <th class="mm-eu-w-col-thumb"></th>
+            <th class="mm-eu-w-col-item"><?= $escaper->escapeHtml(__('Item')) ?></th>
+            <th class="mm-eu-w-col-price"><?= $escaper->escapeHtml(__('Price')) ?></th>
+            <th class="mm-eu-w-col-qty"><?= $escaper->escapeHtml(__('Purchased')) ?></th>
+            <th class="mm-eu-w-col-qty"><?= $escaper->escapeHtml(__('Returned')) ?></th>
+            <th class="mm-eu-w-col-rqty"><?= $escaper->escapeHtml(__('Qty')) ?></th>
+            <th class="mm-eu-w-col-total"><?= $escaper->escapeHtml(__('Total')) ?></th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($states as $state): ?>
+        <?php
+            $orderItemId  = (int) $state->orderItemId;
+            $isEligible   = $state->isEligible();
+            $remaining    = (int) $state->remainingQty;
+            $unitPrice    = (float) $state->unitDisplayPrice;
+            $orderItem    = $block->getOrderItem($orderItemId);
+            $thumbnailUrl = $orderItem !== null ? $block->getThumbnailUrl($orderItem) : '';
+            $badge        = $block->getItemStatusBadge($state);
+            $returnedQty  = $block->getReturnedQty($state);
+            $pendingList  = $pending[$orderItemId] ?? [];
+            $pendingInfo  = $pendingList[0] ?? null;
+            $rowClass     = 'mm-eu-w-item-row';
+        if ($badge !== null) {
+            $rowClass .= ' mm-eu-w-item-row--' . $badge['tone'];
+        }
+        if (!$isEligible) {
+            $rowClass .= ' mm-eu-w-item-row--ineligible';
+        }
+        ?>
+        <tr class="<?= $escaper->escapeHtmlAttr($rowClass) ?>"
+            data-item-id="<?= /* @noEscape */ $orderItemId ?>"
+            data-price="<?= $escaper->escapeHtmlAttr((string) $unitPrice) ?>"
+            data-name="<?= $escaper->escapeHtmlAttr((string) $state->name) ?>"
+            data-thumb="<?= $escaper->escapeUrl($thumbnailUrl) ?>">
+            <td class="mm-eu-w-col-thumb">
+                <?php if ($thumbnailUrl !== ''): ?>
+                    <img src="<?= $escaper->escapeUrl($thumbnailUrl) ?>"
+                         alt="<?= $escaper->escapeHtmlAttr((string) $state->name) ?>">
+                <?php else: ?>
+                    <svg class="mm-eu-w-thumb-fallback-svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-4 9 4v10l-9 4-9-4z"/><polyline points="3 9 12 13 21 9"/><line x1="12" y1="13" x2="12" y2="22"/></svg>
+                <?php endif; ?>
+            </td>
+            <td class="mm-eu-w-col-item">
+                <div class="mm-eu-w-item-name"><?= $escaper->escapeHtml((string) $state->name) ?></div>
+                <div class="mm-eu-w-item-sku">
+                    <?= $escaper->escapeHtml(__('SKU: %1', (string) $state->sku)) ?>
+                </div>
+                <?php $options = $block->getOrderItemOptions($orderItemId); ?>
+                <?php if ($options !== []): ?>
+                    <dl class="mm-eu-w-item-options">
+                        <?php foreach ($options as $opt): ?>
+                            <dt><?= $escaper->escapeHtml($opt['label']) ?></dt>
+                            <dd><?= $escaper->escapeHtml($opt['value']) ?></dd>
+                        <?php endforeach; ?>
+                    </dl>
+                <?php endif; ?>
+            </td>
+            <td class="mm-eu-w-col-price">
+                <?= $escaper->escapeHtml($block->formatPrice($unitPrice)) ?>
+            </td>
+            <td class="mm-eu-w-col-qty">
+                <?= (int) $state->purchasedQty ?>
+            </td>
+            <td class="mm-eu-w-col-qty">
+                <?= (int) $returnedQty ?>
+            </td>
+            <td class="mm-eu-w-col-rqty">
+                <?php if ($isEligible): ?>
+                    <div class="mm-eu-w-qty-stepper"
+                         data-item-id="<?= /* @noEscape */ $orderItemId ?>"
+                         data-min="0"
+                         data-max="<?= /* @noEscape */ $remaining ?>">
+                        <button type="button" class="mm-eu-w-qty-btn" data-action="dec"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Decrease quantity')) ?>">−</button>
+                        <input type="number"
+                               class="mm-eu-w-qty-input"
+                               name="items[<?= /* @noEscape */ $orderItemId ?>]"
+                               value="0"
+                               min="0"
+                               max="<?= /* @noEscape */ $remaining ?>"
+                               inputmode="numeric">
+                        <button type="button" class="mm-eu-w-qty-btn" data-action="inc"
+                                aria-label="<?= $escaper->escapeHtmlAttr(__('Increase quantity')) ?>">+</button>
+                    </div>
+                <?php else: ?>
+                    <div class="mm-eu-w-qty-stepper mm-eu-w-qty-stepper--disabled" aria-disabled="true">
+                        <button type="button" class="mm-eu-w-qty-btn" disabled>−</button>
+                        <input type="number" class="mm-eu-w-qty-input" value="0" disabled tabindex="-1">
+                        <button type="button" class="mm-eu-w-qty-btn" disabled>+</button>
+                    </div>
+                <?php endif; ?>
+            </td>
+            <td class="mm-eu-w-col-total" data-role="line-total">
+                <?= $escaper->escapeHtml($block->formatPrice(0)) ?>
+            </td>
+        </tr>
+        <?php $sealKind = $isEligible ? $block->getSealKind($orderItemId) : null; ?>
+        <?php if ($sealKind !== null): ?>
+            <tr class="mm-eu-w-item-seal-row" data-role="seal-row" data-item-id="<?= /* @noEscape */ $orderItemId ?>" hidden>
+                <td colspan="7">
+                    <div class="mm-eu-w-item-seal-card">
+                        <div class="mm-eu-w-item-seal-question">
+                            <span class="mm-eu-w-item-seal-q-icon" aria-hidden="true">?</span>
+                            <span class="mm-eu-w-item-seal-q-text">
+                                <?= $escaper->escapeHtml($sealKind === 'hygiene'
+                                    ? __('Has the hygiene seal been broken after delivery?')
+                                    : __('Has the original software / media seal been broken after delivery?')) ?>
+                            </span>
+                        </div>
+
+                        <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--ok">
+                            <input type="radio"
+                                   name="item_seal_opened[<?= /* @noEscape */ $orderItemId ?>]"
+                                   value="0"
+                                   data-role="seal-input"
+                                   class="mm-eu-w-item-seal-radio"
+                                   checked>
+                            <span class="mm-eu-w-item-seal-choice-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+                            </span>
+                            <span class="mm-eu-w-item-seal-choice-content">
+                                <span class="mm-eu-w-item-seal-choice-label">
+                                    <?= $escaper->escapeHtml(__('No, the seal is intact')) ?>
+                                </span>
+                                <span class="mm-eu-w-item-seal-choice-hint">
+                                    <?= $escaper->escapeHtml(__('Refund possible — return the unopened package.')) ?>
+                                </span>
+                            </span>
+                            <span class="mm-eu-w-item-seal-choice-dot" aria-hidden="true"></span>
+                        </label>
+
+                        <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--warn">
+                            <input type="radio"
+                                   name="item_seal_opened[<?= /* @noEscape */ $orderItemId ?>]"
+                                   value="1"
+                                   data-role="seal-input"
+                                   class="mm-eu-w-item-seal-radio">
+                            <span class="mm-eu-w-item-seal-choice-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 22h22z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.7"/></svg>
+                            </span>
+                            <span class="mm-eu-w-item-seal-choice-content">
+                                <span class="mm-eu-w-item-seal-choice-label">
+                                    <?= $escaper->escapeHtml(__('Yes, the seal is broken')) ?>
+                                </span>
+                                <span class="mm-eu-w-item-seal-choice-sublabel">
+                                    <?= $escaper->escapeHtml($sealKind === 'hygiene'
+                                        ? __('This item cannot be returned (Art. 16(e) Directive 2011/83/EU).')
+                                        : __('This item cannot be returned (Art. 16(i) Directive 2011/83/EU).')) ?>
+                                </span>
+                            </span>
+                            <span class="mm-eu-w-item-seal-choice-dot" aria-hidden="true"></span>
+                        </label>
+
+                        <p class="mm-eu-w-item-seal-warning" data-role="seal-warning" hidden>
+                            <span class="mm-eu-w-item-seal-warn-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 22h22z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6"/></svg>
+                            </span>
+                            <?= $escaper->escapeHtml(__('Once you confirm the seal is broken, this item is excluded from the withdrawal request and the quantity will be reset to zero.')) ?>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        <?php endif; ?>
+        <?php if ($isEligible && $block->isReasonsEnabled()): ?>
+            <tr class="mm-eu-w-item-reason-row" data-role="reason-row" data-item-id="<?= /* @noEscape */ $orderItemId ?>" hidden>
+                <td colspan="7">
+                    <div class="mm-eu-w-item-reason">
+                        <label for="mm-eu-w-reason-<?= /* @noEscape */ $orderItemId ?>">
+                            <?= $escaper->escapeHtml(__('Reason for return (optional)')) ?>
+                        </label>
+                        <select id="mm-eu-w-reason-<?= /* @noEscape */ $orderItemId ?>"
+                                name="item_reason_code[<?= /* @noEscape */ $orderItemId ?>]"
+                                class="mm-eu-w-reason-select"
+                                data-role="reason-select">
+                            <?php foreach ($block->getReasonOptions() as $opt): ?>
+                                <option value="<?= $escaper->escapeHtmlAttr($opt['value']) ?>">
+                                    <?= $escaper->escapeHtml($opt['label']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if ($block->isOtherReasonEnabled()): ?>
+                            <textarea name="item_reason_text[<?= /* @noEscape */ $orderItemId ?>]"
+                                      class="mm-eu-w-reason-other"
+                                      data-role="reason-other"
+                                      rows="2"
+                                      maxlength="500"
+                                      placeholder="<?= $escaper->escapeHtmlAttr(__('Tell us more (optional, max 500 chars)')) ?>"
+                                      hidden></textarea>
+                        <?php endif; ?>
+                    </div>
+                </td>
+            </tr>
+        <?php endif; ?>
+        <?php
+            // Render one strip per pending request covering this item, plus a
+            // final "Fully returned" / "Not eligible" strip for non-pending
+            // badges. Allows multiple "Request #X awaiting confirmation" rows
+            // stacked under the item row when the customer has re-submitted.
+            $strips = [];
+        if ($badge !== null && $badge['tone'] === 'pending' && $pendingList !== []) {
+            foreach ($pendingList as $info) {
+                $strips[] = ['tone' => 'pending', 'info' => $info];
+            }
+        } elseif ($badge !== null) {
+            $strips[] = ['tone' => $badge['tone'], 'info' => null];
+        }
+        ?>
+        <?php foreach ($strips as $strip): ?>
+            <?php $stripClass = 'mm-eu-w-item-strip mm-eu-w-item-strip--' . $strip['tone']; ?>
+            <tr class="<?= $escaper->escapeHtmlAttr($stripClass) ?>">
+                <td colspan="7">
+                    <div class="mm-eu-w-item-strip-body">
+                        <span class="mm-eu-w-item-strip-icon" aria-hidden="true">
+                            <?php if ($strip['tone'] === 'done'): ?>
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg>
+                            <?php elseif ($strip['tone'] === 'pending'): ?>
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                            <?php else: ?>
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/></svg>
+                            <?php endif; ?>
+                        </span>
+                        <span class="mm-eu-w-item-strip-text">
+                            <?php if ($strip['tone'] === 'done'): ?>
+                                <?= $escaper->escapeHtml(__('Already returned.')) ?>
+                            <?php elseif ($strip['tone'] === 'pending' && $strip['info'] !== null): ?>
+                                <?php
+                                    $statusLabel = $strip['info']['status'] === 'pending'
+                                        ? __('awaiting admin review')
+                                        : __('awaiting confirmation');
+                                ?>
+                                <?= $escaper->escapeHtml(__(
+                                    'Request %1 %2 (%3 item%4).',
+                                    $strip['info']['incrementId'] ?: ('#' . $strip['info']['requestId']),
+                                    $statusLabel,
+                                    (int) $strip['info']['qty'],
+                                    ((int) $strip['info']['qty']) === 1 ? '' : 's',
+                                )) ?>
+                            <?php elseif ($strip['tone'] === 'pending'): ?>
+                                <?= $escaper->escapeHtml(__('Return request awaiting review.')) ?>
+                            <?php else: ?>
+                                <?= $escaper->escapeHtml($block->getExclusionLabel((string) $state->exclusionReason)) ?>
+                            <?php endif; ?>
+                        </span>
+                        <?php if ($strip['tone'] === 'pending' && $strip['info'] !== null && $strip['info']['cancellable'] && $cancelUrl !== ''): ?>
+                            <button type="button"
+                                    class="mm-eu-w-link mm-eu-w-link--danger"
+                                    data-role="cancel-request"
+                                    data-cancel-url="<?= $escaper->escapeHtmlAttr($cancelUrl) ?>"
+                                    data-request-id="<?= (int) $strip['info']['requestId'] ?>">
+                                <?= $escaper->escapeHtml(__('Cancel request')) ?>
+                            </button>
+                        <?php endif; ?>
+                    </div>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+    <?php endforeach; ?>
+    </tbody>
+</table>

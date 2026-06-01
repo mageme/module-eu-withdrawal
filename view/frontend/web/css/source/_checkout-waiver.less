@@ -1,0 +1,283 @@
+/*
+ * Digital-content waiver checkout step (Art. 16(m) CRD).
+ * Amber-toned card to signal "important legal step" without being alarming.
+ */
+
+#checkout-step-eu-withdrawal-waiver-step {
+    list-style: none;
+}
+
+.mageme-waiver-card {
+    background: #fffaf0;
+    border: 1px solid #fde7b0;
+    border-left: 3px solid #f59e0b;
+    border-radius: 4px;
+    padding: 20px;
+    margin: 0 0 20px;
+}
+
+.mageme-waiver-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.mageme-waiver-shield {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    color: #f59e0b;
+    margin-top: 2px;
+}
+
+.mageme-waiver-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 4px;
+    line-height: 1.3;
+}
+
+.mageme-waiver-subhead {
+    color: #5b6471;
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.mageme-waiver-products {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.mageme-waiver-product-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 5px 12px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.mageme-waiver-product-chip svg {
+    color: #6b7280;
+}
+
+.mageme-waiver-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin: 0 0 8px;
+    cursor: pointer;
+    transition: border-color .15s ease;
+}
+
+.mageme-waiver-row:hover {
+    border-color: #f59e0b;
+}
+
+.mageme-waiver-checkbox {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    cursor: pointer;
+}
+
+.mageme-waiver-row-icon {
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+}
+
+.mageme-waiver-row-icon-ok    { color: #10b981; }
+.mageme-waiver-row-icon-warn  { color: #f59e0b; }
+
+.mageme-waiver-row-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #1f2937;
+}
+
+.mageme-waiver-row-text strong {
+    font-weight: 600;
+    color: #111;
+}
+
+.mageme-waiver-microcopy {
+    color: #6b7280;
+    font-size: 12px;
+    line-height: 1.5;
+    margin: 12px 0 14px;
+    text-align: center;
+}
+
+.mageme-waiver-actions {
+    margin: 0;
+}
+
+.mageme-waiver-continue {
+    width: 100%;
+}
+
+.mageme-waiver-continue[disabled] {
+    background: #e5e7eb !important;
+    color: #9ca3af !important;
+    border-color: #e5e7eb !important;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .mageme-waiver-card { padding: 16px; }
+    .mageme-waiver-card-header { gap: 10px; margin-bottom: 12px; }
+    .mageme-waiver-row { padding: 10px 12px; }
+}
+
+/*
+ * Pre-contract block (Art. 6(1)(h) CRD) — withdrawal information shown
+ * on checkout payment step. Inlined here (rather than as a LESS partial
+ * loaded via layout) because Magento's `<css src=>` does not compile
+ * underscore-prefixed LESS partials standalone.
+ */
+
+.mm-eu-w-precontract-block {
+    background: #ffffff;
+    border: 1px solid #e4e7ec;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 32px 0;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.mm-eu-w-precontract-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.mm-eu-w-precontract-heading {
+    font-size: 16px;
+    font-weight: 600;
+    color: #101828;
+}
+
+.mm-eu-w-precontract-pill {
+    background: #eef2ff;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.mm-eu-w-precontract-subhead {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0 0 16px;
+}
+
+.mm-eu-w-precontract-accordion-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid #e4e7ec;
+    border-bottom: 1px solid #e4e7ec;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #101828;
+    user-select: none;
+}
+
+.mm-eu-w-precontract-chevron {
+    transition: transform 0.15s;
+}
+
+.mm-eu-w-precontract-chevron--up {
+    transform: rotate(180deg);
+}
+
+.mm-eu-w-precontract-accordion-body {
+    padding: 16px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #334155;
+}
+
+.mm-eu-w-precontract-section {
+    margin: 0 0 12px;
+}
+
+.mm-eu-w-precontract-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+.mm-eu-w-precontract-start-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #1d4ed8;
+    color: #ffffff !important;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid #1d4ed8;
+}
+
+.mm-eu-w-precontract-start-btn:hover,
+.mm-eu-w-precontract-start-btn:visited,
+.mm-eu-w-precontract-start-btn:focus {
+    background: #1e3a8a;
+    color: #ffffff !important;
+    border-color: #1e3a8a;
+    text-decoration: none;
+}
+
+.mm-eu-w-precontract-download-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid #e4e7ec;
+    border-radius: 6px;
+    color: #1d4ed8;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.mm-eu-w-precontract-download-btn:hover {
+    background: #f8fafc;
+    color: #1d4ed8;
+}
+
+.mm-eu-w-precontract-download-hint {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.mm-eu-w-precontract-footer {
+    margin: 16px 0 0;
+    font-size: 11px;
+    color: #94a3b8;
+}

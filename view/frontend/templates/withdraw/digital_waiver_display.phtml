@@ -1,0 +1,22 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\DigitalWaiverDisplay $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+if (!$block->hasDigitalWaiverItems()) {
+    return;
+}
+?>
+<aside class="mm-eu-w-digital-waiver"
+       role="note"
+       aria-labelledby="mm-eu-w-digital-waiver-title">
+    <h2 id="mm-eu-w-digital-waiver-title">
+        <?= $escaper->escapeHtml(__('Digital content — Art. 16(m) notice')) ?>
+    </h2>
+    <p>
+        <?= $escaper->escapeHtml(__('By placing the order you agreed to begin performance of the digital content before the end of the withdrawal period and acknowledged that, once performance has begun, the right of withdrawal no longer applies. This notice is shown for your records.')) ?>
+    </p>
+</aside>

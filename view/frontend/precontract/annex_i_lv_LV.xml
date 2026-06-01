@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version LV.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Jums ir tiesības {period_days} dienu laikā atteikties no šā līguma, neminot iemeslu.</section>
+        <section id="period_start">Atteikuma termiņš beigsies pēc {period_days} dienām, sākot no dienas, kad jūs esat ieguvis vai trešā persona, kas nav pārvadātājs un ko jūs esat izraudzījies, ir ieguvusi preces fiziskā valdījumā. Attiecībā uz digitālo saturu, kas netiek sniegts materiālā datu nesējā, termiņš beidzas 14 dienas pēc līguma noslēgšanas (izņemot gadījumus, kad pasūtījuma laikā esat atteicies no šīm tiesībām).</section>
+        <section id="how_to_exercise">Lai izmantotu atteikuma tiesības, jums ar nepārprotamu paziņojumu (piemēram, pa pastu nosūtītu vēstuli, faksu vai e-pastu) mūs — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — ir jāinformē par lēmumu atteikties no šā līguma. Jūs varat izmantot turpmāk pievienoto atteikuma veidlapas paraugu, bet tas nav obligāti.</section>
+        <section id="effects">Ja jūs atteiksieties no šā līguma, mēs jums atmaksāsim visus no jums saņemtos maksājumus, tostarp standarta piegādes izmaksas (izņemot papildu izmaksas, kas radušās tādēļ, ka jūs esat izvēlējies piegādes veidu, kas nav mūsu piedāvātais vislētākais standarta piegādes veids), bez nepamatotas kavēšanās un jebkurā gadījumā ne vēlāk kā 14 dienu laikā no dienas, kad mēs tikām informēti par jūsu lēmumu atteikties no šā līguma. Šādu atmaksāšanu mēs veiksim, izmantojot tādu pašu maksāšanas līdzekli, kādu jūs izmantojāt sākotnējam darījumam.</section>
+        <section id="return_address">Preces jānosūta atpakaļ uz adresi: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>ATTEIKUMA VEIDLAPAS PARAUGS
+(aizpildiet un nosūtiet šo veidlapu tikai tad, ja vēlaties atteikties no līguma)
+
+— Adresāts: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Es/mēs (*) paziņoju/paziņojam, ka es/mēs (*) vēlos/vēlamies atteikties no manis/mūsu (*) noslēgtā pārdošanas līguma par šādu preču iegādi (*)/pakalpojumu sniegšanu (*):
+
+— Pasūtīšanas datums (*)/saņemšanas datums (*):
+
+— Patērētāja(-u) vārds(-i) un uzvārds(-i):
+
+— Patērētāja(-u) adrese:
+
+— Patērētāja(-u) paraksts (tikai tad, ja šo veidlapu nosūta uz papīra):
+
+— Datums:
+
+(*) Nevajadzīgo svītrot.
+
+—
+Šī ir oficiāla atteikuma veidlapas paraugs, kas noteikts Direktīvas 2011/83/ES I pielikuma B daļā. Šīs veidlapas izmantošana ir BRĪVPRĀTĪGA — par savu lēmumu atteikties no līguma jūs varat mums paziņot arī ar jebkuru citu nepārprotamu paziņojumu (vēstuli, faksu vai e-pastu), kas nosūtīts uz iepriekš norādīto kontaktu.</annex_ib>
+</config>

@@ -1,0 +1,45 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+declare(strict_types=1);
+
+/** @var \MageMe\EUWithdrawal\Block\Email\Layout $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$storeName = $block->getStoreName();
+$storeUrl  = $block->getStoreUrl();
+$logoUrl   = $block->getLogoUrl();
+?><!doctype html>
+<html lang="<?= $escaper->escapeHtmlAttr($block->getHtmlLang()) ?>" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="x-apple-disable-message-reformatting" />
+<title><?= $escaper->escapeHtml($storeName) ?></title>
+<style>
+@media only screen and (max-width: 620px) {
+    .container { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; }
+    .pad-cell { padding: 24px 16px !important; }
+    .hero-title { font-size: 22px !important; }
+    .usp-cell { display: block !important; width: 100% !important; padding: 16px 0 !important; }
+    .footer-row td { display: block !important; width: 100% !important; text-align: center !important; padding: 6px 0 !important; }
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f6f8" style="background:#f5f6f8;">
+    <tr><td align="center" style="padding:24px 12px;">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+            <tr><td align="center" style="padding:32px 24px 8px;background:#ffffff;">
+                <?php if ($logoUrl !== null): ?>
+                    <a href="<?= $escaper->escapeUrl($storeUrl) ?>" style="text-decoration:none;display:inline-block;">
+                        <img src="<?= $escaper->escapeUrl($logoUrl) ?>" alt="<?= $escaper->escapeHtmlAttr($storeName) ?>" style="display:block;border:0;max-height:42px;height:auto;" />
+                    </a>
+                <?php else: ?>
+                    <a href="<?= $escaper->escapeUrl($storeUrl) ?>" style="text-decoration:none;color:#1a1a1a;font-size:24px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;font-family:Helvetica,Arial,sans-serif;"><?= $escaper->escapeHtml($storeName) ?></a>
+                <?php endif; ?>
+            </td></tr>
+            <tr><td class="pad-cell" style="padding:24px 32px 24px;">

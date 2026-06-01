@@ -1,0 +1,19 @@
+<!--@subject Waiver-event confirmation | Order {{var waiver.order_increment_id}}@-->
+<html><body>
+<p>Copie BCC de la confirmation de renonciation au contenu numérique (Art. L. 221-28 Code consommation) envoyée au consommateur.</p>
+<p>Commande : <strong>{{var waiver.order_increment_id}}</strong></p>
+<p>Consommateur : {{var waiver.customer_name}} &lt;{{var waiver.customer_email}}&gt;</p>
+<p>Langue : {{var waiver.locale}}</p>
+<p>Référence de renonciation : <code>{{var waiver.waiver_reference}}</code></p>
+<p>Consenti le : {{var waiver.consent_at}}</p>
+<p>Reconnu le : {{var waiver.ack_at}}</p>
+<p>Articles :</p>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li>{{var item.sku}} ({{var item.product_type}}) &mdash; {{var item.name}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+<p><em>Consulter le journal d'audit <code>mm_eu_withdrawal_waiver_event</code> pour la trace complète des événements.</em></p>
+</body></html>

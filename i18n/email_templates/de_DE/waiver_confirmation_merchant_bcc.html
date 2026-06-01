@@ -1,0 +1,19 @@
+<!--@subject Waiver-event confirmation | Order {{var waiver.order_increment_id}}@-->
+<html><body>
+<p>BCC-Kopie der Art. 16(m) VRL-Bestätigung über den digitalen Inhaltsverzicht, gesendet an den Verbraucher.</p>
+<p>Bestellung: <strong>{{var waiver.order_increment_id}}</strong></p>
+<p>Verbraucher: {{var waiver.customer_name}} &lt;{{var waiver.customer_email}}&gt;</p>
+<p>Sprache: {{var waiver.locale}}</p>
+<p>Verzichtsreferenz: <code>{{var waiver.waiver_reference}}</code></p>
+<p>Eingewilligt am: {{var waiver.consent_at}}</p>
+<p>Bestätigt am: {{var waiver.ack_at}}</p>
+<p>Artikel:</p>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li>{{var item.sku}} ({{var item.product_type}}) &mdash; {{var item.name}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+<p><em>Vollständiges Ereignisprotokoll siehe <code>mm_eu_withdrawal_waiver_event</code>-Audit-Log.</em></p>
+</body></html>

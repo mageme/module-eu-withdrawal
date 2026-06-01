@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="MageMe_EUWithdrawal::css/order-view.css"/>
+    </head>
+    <body>
+        <referenceBlock name="customer_account_navigation">
+            <block class="MageMe\EUWithdrawal\Block\Customer\Account\WithdrawLink"
+                   name="customer-account-navigation-eu-withdrawal-link">
+                <arguments>
+                    <argument name="path" xsi:type="string">withdraw-contract</argument>
+                    <argument name="sortOrder" xsi:type="number">205</argument>
+                </arguments>
+            </block>
+        </referenceBlock>
+    </body>
+</page>

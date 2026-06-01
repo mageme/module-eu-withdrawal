@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!-- Wired in adminhtml only because the observer reads admin-session
+         state set by `StartCreditMemo` controller. Frontend creditmemo
+         saves (none in core but plugins may exist) won't fire it. -->
+    <event name="sales_order_creditmemo_save_after">
+        <observer name="mageme_eu_withdrawal_link_creditmemo_to_request"
+                  instance="MageMe\EUWithdrawal\Observer\LinkCreditMemoToRequest"/>
+    </event>
+</config>

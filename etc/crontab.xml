@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="default">
+        <job name="mageme_eu_withdrawal_receipt_retry_runner"
+             instance="MageMe\EUWithdrawal\Cron\ReceiptRetryRunner"
+             method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
+        <job name="mageme_eu_withdrawal_waiver_confirmation_retry_runner"
+             instance="MageMe\EUWithdrawal\Cron\WaiverConfirmationRetryRunner"
+             method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
+        <job name="mageme_eu_withdrawal_expire_orphan_waiver_events"
+             instance="MageMe\EUWithdrawal\Cron\ExpireOrphanWaiverEvents"
+             method="execute">
+            <schedule>0 * * * *</schedule>
+        </job>
+        <!-- audit_log_gc cron moved to MageMe_EUWithdrawalAudit (phase-34). -->
+    </group>
+</config>

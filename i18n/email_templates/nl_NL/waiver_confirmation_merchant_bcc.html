@@ -1,0 +1,19 @@
+<!--@subject Waiver-event confirmation | Order {{var waiver.order_increment_id}}@-->
+<html><body>
+<p>BCC-kopie van de Art. 16(m) CRD-bevestiging van de afstand van digitale inhoud, verzonden aan de consument.</p>
+<p>Bestelling: <strong>{{var waiver.order_increment_id}}</strong></p>
+<p>Consument: {{var waiver.customer_name}} &lt;{{var waiver.customer_email}}&gt;</p>
+<p>Taal: {{var waiver.locale}}</p>
+<p>Afstandreferentie: <code>{{var waiver.waiver_reference}}</code></p>
+<p>Toestemming verleend op: {{var waiver.consent_at}}</p>
+<p>Erkend op: {{var waiver.ack_at}}</p>
+<p>Artikelen:</p>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li>{{var item.sku}} ({{var item.product_type}}) &mdash; {{var item.name}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+<p><em>Zie het auditlog <code>mm_eu_withdrawal_waiver_event</code> voor het volledige gebeurtenisspoor.</em></p>
+</body></html>

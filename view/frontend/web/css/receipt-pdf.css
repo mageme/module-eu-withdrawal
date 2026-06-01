@@ -1,0 +1,4 @@
+/* src/app/code/MageMe/EUWithdrawal/view/frontend/web/css/receipt-pdf.css */
+/* Minimal print stylesheet referenced by future admin preview; mPDF inlines the <style> block. */
+body { font-family: "DejaVu Sans", sans-serif; }
+.right { text-align: right; }

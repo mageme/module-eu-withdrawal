@@ -1,0 +1,568 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="recaptcha_frontend">
+            <group id="type_for">
+                <field id="mageme_eu_withdrawal_lookup" translate="label" type="select" sortOrder="220" showInDefault="1"
+                       showInWebsite="1" showInStore="0" canRestore="1">
+                    <label>Enable for EU Withdrawal Lookup Form</label>
+                    <source_model>Magento\ReCaptchaAdminUi\Model\OptionSource\Type</source_model>
+                </field>
+            </group>
+        </section>
+
+        <tab id="mageme" translate="label" sortOrder="500" class="mageme-extensions">
+            <label>MageMe Extensions</label>
+        </tab>
+        <section id="mageme_eu_withdrawal" translate="label" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>EU Withdrawal</label>
+            <tab>mageme</tab>
+            <resource>MageMe_EUWithdrawal::config</resource>
+
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Module</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Activates frontend and cron jobs. Default: disabled. Complete the manual setup checklist before enabling.</comment>
+                </field>
+                <field id="increment_prefix" translate="label comment" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Request Number Prefix</label>
+                    <comment>Optional prefix prepended to the withdrawal request increment ID in customer-facing UI (e.g. "RR-" renders as "RR-000000022"). Leave blank to show the plain padded number.</comment>
+                </field>
+                <field id="default_contract_type" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Default Contract Type</label>
+                    <source_model>MageMe\EUWithdrawal\Model\Config\Source\ContractType</source_model>
+                </field>
+                <field id="frontend_route" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Frontend Route</label>
+                    <validate>required-entry validate-identifier</validate>
+                    <comment><![CDATA[URL prefix used by the customer-facing withdrawal flow (e.g. <code>withdraw-contract</code> renders as <code>/withdraw-contract/...</code>). Lowercase letters, digits, dashes and underscores only. ]]></comment>
+                </field>
+            </group>
+
+            <group id="precontract" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Pre-Contract Information (Art. 6(1)(h))</label>
+                <comment><![CDATA[Mandatory pre-contractual disclosure of the right of withdrawal. Displayed on the checkout payment step. Each display is logged forensically (Art. 10 defence). Snapshot of the rendered text is stored immutably (Art. 6(5)). <strong>Counsel review recommended before customising any Annex I text.</strong>]]></comment>
+
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Pre-Contract Disclosure</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Master kill-switch. Disabled = block does not render and no display events are recorded. Disabling exposes the merchant to Art. 10 (12 month + 14 day extended withdrawal period). Default: enabled.</comment>
+                </field>
+                <field id="return_address" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return Address</label>
+                    <comment><![CDATA[Where consumers send goods back. Leave empty to fall back to the store address from Stores → Configuration → General → General → Store Information.]]></comment>
+                </field>
+                <field id="display_in_checkout" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display In Checkout</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Off = block hidden but display events still recorded server-side via predispatch fallback. Use only for sandbox testing. Default: on.</comment>
+                </field>
+            </group>
+
+            <group id="eligibility" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Eligibility Rules (Art. 16 CRD Presets)</label>
+                <comment><![CDATA[These presets exclude specific product categories from the 14-day withdrawal right, per Art. 16 CRD. Each rule is OFF by default — enable only after confirming the corresponding product attribute is set correctly on your catalog.]]></comment>
+
+                <field id="preset_custom" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Art. 16(c) Custom-Made Goods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Excludes products made to customer specifications or clearly personalised (e.g. engraved jewellery, made-to-measure clothing). <strong>Requires</strong> product attribute <code>is_custom_made = true</code>. If enabled, orders containing such items cannot be withdrawn — customers will see this when attempting to start withdrawal.]]></comment>
+                </field>
+                <field id="preset_perishable" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Art. 16(d) Perishable Goods</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Excludes goods that can deteriorate or expire rapidly (fresh food, cut flowers, short-shelf-life pharmaceuticals). <strong>Requires</strong> product attribute <code>is_perishable = true</code>. Do not enable for all categories — apply it only to truly perishable SKUs, otherwise you will unlawfully deny valid withdrawals.]]></comment>
+                </field>
+                <field id="preset_sealed_hygiene" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Art. 16(e) Sealed Hygiene / Health</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Excludes sealed hygiene or health items <strong>only if the seal has been broken after delivery</strong> (cosmetics, intimate apparel, sealed medical supplies). <strong>Requires</strong> product attribute <code>is_sealed_hygiene = true</code>. The exclusion depends on a seal-check at the time of withdrawal (workflow in phase-04) — a sealed, unopened return remains eligible.]]></comment>
+                </field>
+                <field id="preset_sealed_av" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Art. 16(i) Sealed Audio / Video / Software</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Excludes sealed audio recordings, video recordings, or sealed computer software <strong>only if the seal has been broken after delivery</strong>. <strong>Requires</strong> product attribute <code>is_sealed_av = true</code>. Same seal-check logic as Art. 16(e). Does not apply to streaming / digital-download content — use Art. 16(m) for those.]]></comment>
+                </field>
+
+                <group id="digital" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Detection (Art. 16(m))</label>
+                    <comment><![CDATA[Art. 16(m) CRD digital-content detection. Determines what counts as digital content for eligibility purposes. The actual checkout-step waiver UI and email lives in the next section "Digital Waiver".]]></comment>
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable Digital Content Detection</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment><![CDATA[Master switch for Art. 16(m) digital-content detection. When off, no product is recognised as digital, the checkout waiver step is not required, and the preset always allows withdrawal.]]></comment>
+                    </field>
+                    <field id="detect_product_types" translate="label comment" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Detection Strategies</label>
+                        <source_model>MageMe\EUWithdrawal\Model\Config\Source\DigitalDetectionStrategy</source_model>
+                        <frontend_model>MageMe\Core\Block\Adminhtml\System\Config\Form\Field\Multiselect</frontend_model>
+                        <comment><![CDATA[Which product-type heuristics trigger the digital-content waiver gate. Downloadable + virtual are safe defaults; bundle_contains_digital inspects bundle children; custom_attribute reads the EAV flag configured below.]]></comment>
+                    </field>
+                    <field id="custom_attribute_code" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Custom Attribute Code</label>
+                        <comment><![CDATA[EAV attribute code used <strong>only</strong> when <em>Custom attribute flag</em> is picked in <em>Detection strategies</em> above. Default: <code>is_digital_content</code> (boolean attribute, 1 = digital). Ignored otherwise.]]></comment>
+                    </field>
+                </group>
+            </group>
+
+            <group id="withdrawal_window" translate="label comment" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Withdrawal Window</label>
+                <comment><![CDATA[Defines <strong>when</strong> the 14-day withdrawal right starts running (the delivery trigger, Art. 9(2)(b)) and <strong>how long</strong> it lasts in days (Art. 9(2)). Together these control the period each order's withdrawal is open.]]></comment>
+                <field id="period_days" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Withdrawal Period (Days)</label>
+                    <validate>required-entry validate-digits validate-digits-range digits-range-14-3650</validate>
+                    <comment><![CDATA[Default 14 days per Art. 9(2). Extension allowed (e.g. 30, 100). Reduction below 14 is illegal — the field validates 14-3650 only.]]></comment>
+                </field>
+                <field id="delivery_status_code" translate="label comment" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Confirmation Statuses</label>
+                    <source_model>MageMe\EUWithdrawal\Model\Config\Source\DeliveryStatus</source_model>
+                    <frontend_model>MageMe\Core\Block\Adminhtml\System\Config\Form\Field\Multiselect</frontend_model>
+                    <comment><![CDATA[Pick one or more order statuses whose <em>transition</em> means the customer received the goods in your fulfillment workflow. The 14-day withdrawal window starts on the timestamp of the order's <em>earliest</em> transition into <em>any</em> of the selected statuses (Art. 9(2)(b) Directive 2011/83/EU). Multi-select supports merchants who use several "delivered"-type statuses (e.g. <code>delivered</code> + <code>complete</code> + <code>delivered_partial</code>). Until the order reaches any of them, the right of withdrawal is open with no fixed deadline.]]></comment>
+                </field>
+            </group>
+
+            <group id="digital_waiver" translate="label comment" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Digital Waiver (Art. 16(m))</label>
+                <comment><![CDATA[Art. 16(m) CRD exclusion — digital content where the customer has (1) given express prior consent to begin performance and (2) acknowledged that they lose the withdrawal right. Two switches control this feature end-to-end: the <em>Detection</em> subgroup under <em>Eligibility Rules</em> decides what counts as digital (master switch); this section renders the 2-checkbox waiver UX at checkout and dispatches the Art. 11a(4) confirmation email. Both must be ON for the feature to work end-to-end. Per-locale text overrides below. Use this only for <strong>one-time digital purchases</strong> (ebooks, software installers, music files, games). Do <strong>not</strong> enable it for ongoing digital <strong>subscriptions or services</strong> (SaaS, streaming, hosted software) — EU case law (CJEU Sky, C-641/19) requires a different consent flow for those.]]></comment>
+
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Checkout Waiver Step</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When on, carts that contain a detected digital item render the 2-checkbox waiver step at checkout. Has no effect unless <em>Eligibility Rules → Detection → Enable Digital Content Detection</em> is also on.]]></comment>
+                </field>
+
+                <field id="virtual_timer_enabled" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mark Virtual-Only Items as Performance-Started on Confirmation</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Virtual products have no download trigger. When on, the waiver confirmation email's dispatch counts as performance-start for virtual-only items.]]></comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
+
+                <field id="enforce_on_api" translate="label comment" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enforce Waiver on API / Headless Orders</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When on (default), digital-content orders placed via the REST/GraphQL API are blocked unless a genuine waiver consent record exists for each digital item — the same protection the storefront enforces. Turn this off only if you collect the Art. 16(m) consent through your own headless integration and write it via the waiver-event API; the storefront waiver step is unaffected either way.]]></comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
+
+                <group id="email" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Confirmation Email (Art. 11a(4))</label>
+                    <comment><![CDATA[Durable-medium copy of the customer's Art. 16(m) waiver, sent immediately after checkout when a digital item is in cart. Required by Art. 11a(4) Directive 2011/83/EU — keeps a tamper-evident record of the legal text the customer accepted.]]></comment>
+                    <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>Disable only if you deliver the durable-medium confirmation through a different channel.</comment>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="identity" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Identity</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Optional. Comma-separated. Blind-copies the waiver-confirmation email to a merchant audit address. Leave blank to skip.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+
+                <group id="waiver_texts" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Per-Locale Waiver Text Overrides</label>
+                    <comment><![CDATA[Empty fields fall through to the locale baseline. Any override value becomes part of the SHA-256 hash stored per consent event — changing a field after customers have consented does <strong>not</strong> retroactively invalidate prior consents.]]></comment>
+                    <group id="en_US" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>English (en_US)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="de_DE" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>German (de_DE)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="fi_FI" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Finnish (fi_FI)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="nl_NL" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Dutch (nl_NL)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="fr_FR" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>French (fr_FR)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="it_IT" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Italian (it_IT)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="es_ES" translate="label" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Spanish (es_ES)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="pl_PL" translate="label" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Polish (pl_PL)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="pt_PT" translate="label" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Portuguese (pt_PT)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="da_DK" translate="label" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Danish (da_DK)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="sv_SE" translate="label" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Swedish (sv_SE)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="de_AT" translate="label" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>German — Austria (de_AT)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="sv_FI" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Swedish — Finland (sv_FI)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="nl_BE" translate="label" sortOrder="140" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Dutch — Belgium (nl_BE)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="fr_BE" translate="label" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>French — Belgium (fr_BE)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="de_BE" translate="label" sortOrder="160" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>German — Belgium (de_BE)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                    <group id="fr_LU" translate="label" sortOrder="170" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>French — Luxembourg (fr_LU)</label>
+                        <field id="consent_text" translate="label" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1"><label>Consent Text</label></field>
+                        <field id="acknowledgment_text" translate="label" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1"><label>Right-Loss Acknowledgment Text</label></field>
+                    </group>
+                </group>
+            </group>
+
+            <group id="frontend" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Frontend</label>
+                <comment><![CDATA[Customer-facing UX for the withdrawal flow. Subgroups: <em>Buttons</em> (legal-critical labels), <em>Placements</em> (where to surface the link), <em>Return Reasons</em> (per-item dropdown), <em>Review Step</em> (content on step 3 of the flow).]]></comment>
+
+                <group id="buttons" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Buttons</label>
+                    <field id="button_label_step1" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <label>Step 1 Button Label</label>
+                        <comment><![CDATA[<strong>⚠ Legal warning.</strong> Art. 11a(2) CRD requires the literal text "withdraw from contract here" <em>or a corresponding unambiguous formulation</em>. The default value ("Withdraw from contract here") is the Directive's verbatim phrase; Per-locale translations are counsel-signed. <strong>Do not override unless you have received written advice from qualified consumer-law counsel in the target jurisdiction.</strong> Every override is recorded in the audit log.]]></comment>
+                    </field>
+                    <field id="button_label_step2" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                        <label>Step 2 Button Label (Confirmation)</label>
+                        <comment><![CDATA[<strong>⚠ Legal warning.</strong> This is the label on the final confirmation button. Default ("Confirm withdrawal") is counsel-signed; Per-locale translations are counsel-signed. Override only with written legal advice; overrides are audit-logged.]]></comment>
+                    </field>
+                </group>
+
+                <group id="placements" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Placements</label>
+                    <field id="footer_link" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Show Footer Link</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="my_account_link" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Show in My Account</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                </group>
+
+                <group id="return_reasons" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return Reasons</label>
+                    <field id="reasons" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Reasons</label>
+                        <frontend_model>MageMe\EUWithdrawal\Block\Adminhtml\System\Config\Form\Field\ReasonsArray</frontend_model>
+                        <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                        <comment><![CDATA[List of reasons offered to the customer in the per-item dropdown. <strong>Code</strong> is the machine value (lowercase, snake_case, max 32 chars); <strong>Label</strong> is the visible text. Empty grid hides the dropdown entirely.]]></comment>
+                    </field>
+                    <field id="enable_other" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enable "Other" with Free Text</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>When enabled, an "Other" option appears in the dropdown that reveals a free-text field (max 500 chars).</comment>
+                    </field>
+                </group>
+
+                <group id="review" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Review Step</label>
+                    <field id="shipping_info_text" translate="label comment" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Return Shipping Notice</label>
+                        <comment>Text shown on the Review &amp; Confirm step (step 3). Example: "You'll receive a prepaid shipping label in the confirmation email." or "Return shipping costs are paid by the customer." Leave blank to hide the row.</comment>
+                    </field>
+                    <field id="return_policy_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Return Policy URL</label>
+                        <comment>Optional link rendered next to the shipping notice ("View return policy"). Accepts absolute URLs or relative paths like "return-policy".</comment>
+                    </field>
+                </group>
+            </group>
+
+            <group id="admin_notifications" translate="label comment" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Admin Notifications</label>
+                <comment><![CDATA[Internal alerts to your team. Independent of the per-email <em>BCC Merchant</em> checkboxes under <em>Customer Notifications</em> below — if you enable both, you will receive two emails per request.]]></comment>
+
+                <group id="new_request" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>1. New Request Alert</label>
+                    <comment>Sent the moment a customer completes the two-step withdrawal flow.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="recipients" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Recipient Email(s)</label>
+                        <comment>Comma-separated. Each recipient receives a separate email rendered in their own admin locale (looked up via the admin user's interface_locale; fallback to general/locale/code). Invalid addresses dropped silently.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+            </group>
+
+            <group id="notifications" translate="label comment" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Customer Notifications</label>
+                <comment><![CDATA[All customer-facing emails sent by the module. Each email can be enabled/disabled, assigned a custom template (Marketing → Email Templates), and BCC'd to a merchant address. The shared <em>Branding</em> subgroup at the bottom controls the layout (USP strip, social links) used by every email below.]]></comment>
+
+                <group id="submitted" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>1. Submission Confirmation Email</label>
+                    <comment>Sent when a customer completes the withdrawal form.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated. Leave blank to disable.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+
+                <group id="approved" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>2. Approval Email</label>
+                    <comment>Sent when an admin approves a withdrawal request.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated. Leave blank to disable.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+
+                <group id="denied" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>3. Denial Email</label>
+                    <comment>Sent when an admin denies a withdrawal request.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated. Leave blank to disable.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+
+                <group id="cancelled_admin" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>4. Cancellation Email (Admin-Initiated)</label>
+                    <comment>Sent when an admin cancels a withdrawal request on the customer's behalf.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated. Leave blank to disable.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+
+                <group id="cancelled_self" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>5. Cancellation Email (Customer Self-Cancel)</label>
+                    <comment>Sent when a customer cancels their own pending withdrawal.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated. Leave blank to disable.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
+
+                <group id="receipt" translate="label comment" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>6. Receipt Email (Durable Medium — Art. 11a(4))</label>
+                    <comment><![CDATA[Legally required durable-medium confirmation. Cannot be fully disabled (Art. 11a(4) Directive 2011/83/EU). Disabling here only stops the sender — the receipt is still generated and stored.]]></comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>Disable only if you deliver the receipt through a different durable medium (postal mail, customer account download, etc.).</comment>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="retry_attempts" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Delivery Retry Attempts</label>
+                        <validate>validate-digits validate-digits-range digits-range-1-10</validate>
+                        <comment>Number of delivery attempts before a receipt is flagged as undelivered.</comment>
+                    </field>
+                    <field id="alert_address" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>DLQ Alert Recipient</label>
+                        <comment>Notified when a receipt fails permanently. Falls back to Store Email Addresses → General Contact.</comment>
+                    </field>
+                </group>
+
+                <group id="branding" translate="label comment" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Branding (Shared by All Emails Above)</label>
+                    <comment><![CDATA[Optional decoration of the customer-facing emails. Empty fields hide their respective rows. Brand wordmark, logo, support email, and store address are read from the standard Magento configuration tree (Stores → Configuration → General + Design → Transactional Emails).]]></comment>
+
+                    <group id="usp_1" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>USP Strip — Item 1</label>
+                        <field id="usp_1_icon" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Icon</label>
+                            <source_model>MageMe\EUWithdrawal\Model\Config\Source\UspIcon</source_model>
+                        </field>
+                        <field id="usp_1_title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Title</label>
+                            <comment>e.g. "Free delivery"</comment>
+                        </field>
+                        <field id="usp_1_subtitle" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Subtitle</label>
+                            <comment>e.g. "EU orders above €50"</comment>
+                        </field>
+                    </group>
+
+                    <group id="usp_2" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>USP Strip — Item 2</label>
+                        <field id="usp_2_icon" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Icon</label>
+                            <source_model>MageMe\EUWithdrawal\Model\Config\Source\UspIcon</source_model>
+                        </field>
+                        <field id="usp_2_title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Title</label>
+                        </field>
+                        <field id="usp_2_subtitle" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Subtitle</label>
+                        </field>
+                    </group>
+
+                    <group id="usp_3" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>USP Strip — Item 3</label>
+                        <field id="usp_3_icon" translate="label" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Icon</label>
+                            <source_model>MageMe\EUWithdrawal\Model\Config\Source\UspIcon</source_model>
+                        </field>
+                        <field id="usp_3_title" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Title</label>
+                        </field>
+                        <field id="usp_3_subtitle" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Subtitle</label>
+                        </field>
+                    </group>
+
+                    <group id="social" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Social Links</label>
+                        <comment>Optional URLs rendered as round monogram badges in the email footer. Leave blank to hide.</comment>
+                        <field id="social_instagram" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Instagram URL</label>
+                        </field>
+                        <field id="social_x" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>X / Twitter URL</label>
+                        </field>
+                        <field id="social_facebook" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>Facebook URL</label>
+                        </field>
+                        <field id="social_youtube" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                            <label>YouTube URL</label>
+                        </field>
+                    </group>
+                </group>
+            </group>
+
+            <group id="retention" translate="label comment" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Privacy &amp; Retention</label>
+                <comment><![CDATA[
+                    Two-stage GDPR data lifecycle. Withdrawal requests carry both <em>personally identifiable</em> data (customer name, email, IP, user agent, admin notes, denial reasons) and a content hash that is the Art. 11a(4) <em>durable-medium</em> legal proof. The two have different mandatory retention periods and are aged out separately.
+                ]]></comment>
+
+                <field id="pii_retention_days" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>PII Retention (days)</label>
+                    <validate>validate-digits validate-digits-range digits-range-730-3650</validate>
+                    <comment><![CDATA[
+                        How long the <strong>personally identifiable fields</strong> (customer name, email, IP, user agent, denial reason, admin note) are kept before they are nullified by the daily privacy cron. The withdrawal record itself stays — only PII is wiped. Counted from the record's creation date.<br/><br/>
+                        <strong>Default: 730 days (2 years).</strong> This is the floor — GDPR Art. 5(1)(e) ("storage limitation") balanced against the statute of limitations for consumer-rights claims in most EU member states (1–2 years). Range: 730–3650 days.
+                    ]]></comment>
+                </field>
+                <field id="hash_retention_days" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Hash Retention (days)</label>
+                    <validate>validate-digits validate-digits-range digits-range-2190-3650</validate>
+                    <comment><![CDATA[
+                        How long the <strong>content hash</strong> (Art. 11a(4) durable-medium proof) is retained. After PII has been wiped, the record keeps only the hash and receipt timestamps until this period expires; then the record is deleted entirely.<br/><br/>
+                        <strong>Default: 2190 days (6 years).</strong> Matches the longest commercial-records retention obligation in EU member states (typically 6 years for accounting / VAT). Must be ≥ PII Retention. Range: 2190–3650 days.
+                    ]]></comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

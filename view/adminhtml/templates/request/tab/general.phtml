@@ -1,0 +1,278 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Adminhtml\Request\Tab\General $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$request = $block->getRequestEntity();
+if ($request === null) {
+    return;
+}
+$id = (int) $request->getRequestId();
+$incrementId = $request->getIncrementId() ?? sprintf('%09d', $id);
+$status = (string) $request->getStatus();
+$orderIncrement = $block->getOrderIncrementId();
+$items = $block->getItems();
+$terminal = in_array($status, ['approved', 'denied', 'cancelled', 'anonymised'], true);
+$statusBadgeSuffix = in_array($status, \MageMe\EUWithdrawal\Api\Data\RequestInterface::ALL_STATUSES, true)
+    ? $status
+    : 'unknown';
+$statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($status);
+?>
+
+<section class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Withdrawal & Customer Information')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__page-section-item mm-eu-w-col-left">
+            <div class="admin__page-section-item-title">
+                <span class="title"><?= $escaper->escapeHtml(__('Request # %1', $incrementId)) ?></span>
+            </div>
+            <div class="admin__page-section-item-content">
+                <table class="admin__table-secondary">
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Request Status')) ?></th>
+                        <td><span id="request_status" class="mageme-eu-w-status-badge mageme-eu-w-status-badge--<?= $escaper->escapeHtmlAttr($statusBadgeSuffix) ?>"><?= $escaper->escapeHtml($statusBadgeLabel) ?></span></td>
+                    </tr>
+                    <?php $reason = $block->getStatusChangeReason(); ?>
+                    <?php if ($reason !== null): ?>
+                        <tr>
+                            <th><?= $escaper->escapeHtml($reason['label']) ?></th>
+                            <td>
+                                <?php if ($reason['legal_basis'] !== ''): ?>
+                                    <div><em><?= /* @noEscape */ nl2br($escaper->escapeHtml($reason['legal_basis'])) ?></em></div>
+                                <?php endif; ?>
+                                <?php if ($reason['note'] !== ''): ?>
+                                    <div<?= $reason['legal_basis'] !== '' ? ' style="margin-top:4px;color:#6b7280;"' : '' ?>>
+                                        <?= /* @noEscape */ nl2br($escaper->escapeHtml($reason['note'])) ?>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Submitted At')) ?></th>
+                        <td><?= $escaper->escapeHtml($block->formatIsoDate((string) $request->getCreatedAt())) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Confirmed At')) ?></th>
+                        <td><?= $escaper->escapeHtml($block->formatIsoDate((string) $request->getConfirmedAt())) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Related Order')) ?></th>
+                        <td>
+                            <?php if ($orderIncrement !== ''): ?>
+                                <a href="<?= $escaper->escapeUrl($block->getOrderUrl((int) $request->getOrderId())) ?>">
+                                    <?= $escaper->escapeHtml('#' . $orderIncrement) ?>
+                                </a>
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Jurisdiction')) ?></th>
+                        <td><?= $escaper->escapeHtml($request->getJurisdiction()) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Contract Type')) ?></th>
+                        <td><?= $escaper->escapeHtml($block->getContractTypeLabel($request->getContractType())) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Receipt Status')) ?></th>
+                        <td>
+                            <?= $escaper->escapeHtml(__(ucwords(str_replace('_', ' ', (string) $request->getReceiptStatus())))) ?>
+                            <?php $attempts = (int) $request->getReceiptSendAttempts(); ?>
+                            <?php if ($attempts > 0): ?>
+                                <span class="mm-eu-w-receipt-attempts">
+                                    (<?= $escaper->escapeHtml(__('%1 attempt(s)', $attempts)) ?>)
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php $lastError = (string) $request->getReceiptLastError(); ?>
+                    <?php if ($lastError !== ''): ?>
+                        <tr>
+                            <th><?= $escaper->escapeHtml(__('Receipt Error')) ?></th>
+                            <td><code class="mm-eu-w-receipt-error"><?= $escaper->escapeHtml($lastError) ?></code></td>
+                        </tr>
+                    <?php endif; ?>
+                </table>
+                <?php
+                /* Contextual request-level actions slot, directly under the
+                   summary table. Pro add-ons (e.g. Evidence "Export evidence
+                   pack") fill it via the same name-lookup seam used for the
+                   notes block — Free stays add-on-agnostic. Absent in Free. */
+                $summaryActions = $block->getLayout()->getBlock('mageme_eu_withdrawal_request_summary_actions');
+                ?>
+                <?php if ($summaryActions !== null): ?>
+                    <?= /* @noEscape */ $summaryActions->toHtml() ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="admin__page-section-item mm-eu-w-col-right">
+            <div class="admin__page-section-item-title">
+                <span class="title"><?= $escaper->escapeHtml(__('Customer Information')) ?></span>
+            </div>
+            <div class="admin__page-section-item-content">
+                <table class="admin__table-secondary">
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Customer Name')) ?></th>
+                        <td><?= $escaper->escapeHtml((string) $request->getCustomerName()) ?></td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Email')) ?></th>
+                        <td>
+                            <a href="mailto:<?= $escaper->escapeHtmlAttr((string) $request->getCustomerEmail()) ?>">
+                                <?= $escaper->escapeHtml((string) $request->getCustomerEmail()) ?>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Locale')) ?></th>
+                        <td><?= $escaper->escapeHtml($request->getLocale()) ?></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Items Selected for Withdrawal')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <div class="admin__table-wrapper">
+            <table class="data-table admin__table-primary edit-order-table mm-eu-w-items-table">
+                <thead>
+                    <tr class="headings">
+                        <th class="col-product"><span><?= $escaper->escapeHtml(__('Product')) ?></span></th>
+                        <th class="col-price"><span><?= $escaper->escapeHtml(__('Price')) ?></span></th>
+                        <th class="col-ordered-qty"><span><?= $escaper->escapeHtml(__('Qty')) ?></span></th>
+                        <th class="col-subtotal"><span><?= $escaper->escapeHtml(__('Subtotal')) ?></span></th>
+                        <th class="col-refund"><span><?= $escaper->escapeHtml(__('Refund')) ?></span></th>
+                        <th class="col-reason"><span><?= $escaper->escapeHtml(__('Reason')) ?></span></th>
+                        <th class="col-eligibility last"><span><?= $escaper->escapeHtml(__('Eligibility')) ?></span></th>
+                    </tr>
+                </thead>
+                <?php if (empty($items)): ?>
+                    <tbody>
+                        <tr>
+                            <td colspan="7"><?= $escaper->escapeHtml(__('No items associated with this request.')) ?></td>
+                        </tr>
+                    </tbody>
+                <?php else: ?>
+                    <?php $rowIndex = 0; foreach ($items as $item): ?>
+                        <?php
+                        $rowIndex++;
+                        $orderItem = $block->getOrderItem((int) $item->getOrderItemId());
+                        $eligibility = (string) $item->getEligibility();
+                        ?>
+                        <tbody class="<?= /* @noEscape */ $rowIndex % 2 ? 'even' : 'odd' ?>">
+                            <tr>
+                                <td class="col-product">
+                                    <?php if ($orderItem !== null): ?>
+                                        <div class="product-title">
+                                            <?= $escaper->escapeHtml((string) $orderItem->getName()) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="product-sku-block">
+                                        <span><?= $escaper->escapeHtml(__('SKU')) ?>:</span>
+                                        <?= $escaper->escapeHtml((string) $item->getSku()) ?>
+                                    </div>
+                                </td>
+                                <td class="col-price">
+                                    <?= $escaper->escapeHtml(
+                                        $orderItem !== null
+                                            ? $block->formatPrice((float) $orderItem->getPrice())
+                                            : '—'
+                                    ) ?>
+                                </td>
+                                <td class="col-ordered-qty">
+                                    <table class="qty-table">
+                                        <?php if ($orderItem !== null): ?>
+                                            <tr>
+                                                <th><?= $escaper->escapeHtml(__('Ordered')) ?></th>
+                                                <td><?= (float) $orderItem->getQtyOrdered() ?></td>
+                                            </tr>
+                                        <?php endif; ?>
+                                        <tr>
+                                            <th><?= $escaper->escapeHtml(__('Withdrawing')) ?></th>
+                                            <td><?= (float) $item->getQtyWithdraw() ?></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td class="col-subtotal">
+                                    <?= $escaper->escapeHtml(
+                                        $orderItem !== null
+                                            ? $block->formatPrice((float) $orderItem->getRowTotal())
+                                            : '—'
+                                    ) ?>
+                                </td>
+                                <td class="col-refund">
+                                    <?= $escaper->escapeHtml($block->formatPrice((float) $item->getRefundAmount())) ?>
+                                </td>
+                                <td class="col-reason">
+                                    <?= $escaper->escapeHtml($block->getItemReasonDisplay($item)) ?>
+                                </td>
+                                <td class="col-eligibility last">
+                                    <?= $escaper->escapeHtml(__(ucwords(str_replace('_', ' ', $eligibility)))) ?>
+                                </td>
+                            </tr>
+                        </tbody>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </table>
+        </div>
+    </div>
+</section>
+
+<?php
+/* Internal-notes feature lives in Pro MageMe_EUWithdrawalAudit (audit-backed),
+   but is rendered in its original place — the left column of this section —
+   via the same name-lookup seam Tabs uses for the audit/precontract blocks.
+   Absent in Free (graceful: section shows only Refund Totals). */
+$notesBlock = $block->getLayout()->getBlock('mageme_eu_withdrawal_request_notes');
+?>
+<?php if ($notesBlock !== null || !empty($items)): ?>
+<section class="admin__page-section">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('Refund Total')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <?php if ($notesBlock !== null): ?>
+            <?= /* @noEscape */ $notesBlock->toHtml() ?>
+        <?php endif; ?>
+
+        <?php if (!empty($items)): ?>
+            <div class="admin__page-section-item mm-eu-w-col-right">
+                <div class="admin__page-section-item-title">
+                    <span class="title"><?= $escaper->escapeHtml(__('Refund Totals')) ?></span>
+                </div>
+                <div class="admin__page-section-item-content">
+                    <table class="admin__table-secondary mm-eu-w-totals-table">
+                        <tr>
+                            <th><?= $escaper->escapeHtml(__('Items Subtotal')) ?></th>
+                            <td><?= $escaper->escapeHtml($block->getItemsSubtotalDisplay()) ?></td>
+                        </tr>
+                        <?php if ($block->getShippingRefund() > 0): ?>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('Shipping Refund')) ?></th>
+                                <td><?= $escaper->escapeHtml($block->getShippingRefundDisplay()) ?></td>
+                            </tr>
+                        <?php endif; ?>
+                        <tr class="grand_total">
+                            <th><?= $escaper->escapeHtml(__('Total Refund')) ?></th>
+                            <td><strong><?= $escaper->escapeHtml($block->getRefundTotal()) ?></strong></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
+<?php endif; ?>

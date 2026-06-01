@@ -1,0 +1,22 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\ProgressStepper $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$steps = $block->getSteps();
+?>
+<nav class="mm-eu-w-stepper" aria-label="<?= $escaper->escapeHtmlAttr(__('Withdrawal progress')) ?>">
+    <ol class="mm-eu-w-stepper-list">
+        <?php foreach ($steps as $s): ?>
+            <li class="mm-eu-w-step mm-eu-w-step--<?= $escaper->escapeHtmlAttr($s['status']) ?>">
+                <span class="mm-eu-w-step-number" aria-hidden="true"><?= (int) $s['number'] ?></span>
+                <span class="mm-eu-w-step-body">
+                    <span class="mm-eu-w-step-title"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
+                    <span class="mm-eu-w-step-subtitle"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>
+                </span>
+            </li>
+        <?php endforeach; ?>
+    </ol>
+</nav>

@@ -1,0 +1,94 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+declare(strict_types=1);
+
+/** @var \MageMe\EUWithdrawal\Block\Email\Layout $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$storeName    = $block->getStoreName();
+$storeUrl     = $block->getStoreUrl();
+$supportEmail = $block->getSupportEmail();
+$storeAddress = $block->getStoreAddress();
+$uspItems     = $block->getUspItems();
+$socialUrls   = $block->getSocialUrls();
+$year         = $block->getCurrentYear();
+?>
+            </td></tr>
+            <?php if ($uspItems !== []): ?>
+            <tr><td style="padding:0 32px 8px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #eaecef;border-bottom:1px solid #eaecef;">
+                    <tr>
+                    <?php foreach ($uspItems as $usp): ?>
+                        <td class="usp-cell" align="center" valign="top" style="padding:18px 8px;width:33.33%;">
+                            <div style="line-height:1;margin-bottom:8px;">
+                                <img src="<?= $escaper->escapeHtmlAttr($usp['icon']) ?>" alt="" width="22" height="22" style="display:inline-block;border:0;vertical-align:middle;" />
+                            </div>
+                            <div style="font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.3;"><?= $escaper->escapeHtml($usp['title']) ?></div>
+                            <?php if ($usp['subtitle'] !== ''): ?>
+                                <div style="font-size:12px;color:#6b7280;line-height:1.4;margin-top:2px;"><?= $escaper->escapeHtml($usp['subtitle']) ?></div>
+                            <?php endif; ?>
+                        </td>
+                    <?php endforeach; ?>
+                    </tr>
+                </table>
+            </td></tr>
+            <?php endif; ?>
+            <tr><td style="padding:18px 32px 24px;">
+                <table role="presentation" class="footer-row" width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td align="left" valign="middle" style="font-size:12px;color:#6b7280;">
+                            <?php if ($supportEmail !== ''): ?>
+                                <a href="mailto:<?= $escaper->escapeUrl($supportEmail) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml(__('Contact us')) ?></a>
+                            <?php else: ?>
+                                <span><?= $escaper->escapeHtml(__('Contact us')) ?></span>
+                            <?php endif; ?>
+                            <span style="margin:0 8px;color:#d1d5db;">·</span>
+                            <a href="<?= $escaper->escapeUrl($storeUrl) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml(__('Returns')) ?></a>
+                            <span style="margin:0 8px;color:#d1d5db;">·</span>
+                            <a href="<?= $escaper->escapeUrl($storeUrl) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml(__('FAQs')) ?></a>
+                        </td>
+                        <?php if ($socialUrls !== []): ?>
+                        <td align="right" valign="middle">
+                            <?php
+                            // Inline SVG logos via data URI — render in Apple Mail, iOS,
+                            // Gmail web/mobile, Outlook web. Old Outlook desktop strips
+                            // data: img sources; the alt attribute serves as fallback.
+                            $svg = [
+                                'instagram' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.81.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.81-.41 2.23a3.71 3.71 0 0 1-.9 1.38c-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.81-.25-2.23-.41a3.71 3.71 0 0 1-1.38-.9 3.71 3.71 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.81.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16M12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.31-1.46.72-2.13 1.39A5.9 5.9 0 0 0 .63 4.14c-.3.76-.5 1.64-.56 2.91C.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.39 2.13a5.9 5.9 0 0 0 2.13 1.39c.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.39 5.9 5.9 0 0 0 1.39-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.39-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0zm0 5.84A6.16 6.16 0 1 0 12 18.16 6.16 6.16 0 0 0 12 5.84zm0 10.16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-11.84a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>',
+                                'x'         => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>',
+                                'facebook'  => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+                                'youtube'   => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#1a1a1a"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>',
+                            ];
+                            ?>
+                            <?php foreach ($socialUrls as $network => $url): ?>
+                                <?php $icon = $svg[$network] ?? null; ?>
+                                <a href="<?= $escaper->escapeUrl($url) ?>" style="display:inline-block;text-decoration:none;margin-left:6px;vertical-align:middle;" aria-label="<?= $escaper->escapeHtmlAttr(ucfirst($network)) ?>">
+                                    <?php if ($icon !== null): ?>
+                                        <img src="data:image/svg+xml;base64,<?= /* @noEscape */ base64_encode($icon) ?>" alt="<?= $escaper->escapeHtmlAttr(ucfirst($network)) ?>" width="20" height="20" style="display:inline-block;border:0;vertical-align:middle;" />
+                                    <?php else: ?>
+                                        <span style="font-size:12px;color:#6b7280;"><?= $escaper->escapeHtml(ucfirst($network)) ?></span>
+                                    <?php endif; ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </td>
+                        <?php endif; ?>
+                    </tr>
+                </table>
+            </td></tr>
+        </table>
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-top:16px;">
+            <tr><td align="center" style="padding:8px 24px;font-size:11px;color:#9ca3af;line-height:1.6;">
+                <?= $escaper->escapeHtml($block->getDisclaimer()) ?><br />
+                <?php if ($storeAddress !== ''): ?>
+                    <?= $escaper->escapeHtml($storeAddress) ?><br />
+                <?php endif; ?>
+                © <?= $escaper->escapeHtml($year) ?> <?= $escaper->escapeHtml($storeName) ?>. <?= $escaper->escapeHtml(__('All rights reserved.')) ?>
+            </td></tr>
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — AI-drafted baseline Art. 16(m) CRD waiver texts.
+
+    IMPORTANT — MERCHANT RESPONSIBILITY:
+    These texts were drafted by an AI system from publicly available legal
+    sources (EUR-Lex, national consumer codes). They have NOT been reviewed
+    by a licensed attorney in any jurisdiction. It is the merchant's
+    responsibility to:
+      (1) review the text for their store's target jurisdictions with local
+          counsel BEFORE enabling the waiver flow in production, and
+      (2) replace any text via the admin override (Stores -> Configuration
+          -> MageMe -> EU Withdrawal -> Digital Content Detection -> Per-locale
+          waiver text overrides) if counsel advises different wording.
+
+    Each cell is the exact bytes rendered into the checkout checkbox label
+    AND stored as snapshot per event — changes made after customers have
+    consented do NOT retroactively invalidate prior consents (the hash is
+    taken at consent time).
+
+    Cell key "__eu_generic__" is the jurisdiction-agnostic fallback used for
+    any country without a specific row, citing only Directive 2011/83/EU
+    art. 16(m).
+
+    Locale rows are keyed by base language only (de_DE, fr_FR, nl_NL, sv_SE,
+    ...). Country-variant locales (de_AT, de_BE, fr_BE, fr_LU, nl_BE, sv_FI)
+    walk to their parent language via Model\Locale\LocaleFallbackResolver.
+    Jurisdiction-specific rows for variant countries (AT, BE, LU) live under
+    the parent language row (e.g. (de_DE, AT) covers Austria's de_AT customer).
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/waiver_templates.xsd">
+    <template locale="en_US" jurisdiction="__eu_generic__">
+        <consent>I expressly consent to immediate performance of the digital content / digital service before the end of the 14-day withdrawal period.</consent>
+        <acknowledgment>I acknowledge that, by giving this consent, I will lose my right of withdrawal once performance has begun (Art. 16(m) CRD).</acknowledgment>
+    </template>
+    <template locale="de_DE" jurisdiction="DE">
+        <consent>Ich verlange ausdrücklich die Ausführung des digitalen Inhalts / der digitalen Dienstleistung vor Ablauf der 14-tägigen Widerrufsfrist (§ 356 Abs. 5 BGB).</consent>
+        <acknowledgment>Mir ist bekannt, dass mit Beginn der Ausführung des Vertrages mein Widerrufsrecht erlischt.</acknowledgment>
+    </template>
+    <template locale="de_DE" jurisdiction="AT">
+        <consent>Ich verlange ausdrücklich die Ausführung der digitalen Leistung / des digitalen Inhalts vor Ablauf der 14-tägigen Rücktrittsfrist (§ 18 Abs. 1 Z 11 FAGG).</consent>
+        <acknowledgment>Mir ist bekannt, dass ich durch diese Zustimmung mein Rücktrittsrecht verliere, sobald mit der Ausführung begonnen wurde (§ 18 Abs. 1 Z 11 FAGG).</acknowledgment>
+    </template>
+    <template locale="de_DE" jurisdiction="BE">
+        <consent>Ich verlange ausdrücklich die Ausführung des digitalen Inhalts / der digitalen Dienstleistung vor Ablauf der 14-tägigen Widerrufsfrist (Art. VI.48 §1 WGB).</consent>
+        <acknowledgment>Mir ist bekannt, dass ich durch diese Zustimmung mein Widerrufsrecht verliere, sobald mit der Ausführung begonnen wurde (Art. VI.53, 13° WGB).</acknowledgment>
+    </template>
+    <template locale="de_DE" jurisdiction="__eu_generic__">
+        <consent>Ich stimme der sofortigen Bereitstellung des digitalen Inhalts vor Ablauf der 14-tägigen Widerrufsfrist ausdrücklich zu.</consent>
+        <acknowledgment>Mit dieser Zustimmung verzichte ich auf mein Widerrufsrecht, sobald die Ausführung begonnen hat (Art. 16(m) VRRL).</acknowledgment>
+    </template>
+    <template locale="fi_FI" jurisdiction="FI">
+        <consent>Pyydän nimenomaisesti, että digitaalinen sisältö / digitaalinen palvelu toimitetaan ennen 14 päivän peruuttamisajan päättymistä.</consent>
+        <acknowledgment>Olen tietoinen siitä, että menetän peruuttamisoikeuteni, kun palvelun suorittaminen on alkanut (KSL 6:16 § 11 k.).</acknowledgment>
+    </template>
+    <template locale="fi_FI" jurisdiction="__eu_generic__">
+        <consent>Annan nimenomaisen suostumuksen digitaalisen sisällön välittömään toimittamiseen ennen peruuttamisajan päättymistä.</consent>
+        <acknowledgment>Ymmärrän menettäväni peruuttamisoikeuteni, kun suorittaminen on alkanut (VRRL 16 m art.).</acknowledgment>
+    </template>
+    <template locale="nl_NL" jurisdiction="NL">
+        <consent>Ik ga er uitdrukkelijk mee akkoord dat de digitale inhoud / digitale dienst vóór afloop van de bedenktijd van 14 dagen wordt geleverd.</consent>
+        <acknowledgment>Ik erken dat ik door het geven van deze toestemming mijn herroepingsrecht verlies zodra de uitvoering is begonnen (art. 6:230s BW).</acknowledgment>
+    </template>
+    <template locale="nl_NL" jurisdiction="BE">
+        <consent>Ik verzoek uitdrukkelijk om de uitvoering van de digitale inhoud / digitale dienst vóór het verstrijken van de herroepingstermijn van 14 dagen (art. VI.48 §1 WER).</consent>
+        <acknowledgment>Ik erken dat ik door deze toestemming mijn herroepingsrecht verlies zodra de uitvoering is begonnen (art. VI.53, 13° WER).</acknowledgment>
+    </template>
+    <template locale="nl_NL" jurisdiction="__eu_generic__">
+        <consent>Ik geef uitdrukkelijk toestemming voor onmiddellijke levering van de digitale inhoud voor het einde van de bedenktijd van 14 dagen.</consent>
+        <acknowledgment>Ik aanvaard dat ik mijn herroepingsrecht verlies zodra de uitvoering is begonnen (art. 16(m) Richtlijn 2011/83/EU).</acknowledgment>
+    </template>
+    <template locale="fr_FR" jurisdiction="FR">
+        <consent>Je demande expressément l'exécution du contenu numérique / du service numérique avant la fin du délai de rétractation de 14 jours (art. L. 221-25 C. consomm.).</consent>
+        <acknowledgment>Je reconnais perdre mon droit de rétractation dès le début de l'exécution (art. L. 221-28, 13° C. consomm.).</acknowledgment>
+    </template>
+    <template locale="fr_FR" jurisdiction="BE">
+        <consent>Je demande expressément l'exécution du contenu numérique / du service numérique avant l'expiration du délai de rétractation de 14 jours (art. VI.48 §1 CDE).</consent>
+        <acknowledgment>Je reconnais perdre mon droit de rétractation dès le début de l'exécution (art. VI.53, 13° CDE).</acknowledgment>
+    </template>
+    <template locale="fr_FR" jurisdiction="LU">
+        <consent>Je demande expressément l'exécution du contenu numérique / du service numérique avant l'expiration du délai de rétractation de 14 jours (art. L. 222-9 Code de la consommation).</consent>
+        <acknowledgment>Je reconnais perdre mon droit de rétractation dès le début de l'exécution (art. L. 222-9, 13° Code de la consommation).</acknowledgment>
+    </template>
+    <template locale="fr_FR" jurisdiction="__eu_generic__">
+        <consent>Je consens expressément à l'exécution immédiate du contenu numérique avant la fin du délai de rétractation de 14 jours.</consent>
+        <acknowledgment>J'accepte de perdre mon droit de rétractation dès le début de l'exécution (art. 16(m) Directive 2011/83/UE).</acknowledgment>
+    </template>
+    <template locale="it_IT" jurisdiction="IT">
+        <consent>Chiedo espressamente l'esecuzione del contenuto digitale / servizio digitale prima della scadenza del periodo di recesso di 14 giorni (art. 51, comma 8-bis, Codice del Consumo).</consent>
+        <acknowledgment>Prendo atto che, prestando tale consenso, perdo il diritto di recesso una volta iniziata l'esecuzione (art. 59, comma 1, lett. o), Codice del Consumo).</acknowledgment>
+    </template>
+    <template locale="it_IT" jurisdiction="__eu_generic__">
+        <consent>Acconsento espressamente all'esecuzione immediata del contenuto digitale prima della fine del periodo di recesso di 14 giorni.</consent>
+        <acknowledgment>Prendo atto che con questo consenso perdo il diritto di recesso non appena ha inizio l'esecuzione (art. 16, lett. m), Direttiva 2011/83/UE).</acknowledgment>
+    </template>
+    <template locale="es_ES" jurisdiction="ES">
+        <consent>Solicito expresamente la ejecución del contenido digital / servicio digital antes de que finalice el plazo de desistimiento de 14 días (art. 98.8 TRLGDCU).</consent>
+        <acknowledgment>Reconozco que, al prestar este consentimiento, pierdo mi derecho de desistimiento una vez iniciada la ejecución (art. 103 m) TRLGDCU).</acknowledgment>
+    </template>
+    <template locale="es_ES" jurisdiction="__eu_generic__">
+        <consent>Consiento expresamente la ejecución inmediata del contenido digital antes del final del plazo de desistimiento de 14 días.</consent>
+        <acknowledgment>Reconozco que, con este consentimiento, pierdo mi derecho de desistimiento tan pronto como comience la ejecución (art. 16, letra m), Directiva 2011/83/UE).</acknowledgment>
+    </template>
+    <template locale="pl_PL" jurisdiction="PL">
+        <consent>Żądam wyraźnie wykonania treści cyfrowej / usługi cyfrowej przed upływem 14-dniowego terminu do odstąpienia od umowy (art. 15 ust. 3 ustawy o prawach konsumenta).</consent>
+        <acknowledgment>Przyjmuję do wiadomości, że wyrażając tę zgodę, tracę prawo odstąpienia od umowy z chwilą rozpoczęcia świadczenia (art. 38 ust. 1 pkt 13 ustawy o prawach konsumenta).</acknowledgment>
+    </template>
+    <template locale="pl_PL" jurisdiction="__eu_generic__">
+        <consent>Wyraźnie wyrażam zgodę na natychmiastowe wykonanie treści cyfrowej przed upływem 14-dniowego terminu do odstąpienia od umowy.</consent>
+        <acknowledgment>Przyjmuję do wiadomości, że wraz z tą zgodą tracę prawo odstąpienia z chwilą rozpoczęcia świadczenia (art. 16 lit. m) dyrektywy 2011/83/UE).</acknowledgment>
+    </template>
+    <template locale="pt_PT" jurisdiction="PT">
+        <consent>Solicito expressamente a execução do conteúdo digital / serviço digital antes do termo do prazo de livre resolução de 14 dias (art. 19.º n.º 2 al. b) do DL 24/2014).</consent>
+        <acknowledgment>Reconheço que, ao prestar este consentimento, perco o meu direito de livre resolução assim que a execução tiver início (art. 17.º n.º 1 al. m) do DL 24/2014).</acknowledgment>
+    </template>
+    <template locale="pt_PT" jurisdiction="__eu_generic__">
+        <consent>Consinto expressamente a execução imediata do conteúdo digital antes do fim do prazo de livre resolução de 14 dias.</consent>
+        <acknowledgment>Reconheço que, com este consentimento, perco o direito de livre resolução assim que a execução tiver início (art. 16.º al. m) da Diretiva 2011/83/UE).</acknowledgment>
+    </template>
+    <template locale="da_DK" jurisdiction="DK">
+        <consent>Jeg anmoder udtrykkeligt om levering af det digitale indhold / den digitale tjeneste inden udløbet af den 14-dages fortrydelsesfrist (forbrugeraftalelovens § 23 stk. 2).</consent>
+        <acknowledgment>Jeg anerkender, at jeg ved at give dette samtykke mister min fortrydelsesret, så snart leveringen er påbegyndt (forbrugeraftalelovens § 18 stk. 2 nr. 13).</acknowledgment>
+    </template>
+    <template locale="da_DK" jurisdiction="__eu_generic__">
+        <consent>Jeg giver udtrykkeligt samtykke til øjeblikkelig levering af det digitale indhold inden fortrydelsesfristen på 14 dage udløber.</consent>
+        <acknowledgment>Jeg anerkender, at jeg med dette samtykke mister min fortrydelsesret, så snart leveringen er påbegyndt (art. 16, litra m) i direktiv 2011/83/EU).</acknowledgment>
+    </template>
+    <template locale="sv_SE" jurisdiction="SE">
+        <consent>Jag begär uttryckligen att det digitala innehållet / den digitala tjänsten ska levereras innan ångerfristen på 14 dagar löper ut (2 kap. 12 § distansavtalslagen).</consent>
+        <acknowledgment>Jag är medveten om att jag genom detta samtycke förlorar min ångerrätt när leveransen har påbörjats (2 kap. 11 § p. 11 distansavtalslagen).</acknowledgment>
+    </template>
+    <template locale="sv_SE" jurisdiction="FI">
+        <consent>Jag ber uttryckligen att det digitala innehållet / den digitala tjänsten levereras innan ångerfristen på 14 dagar löper ut (KSL 6 kap. 14 §).</consent>
+        <acknowledgment>Jag är medveten om att jag genom detta samtycke förlorar min ångerrätt så snart leveransen har påbörjats (KSL 6 kap. 16 § 11 p.).</acknowledgment>
+    </template>
+    <template locale="sv_SE" jurisdiction="__eu_generic__">
+        <consent>Jag samtycker uttryckligen till att det digitala innehållet levereras omedelbart innan ångerfristen på 14 dagar löper ut.</consent>
+        <acknowledgment>Jag är medveten om att jag genom detta samtycke förlorar min ångerrätt så snart leveransen har påbörjats (art. 16 led m i direktiv 2011/83/EU).</acknowledgment>
+    </template>
+    <template locale="bg_BG" jurisdiction="BG">
+        <consent>Изрично искам предоставянето на цифровото съдържание/цифрова услуга преди изтичането на 14-дневния срок за отказ (чл. 57 от Закона за защита на потребителите).</consent>
+        <acknowledgment>Запознат съм, че с предоставянето на това съгласие губя правото си на отказ от момента на започване на изпълнението (чл. 57, ал. 4, т. 13 от Закона за защита на потребителите).</acknowledgment>
+    </template>
+    <template locale="bg_BG" jurisdiction="__eu_generic__">
+        <consent>Изрично давам съгласие за незабавно предоставяне на цифровото съдържание преди изтичането на 14-дневния срок за отказ.</consent>
+        <acknowledgment>Запознат съм, че с това съгласие губя правото си на отказ след започване на изпълнението (чл. 16, буква "м" от Директива 2011/83/ЕС).</acknowledgment>
+    </template>
+    <template locale="cs_CZ" jurisdiction="CZ">
+        <consent>Výslovně žádám poskytnutí digitálního obsahu/digitální služby před uplynutím 14denní lhůty pro odstoupení od smlouvy (§ 1820 odst. 1 písm. j) zákona č. 89/2012 Sb. ve spojení s § 1837 písm. l) občanského zákoníku).</consent>
+        <acknowledgment>Beru na vědomí, že tímto souhlasem ztrácím právo odstoupit od smlouvy okamžikem zahájení plnění (§ 1837 písm. l) občanského zákoníku).</acknowledgment>
+    </template>
+    <template locale="cs_CZ" jurisdiction="__eu_generic__">
+        <consent>Výslovně souhlasím s okamžitým poskytnutím digitálního obsahu před uplynutím 14denní lhůty pro odstoupení od smlouvy.</consent>
+        <acknowledgment>Beru na vědomí, že tímto souhlasem ztrácím právo na odstoupení od smlouvy v okamžiku zahájení plnění (čl. 16 písm. m) směrnice 2011/83/EU).</acknowledgment>
+    </template>
+    <template locale="el_GR" jurisdiction="GR">
+        <consent>Ζητώ ρητά την παροχή του ψηφιακού περιεχομένου/ψηφιακής υπηρεσίας πριν από τη λήξη της προθεσμίας υπαναχώρησης 14 ημερών (άρθρο 4Β του Ν. 2251/1994).</consent>
+        <acknowledgment>Αναγνωρίζω ότι, παρέχοντας αυτή τη συγκατάθεση, χάνω το δικαίωμα υπαναχώρησής μου από τη στιγμή που αρχίζει η εκτέλεση (άρθρο 3ΙΓ του Ν. 2251/1994).</acknowledgment>
+    </template>
+    <template locale="el_GR" jurisdiction="__eu_generic__">
+        <consent>Συναινώ ρητώς στην άμεση παροχή του ψηφιακού περιεχομένου πριν από τη λήξη της προθεσμίας υπαναχώρησης 14 ημερών.</consent>
+        <acknowledgment>Αναγνωρίζω ότι, με αυτή τη συγκατάθεση, χάνω το δικαίωμα υπαναχώρησης μόλις αρχίσει η εκτέλεση (άρθρο 16, στοιχ. ιγ της οδηγίας 2011/83/ΕΕ).</acknowledgment>
+    </template>
+    <template locale="et_EE" jurisdiction="EE">
+        <consent>Nõuan sõnaselgelt digitaalse sisu/digitaalse teenuse osutamist enne 14-päevase taganemistähtaja möödumist (võlaõigusseaduse § 56 lõige 22).</consent>
+        <acknowledgment>Olen teadlik sellest, et selle nõusoleku andmisega kaotan oma taganemisõiguse pärast täitmise alustamist (võlaõigusseaduse § 53 lõige 4 punkt 12).</acknowledgment>
+    </template>
+    <template locale="et_EE" jurisdiction="__eu_generic__">
+        <consent>Nõustun sõnaselgelt digitaalse sisu kohese osutamisega enne 14-päevase taganemistähtaja möödumist.</consent>
+        <acknowledgment>Olen teadlik sellest, et selle nõusolekuga kaotan oma taganemisõiguse pärast täitmise alustamist (direktiivi 2011/83/EL artikkel 16 punkt m).</acknowledgment>
+    </template>
+    <template locale="hr_HR" jurisdiction="HR">
+        <consent>Izričito tražim isporuku digitalnog sadržaja/digitalne usluge prije isteka 14-dnevnog roka za jednostrani raskid (čl. 79. Zakona o zaštiti potrošača).</consent>
+        <acknowledgment>Svjestan sam da ovim pristankom gubim pravo na jednostrani raskid ugovora počevši od trenutka početka isporuke (čl. 86. st. 1. t. 12. Zakona o zaštiti potrošača).</acknowledgment>
+    </template>
+    <template locale="hr_HR" jurisdiction="__eu_generic__">
+        <consent>Izričito pristajem na neposrednu isporuku digitalnog sadržaja prije isteka 14-dnevnog roka za jednostrani raskid.</consent>
+        <acknowledgment>Svjestan sam da ovim pristankom gubim pravo na jednostrani raskid ugovora čim isporuka započne (čl. 16. t. m) Direktive 2011/83/EU).</acknowledgment>
+    </template>
+    <template locale="hu_HU" jurisdiction="HU">
+        <consent>Kifejezetten kérem a digitális tartalom/digitális szolgáltatás teljesítését a 14 napos elállási határidő lejárta előtt (45/2014. (II. 26.) Korm. rendelet 22. § (1) bekezdés a) pont).</consent>
+        <acknowledgment>Tudomásul veszem, hogy e hozzájárulás megadásával a teljesítés megkezdését követően elveszítem az elállási jogomat (45/2014. (II. 26.) Korm. rendelet 29. § (1) bekezdés m) pont).</acknowledgment>
+    </template>
+    <template locale="hu_HU" jurisdiction="__eu_generic__">
+        <consent>Kifejezetten hozzájárulok a digitális tartalom azonnali teljesítéséhez a 14 napos elállási határidő lejárta előtt.</consent>
+        <acknowledgment>Tudomásul veszem, hogy e hozzájárulással a teljesítés megkezdésével elveszítem az elállási jogomat (a 2011/83/EU irányelv 16. cikk m) pontja).</acknowledgment>
+    </template>
+    <template locale="lt_LT" jurisdiction="LT">
+        <consent>Aiškiai prašau pateikti skaitmeninį turinį/skaitmeninę paslaugą iki 14 dienų atsisakymo termino pabaigos (Civilinio kodekso 6.36715 straipsnio 1 dalies 13 punktas).</consent>
+        <acknowledgment>Suprantu, kad duodamas šį sutikimą prarandu teisę atsisakyti sutarties nuo paslaugos teikimo pradžios (Civilinio kodekso 6.36715 straipsnio 1 dalies 13 punktas).</acknowledgment>
+    </template>
+    <template locale="lt_LT" jurisdiction="__eu_generic__">
+        <consent>Aiškiai sutinku, kad skaitmeninis turinys būtų pateiktas iškart, dar nepasibaigus 14 dienų atsisakymo terminui.</consent>
+        <acknowledgment>Suprantu, kad šiuo sutikimu prarandu teisę atsisakyti sutarties nuo vykdymo pradžios (Direktyvos 2011/83/ES 16 straipsnio m punktas).</acknowledgment>
+    </template>
+    <template locale="lv_LV" jurisdiction="LV">
+        <consent>Skaidri pieprasu digitālā satura/digitālā pakalpojuma piegādi pirms 14 dienu atteikuma termiņa beigām (Patērētāju tiesību aizsardzības likuma 12. panta sestā daļa).</consent>
+        <acknowledgment>Apzinos, ka, sniedzot šo piekrišanu, zaudēju savas atteikuma tiesības pēc izpildes uzsākšanas (Patērētāju tiesību aizsardzības likuma 12. panta sestā daļa).</acknowledgment>
+    </template>
+    <template locale="lv_LV" jurisdiction="__eu_generic__">
+        <consent>Skaidri piekrītu digitālā satura tūlītējai piegādei pirms 14 dienu atteikuma termiņa beigām.</consent>
+        <acknowledgment>Apzinos, ka ar šo piekrišanu zaudēju savas atteikuma tiesības pēc izpildes uzsākšanas (Direktīvas 2011/83/ES 16. panta m) apakšpunkts).</acknowledgment>
+    </template>
+    <template locale="ro_RO" jurisdiction="RO">
+        <consent>Solicit în mod expres furnizarea conținutului digital/serviciului digital înainte de expirarea termenului de retragere de 14 zile (art. 16 lit. m) din OUG 34/2014).</consent>
+        <acknowledgment>Iau la cunoștință că, prin acordarea acestui consimțământ, îmi pierd dreptul de retragere odată cu începerea executării (art. 16 lit. m) din OUG 34/2014).</acknowledgment>
+    </template>
+    <template locale="ro_RO" jurisdiction="__eu_generic__">
+        <consent>Sunt de acord în mod expres cu furnizarea imediată a conținutului digital înainte de expirarea termenului de retragere de 14 zile.</consent>
+        <acknowledgment>Iau la cunoștință că, prin acest consimțământ, îmi pierd dreptul de retragere odată cu începerea executării (art. 16 lit. m) din Directiva 2011/83/UE).</acknowledgment>
+    </template>
+    <template locale="sk_SK" jurisdiction="SK">
+        <consent>Výslovne žiadam poskytnutie digitálneho obsahu/digitálnej služby pred uplynutím 14-dňovej lehoty na odstúpenie od zmluvy (§ 7 ods. 6 písm. l) zákona č. 102/2014 Z. z.).</consent>
+        <acknowledgment>Beriem na vedomie, že týmto súhlasom strácam právo na odstúpenie od zmluvy okamihom začatia plnenia (§ 7 ods. 6 písm. l) zákona č. 102/2014 Z. z.).</acknowledgment>
+    </template>
+    <template locale="sk_SK" jurisdiction="__eu_generic__">
+        <consent>Výslovne súhlasím s okamžitým poskytnutím digitálneho obsahu pred uplynutím 14-dňovej lehoty na odstúpenie od zmluvy.</consent>
+        <acknowledgment>Beriem na vedomie, že týmto súhlasom strácam právo na odstúpenie od zmluvy okamihom začatia plnenia (článok 16 písm. m) smernice 2011/83/EÚ).</acknowledgment>
+    </template>
+    <template locale="sl_SI" jurisdiction="SI">
+        <consent>Izrecno zahtevam dobavo digitalne vsebine/digitalne storitve pred iztekom 14-dnevnega roka za odstop (43. člen Zakona o varstvu potrošnikov ZVPot-1).</consent>
+        <acknowledgment>Zavedam se, da s to privolitvijo izgubim pravico do odstopa od pogodbe ob začetku izvedbe (43. člen Zakona o varstvu potrošnikov ZVPot-1).</acknowledgment>
+    </template>
+    <template locale="sl_SI" jurisdiction="__eu_generic__">
+        <consent>Izrecno soglašam s takojšnjo dobavo digitalne vsebine pred iztekom 14-dnevnega roka za odstop.</consent>
+        <acknowledgment>Zavedam se, da s to privolitvijo izgubim pravico do odstopa, takoj ko se izvedba začne (16. točka m) Direktive 2011/83/EU).</acknowledgment>
+    </template>
+</config>

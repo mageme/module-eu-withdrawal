@@ -1,0 +1,82 @@
+<!--@subject {{var subject_text}} @-->
+<!--@vars {
+    "var request_increment_id":"Withdrawal number",
+    "var order_increment_id":"Order number",
+    "var consumer_name":"Consumer name",
+    "var admin_note":"Admin note",
+    "var view_url":"Withdraw-contract URL",
+    "var support_email":"Support email",
+    "var email_header_html":"Branded email header",
+    "var email_footer_html":"Branded email footer"
+} @-->
+{{var email_header_html|raw}}
+
+<!-- Hero card — cancelled by merchant (neutral grey) -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;border-radius:10px;margin:0 0 24px;">
+    <tr><td align="center" style="padding:36px 24px 32px;">
+        <div style="display:inline-block;width:64px;height:64px;line-height:64px;background:#9ca3af;color:#ffffff;border-radius:50%;font-size:32px;font-weight:700;text-align:center;font-family:Helvetica,Arial,sans-serif;">&#10005;</div>
+        <h1 class="hero-title" style="margin:18px 0 8px;font-size:24px;font-weight:700;color:#1f2937;line-height:1.25;">{{trans "Your withdrawal was cancelled"}}</h1>
+        <p style="margin:0 auto 24px;color:#475569;font-size:14px;line-height:1.55;max-width:440px;">{{trans "Hi %name, we've cancelled your withdrawal request." name=$consumer_name}}</p>
+        <a href="{{var view_url}}" style="display:inline-block;background:#1e293b;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">{{trans "Submit a new request"}}</a>
+    </td></tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    <tr><td style="font-size:13px;font-weight:600;color:#0f172a;padding:0 0 12px;">{{trans "Cancelled request"}}</td></tr>
+    <tr><td style="border-top:1px solid #e5e7eb;padding-top:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;width:50%;">{{trans "Withdrawal number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">{{var request_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Order number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">#{{var order_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Cancelled on"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var event_date_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Refund requested"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var refund_total_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Status"}}</td>
+                <td style="padding:6px 0;font-size:13px;text-align:right;"><span style="display:inline-block;background:#e5e7eb;color:#374151;font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px;">{{trans "Cancelled"}}</span></td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+
+{{var items_html|raw}}
+
+{{depend admin_note}}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;margin:0 0 16px;">
+    <tr><td style="padding:16px 18px;">
+        <div style="font-size:12px;font-weight:600;color:#0f172a;margin:0 0 6px;">{{trans "Note from our team"}}</div>
+        <div style="font-size:13px;color:#475569;font-style:italic;line-height:1.55;">{{var admin_note}}</div>
+    </td></tr>
+</table>
+{{/depend}}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eff6ff;border-radius:8px;margin:0 0 12px;">
+    <tr>
+        <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#1d4ed8;">&#9432;</td>
+        <td style="padding:14px 18px 14px 0;font-size:13px;color:#1e3a8a;line-height:1.5;">
+            <strong>{{trans "What happens next?"}}</strong><br />
+            {{trans "If this was unexpected, you can submit a new withdrawal request as long as your 14-day window is still open. Reach out if you need help — we're happy to clarify."}}
+        </td>
+    </tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:8px;margin:0 0 8px;">
+    <tr>
+        <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#475569;">&#9993;</td>
+        <td style="padding:14px 18px 14px 0;font-size:13px;color:#334155;line-height:1.5;">
+            <strong>{{trans "Need help?"}}</strong> {{trans "Reply to this email or contact us at"}} <a href="mailto:{{var support_email}}" style="color:#1d4ed8;text-decoration:none;font-weight:600;">{{var support_email}}</a>.
+        </td>
+    </tr>
+</table>
+
+{{var email_footer_html|raw}}

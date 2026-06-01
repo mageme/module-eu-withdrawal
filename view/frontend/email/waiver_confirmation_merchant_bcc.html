@@ -1,0 +1,19 @@
+<!--@subject Waiver-event confirmation | Order {{var waiver.order_increment_id}}@-->
+<html><body>
+<p>BCC copy of the Art. 16(m) CRD digital-content waiver confirmation sent to consumer.</p>
+<p>Order: <strong>{{var waiver.order_increment_id}}</strong></p>
+<p>Consumer: {{var waiver.customer_name}} &lt;{{var waiver.customer_email}}&gt;</p>
+<p>Locale: {{var waiver.locale}}</p>
+<p>Waiver reference: <code>{{var waiver.waiver_reference}}</code></p>
+<p>Consent at: {{var waiver.consent_at}}</p>
+<p>Ack at: {{var waiver.ack_at}}</p>
+<p>Items:</p>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li>{{var item.sku}} ({{var item.product_type}}) &mdash; {{var item.name}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+<p><em>See <code>mm_eu_withdrawal_waiver_event</code> audit log for full event trail.</em></p>
+</body></html>

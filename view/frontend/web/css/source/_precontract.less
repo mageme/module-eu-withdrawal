@@ -1,0 +1,137 @@
+// EU Withdrawal — pre-contract block in checkout payment step.
+@mm-eu-w-precontract-bg:        #ffffff;
+@mm-eu-w-precontract-border:    #e4e7ec;
+@mm-eu-w-precontract-pill-bg:   #eef2ff;
+@mm-eu-w-precontract-pill-text: #1d4ed8;
+@mm-eu-w-precontract-link:      #1d4ed8;
+
+.mm-eu-w-precontract-block {
+    background: @mm-eu-w-precontract-bg;
+    border: 1px solid @mm-eu-w-precontract-border;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 32px 0;
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+.mm-eu-w-precontract-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.mm-eu-w-precontract-heading {
+    font-size: 16px;
+    font-weight: 600;
+    color: #101828;
+}
+
+.mm-eu-w-precontract-pill {
+    background: @mm-eu-w-precontract-pill-bg;
+    color: @mm-eu-w-precontract-pill-text;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+
+.mm-eu-w-precontract-subhead {
+    font-size: 13px;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0 0 16px;
+}
+
+.mm-eu-w-precontract-accordion-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid @mm-eu-w-precontract-border;
+    border-bottom: 1px solid @mm-eu-w-precontract-border;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #101828;
+    user-select: none;
+}
+
+.mm-eu-w-precontract-chevron {
+    transition: transform 0.15s;
+}
+
+.mm-eu-w-precontract-chevron--up {
+    transform: rotate(180deg);
+}
+
+.mm-eu-w-precontract-accordion-body {
+    padding: 16px 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #334155;
+}
+
+.mm-eu-w-precontract-section {
+    margin: 0 0 12px;
+}
+
+.mm-eu-w-precontract-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    align-items: center;
+}
+
+.mm-eu-w-precontract-start-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: @mm-eu-w-precontract-link;
+    color: #ffffff !important;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid @mm-eu-w-precontract-link;
+}
+
+.mm-eu-w-precontract-start-btn:hover,
+.mm-eu-w-precontract-start-btn:visited,
+.mm-eu-w-precontract-start-btn:focus {
+    background: #1e3a8a;
+    color: #ffffff !important;
+    border-color: #1e3a8a;
+    text-decoration: none;
+}
+
+.mm-eu-w-precontract-download-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: transparent;
+    border: 1px solid @mm-eu-w-precontract-border;
+    border-radius: 6px;
+    color: @mm-eu-w-precontract-link;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.mm-eu-w-precontract-download-btn:hover {
+    background: #f8fafc;
+    color: @mm-eu-w-precontract-link;
+}
+
+.mm-eu-w-precontract-download-hint {
+    margin: 8px 0 0;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+.mm-eu-w-precontract-footer {
+    margin: 16px 0 0;
+    font-size: 11px;
+    color: #94a3b8;
+}

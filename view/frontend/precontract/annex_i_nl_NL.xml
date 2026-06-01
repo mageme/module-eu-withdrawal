@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version NL.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">U heeft het recht om binnen een termijn van {period_days} dagen zonder opgave van redenen de overeenkomst te herroepen.</section>
+        <section id="period_start">De herroepingstermijn verstrijkt {period_days} dagen na de dag waarop u of een door u aangewezen derde, die niet de vervoerder is, het goed fysiek in bezit krijgt. Voor digitale inhoud die niet op een materiële drager wordt geleverd, verstrijkt de termijn 14 dagen na de sluiting van de overeenkomst (tenzij u bij de bestelling afstand heeft gedaan van dit recht).</section>
+        <section id="how_to_exercise">Om het herroepingsrecht uit te oefenen, moet u ons — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — via een ondubbelzinnige verklaring (bv. schriftelijk per post, fax of e-mail) op de hoogte stellen van uw beslissing de overeenkomst te herroepen. U kunt hiervoor gebruikmaken van het hieronder bijgevoegde modelformulier voor herroeping, maar bent hiertoe niet verplicht.</section>
+        <section id="effects">Als u de overeenkomst herroept, ontvangt u alle betalingen die u tot op dat moment heeft gedaan, inclusief standaard leveringskosten (met uitzondering van eventuele extra kosten ten gevolge van uw keuze voor een andere wijze van levering dan de door ons geboden goedkoopste standaard levering) onverwijld en in ieder geval niet later dan 14 dagen nadat wij op de hoogte zijn gesteld van uw beslissing de overeenkomst te herroepen, van ons terug. Wij betalen u terug met hetzelfde betaalmiddel als waarmee u de oorspronkelijke transactie heeft verricht.</section>
+        <section id="return_address">De goederen dienen geretourneerd te worden naar: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MODELFORMULIER VOOR HERROEPING
+(dit formulier alleen invullen en terugzenden als u de overeenkomst wilt herroepen)
+
+— Aan: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Ik/Wij (*) deel/delen (*) u hierbij mede dat ik/wij (*) onze overeenkomst betreffende de verkoop van de volgende goederen/levering van de volgende dienst (*) herroep/herroepen (*):
+
+— Besteld op (*)/Ontvangen op (*):
+
+— Naam/Namen consument(en):
+
+— Adres consument(en):
+
+— Handtekening van consument(en) (alleen wanneer dit formulier op papier wordt ingediend):
+
+— Datum:
+
+(*) Doorhalen wat niet van toepassing is.
+
+—
+Dit is het officiële modelformulier voor herroeping zoals voorgeschreven in bijlage I, deel B, van richtlijn 2011/83/EU. Het gebruik van dit formulier is FACULTATIEF — u kunt ons ook van uw beslissing tot herroeping op de hoogte stellen door middel van een andere ondubbelzinnige verklaring (brief, fax of e-mail) gericht aan het bovengenoemde contact.</annex_ib>
+</config>

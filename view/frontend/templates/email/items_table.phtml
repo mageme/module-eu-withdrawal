@@ -1,0 +1,59 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+declare(strict_types=1);
+
+/** @var \MageMe\EUWithdrawal\Block\Email\ItemsTable $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$rows = $block->getData('rows') ?: [];
+$count = count($rows);
+?>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    <tr><td style="font-size:13px;font-weight:600;color:#0f172a;padding:0 0 12px;">
+        <?= $escaper->escapeHtml(__('Returned items')) ?> (<?= (int) $count ?>)
+    </td></tr>
+    <tr><td style="border-top:1px solid #e5e7eb;padding-top:14px;">
+        <?php foreach ($rows as $row): ?>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
+                <tr>
+                    <!-- Thumbnail -->
+                    <td valign="top" width="76" style="width:76px;padding-right:14px;">
+                        <?php if ($row['image_url']): ?>
+                            <img src="<?= $escaper->escapeUrl($row['image_url']) ?>" alt="<?= $escaper->escapeHtmlAttr($row['name']) ?>" width="64" height="64" style="display:block;width:64px;height:64px;border:1px solid #e5e7eb;border-radius:6px;object-fit:cover;background:#f9fafb;" />
+                        <?php else: ?>
+                            <div style="width:64px;height:64px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;line-height:64px;text-align:center;color:#9ca3af;font-size:11px;font-family:Helvetica,Arial,sans-serif;"><?= $escaper->escapeHtml(__('No image')) ?></div>
+                        <?php endif; ?>
+                    </td>
+                    <!-- Product / options / SKU -->
+                    <td valign="top" style="padding:2px 8px 2px 0;">
+                        <div style="font-size:13px;font-weight:600;color:#0f172a;line-height:1.35;"><?= $escaper->escapeHtml($row['name']) ?></div>
+                        <?php if ($row['options'] !== ''): ?>
+                            <div style="font-size:11px;color:#6b7280;margin-top:2px;line-height:1.4;"><?= $escaper->escapeHtml($row['options']) ?></div>
+                        <?php endif; ?>
+                        <div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.35;"><?= $escaper->escapeHtml(__('SKU')) ?>: <?= $escaper->escapeHtml($row['sku']) ?></div>
+                    </td>
+                    <!-- Quantity -->
+                    <td valign="top" align="center" width="48" style="width:48px;padding:2px 4px;">
+                        <div style="font-size:11px;color:#9ca3af;line-height:1.4;"><?= $escaper->escapeHtml(__('Qty')) ?></div>
+                        <div style="font-size:13px;font-weight:600;color:#0f172a;line-height:1.4;"><?= (int) $row['qty'] ?></div>
+                    </td>
+                    <!-- Reason -->
+                    <td valign="top" align="left" width="120" style="width:120px;padding:2px 8px;">
+                        <div style="font-size:11px;color:#9ca3af;line-height:1.4;"><?= $escaper->escapeHtml(__('Reason')) ?></div>
+                        <div style="font-size:12px;color:#475569;line-height:1.4;">
+                            <?= $row['reason'] !== '' ? $escaper->escapeHtml($row['reason']) : '<span style="color:#cbd5e1;">—</span>' ?>
+                        </div>
+                    </td>
+                    <!-- Item status badge -->
+                    <td valign="top" align="right" width="92" style="width:92px;padding:2px 0;">
+                        <div style="font-size:11px;color:#9ca3af;line-height:1.4;"><?= $escaper->escapeHtml(__('Item status')) ?></div>
+                        <span style="display:inline-block;background:<?= $escaper->escapeHtmlAttr($row['status_bg']) ?>;color:<?= $escaper->escapeHtmlAttr($row['status_fg']) ?>;font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;margin-top:3px;line-height:1.3;white-space:nowrap;"><?= $escaper->escapeHtml($row['status_label']) ?></span>
+                    </td>
+                </tr>
+            </table>
+        <?php endforeach; ?>
+    </td></tr>
+</table>

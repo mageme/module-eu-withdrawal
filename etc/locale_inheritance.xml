@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — regional locale → base-language fallback map.
+    Used by Model\Locale\LocaleFallbackResolver to walk the chain
+    customer-locale → base-language → en_US for any module-specific lookup
+    (Annex I, button labels, waiver, snapshot, translate plugin).
+
+    Only Magento-allowed regional locales appear here. EU country variants
+    (de_AT, de_BE, fr_BE, fr_LU, nl_BE, sv_FI) inherit their parent language;
+    other Magento regional locales (en_GB, en_AU, fr_CA, de_CH, etc.)
+    likewise route to their base.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/locale_inheritance.xsd">
+    <!-- German variants -->
+    <locale code="de_AT" parent="de_DE"/>
+    <locale code="de_BE" parent="de_DE"/>
+    <locale code="de_LU" parent="de_DE"/>
+    <locale code="de_CH" parent="de_DE"/>
+    <!-- French variants -->
+    <locale code="fr_BE" parent="fr_FR"/>
+    <locale code="fr_LU" parent="fr_FR"/>
+    <locale code="fr_CA" parent="fr_FR"/>
+    <locale code="fr_CH" parent="fr_FR"/>
+    <!-- Dutch variants -->
+    <locale code="nl_BE" parent="nl_NL"/>
+    <!-- Swedish variants -->
+    <locale code="sv_FI" parent="sv_SE"/>
+    <!-- Italian variants -->
+    <locale code="it_CH" parent="it_IT"/>
+    <!-- English variants — all route to en_US -->
+    <locale code="en_GB" parent="en_US"/>
+    <locale code="en_IE" parent="en_US"/>
+    <locale code="en_AU" parent="en_US"/>
+    <locale code="en_CA" parent="en_US"/>
+    <locale code="en_NZ" parent="en_US"/>
+    <!-- Spanish variants — all route to es_ES -->
+    <locale code="es_AR" parent="es_ES"/>
+    <locale code="es_BO" parent="es_ES"/>
+    <locale code="es_CL" parent="es_ES"/>
+    <locale code="es_CO" parent="es_ES"/>
+    <locale code="es_CR" parent="es_ES"/>
+    <locale code="es_MX" parent="es_ES"/>
+    <locale code="es_PA" parent="es_ES"/>
+    <locale code="es_PE" parent="es_ES"/>
+    <locale code="es_US" parent="es_ES"/>
+    <locale code="es_VE" parent="es_ES"/>
+    <!-- Portuguese variants -->
+    <locale code="pt_BR" parent="pt_PT"/>
+</config>

@@ -1,0 +1,6 @@
+<!--@subject {{trans "[EU Withdrawal] Receipt send failed — request #%request_id" request_id=$request_id}} @-->
+<!--@vars { "var request_id":"Request ID" } @-->
+
+<p>{{trans "The receipt email for withdrawal request #%request_id has failed to send permanently." request_id=$request_id}}</p>
+<p>{{trans "Inspect the <code>mm_eu_withdrawal_request.receipt_last_error</code> column for the last error message, and the <code>mm_eu_withdrawal_request.receipt_send_attempts</code> column for the retry count."}}</p>
+<p>{{trans "You can requeue the send from the admin grid after resolving the underlying issue."}}</p>

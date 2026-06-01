@@ -1,0 +1,73 @@
+<!--@subject {{var subject_text}} @-->
+<!--@vars {
+    "var order_increment_id":"Order number",
+    "var consumer_name":"Consumer name",
+    "var refund_total":"Refund total",
+    "var verify_url":"Verify URL",
+    "var content_hash":"Integrity hash",
+    "var email_header_html":"Branded email header",
+    "var email_footer_html":"Branded email footer"
+} @-->
+{{var email_header_html|raw}}
+
+<!-- Hero card — formal-legal navy accent -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2f7;border-radius:10px;margin:0 0 24px;">
+    <tr><td align="center" style="padding:36px 24px 32px;">
+        <div style="display:inline-block;width:68px;height:68px;line-height:68px;background:#1e293b;color:#ffffff;border-radius:50%;font-size:30px;font-weight:700;text-align:center;font-family:Helvetica,Arial,sans-serif;">&#10003;</div>
+        <h1 class="hero-title" style="margin:18px 0 8px;font-size:24px;font-weight:700;color:#0f172a;line-height:1.25;">{{trans "Withdrawal receipt"}}</h1>
+        <p style="margin:0 auto 24px;color:#475569;font-size:14px;line-height:1.55;max-width:440px;">{{trans "Hi %name, this email is your durable-medium proof of withdrawal under Art. 11a Directive 2011/83/EU. Keep it for your records." name=$consumer_name}}</p>
+        {{depend verify_url}}<a href="{{var verify_url}}" style="display:inline-block;background:#1e293b;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">{{trans "Verify this receipt"}}</a>{{/depend}}
+    </td></tr>
+</table>
+
+<!-- Receipt details -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    <tr><td style="font-size:13px;font-weight:600;color:#0f172a;padding:0 0 12px;">{{trans "Receipt details"}}</td></tr>
+    <tr><td style="border-top:1px solid #e5e7eb;padding-top:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;width:50%;">{{trans "Order number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">#{{var order_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Submitted on"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var submitted_at_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Refund total"}}</td>
+                <td style="padding:6px 0;font-size:14px;color:#0f172a;text-align:right;font-weight:700;">{{var refund_total_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Refund method"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var refund_method}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Legal basis"}}</td>
+                <td style="padding:6px 0;font-size:12px;color:#0f172a;text-align:right;">Art. 11a Directive 2011/83/EU</td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+
+{{var items_html|raw}}
+
+{{depend content_hash}}<!-- Integrity hash card (Pro ReceiptVerify only — hidden when content_hash empty) -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin:0 0 12px;">
+    <tr><td style="padding:16px 18px;">
+        <div style="font-size:12px;font-weight:600;color:#0f172a;margin:0 0 6px;">{{trans "Integrity hash"}}</div>
+        <div style="font-family:'SF Mono',Consolas,Menlo,monospace;font-size:11px;color:#475569;word-break:break-all;line-height:1.5;">{{var content_hash}}</div>
+        <div style="font-size:11px;color:#64748b;margin-top:8px;line-height:1.5;">{{trans "This SHA-256 hash uniquely identifies your withdrawal record. Verify it at any time using the button above."}}</div>
+    </td></tr>
+</table>{{/depend}}
+
+<!-- Need help callout -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:8px;margin:0 0 8px;">
+    <tr>
+        <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#475569;">&#9993;</td>
+        <td style="padding:14px 18px 14px 0;font-size:13px;color:#334155;line-height:1.5;">
+            <strong>{{trans "Need help?"}}</strong> {{trans "Reply to this email or contact us at"}} <a href="mailto:{{var support_email}}" style="color:#1d4ed8;text-decoration:none;font-weight:600;">{{var support_email}}</a>.
+        </td>
+    </tr>
+</table>
+
+{{var email_footer_html|raw}}

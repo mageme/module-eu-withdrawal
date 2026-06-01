@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="MageMe_EUWithdrawal::config" title="EU Withdrawal Configuration" sortOrder="10"/>
+                        </resource>
+                    </resource>
+                </resource>
+                <resource id="MageMe_EUWithdrawal::menu" title="EU Withdrawal" sortOrder="100">
+                    <resource id="MageMe_EUWithdrawal::request" title="Withdrawal Requests" sortOrder="10">
+                        <resource id="MageMe_EUWithdrawal::request_view" title="View" sortOrder="10"/>
+                        <resource id="MageMe_EUWithdrawal::request_edit" title="Manage (approve, deny, cancel, comment, refund)" sortOrder="20"/>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

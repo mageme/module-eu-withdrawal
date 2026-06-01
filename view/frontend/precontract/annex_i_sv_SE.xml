@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version SV.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Du har rätt att frånträda detta avtal utan att ange något skäl inom {period_days} dagar.</section>
+        <section id="period_start">Ångerfristen löper ut {period_days} dagar efter dag då du eller någon tredje part, dock ej transportföretaget, som du anger, tar varan i fysisk besittning. När det gäller digitalt innehåll som inte levereras på ett fysiskt medium löper fristen ut 14 dagar efter att avtalet ingicks (såvida du inte avstått från denna rätt vid beställningen).</section>
+        <section id="how_to_exercise">Vill du utöva ångerrätten ska du till oss — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — skicka ett klart och tydligt meddelande om ditt beslut att frånträda avtalet (t.ex. ett brev avsänt per post, fax eller e-post). Du kan använda mallen för ångerblankett nedan, men du måste inte använda den.</section>
+        <section id="effects">Om du frånträder detta avtal kommer vi att betala tillbaka alla betalningar vi fått från dig, bland dem också standardleveranskostnader (men då räknas inte extra leveranskostnader till följd av att du valt något annat leveranssätt än den billigaste standardleverans vi erbjuder). Återbetalningen kommer att ske utan onödigt dröjsmål och i vilket fall som helst senast 14 dagar från och med den dag då vi underrättades om ditt beslut att frånträda avtalet. Vi kommer att använda samma betalningsmedel för återbetalningen som du själv har använt för den inledande affärshändelsen.</section>
+        <section id="return_address">Varan ska återsändas till: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MALL FÖR ÅNGERBLANKETT
+(Blanketten ska fyllas i och återsändas bara om du vill frånträda avtalet)
+
+— Till: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Jag/Vi (*) meddelar härmed att jag/vi (*) frånträder mitt/vårt (*) köpeavtal avseende följande varor (*)/tjänster (*):
+
+— Beställdes den (*)/mottogs den (*):
+
+— Konsumentens/konsumenternas namn:
+
+— Konsumentens/konsumenternas adress:
+
+— Konsumentens/konsumenternas underskrift (endast om denna blankett meddelas på papper):
+
+— Datum:
+
+(*) Stryk det som inte är tillämpligt.
+
+—
+Detta är den officiella mallen för ångerblankett som föreskrivs i bilaga I, del B, till direktiv 2011/83/EU. Användningen av denna blankett är FRIVILLIG — du kan också meddela oss ditt beslut att frånträda avtalet genom något annat klart och tydligt meddelande (brev, fax eller e-post) skickat till ovanstående kontakt.</annex_ib>
+</config>

@@ -1,0 +1,164 @@
+{
+    "mm_eu_withdrawal_request": {
+        "column": {
+            "request_id": true,
+            "order_id": true,
+            "store_id": true,
+            "jurisdiction": true,
+            "customer_id": true,
+            "customer_email": true,
+            "customer_name": true,
+            "contract_identifier": true,
+            "contract_type": true,
+            "status": true,
+            "reason_text": true,
+            "is_partial": true,
+            "locale": true,
+            "ip": true,
+            "user_agent": true,
+            "content_hash": true,
+            "receipt_snapshot": true,
+            "pro_rata_refund": true,
+            "submitted_at": true,
+            "confirmed_at": true,
+            "acknowledged_at": true,
+            "period_end_at": true,
+            "anonymised_at": true,
+            "created_at": true,
+            "updated_at": true,
+            "receipt_status": true,
+            "receipt_send_attempts": true,
+            "receipt_next_send_at": true,
+            "receipt_last_error": true,
+            "status_change_note": true,
+            "status_change_legal_basis": true,
+            "status_change_actor": true,
+            "increment_id": true,
+            "shipping_refund": true,
+            "refund_creditmemo_id": true
+        },
+        "index": {
+            "MM_EU_WITHDRAWAL_REQUEST_ORDER_ID": true,
+            "MM_EU_WITHDRAWAL_REQUEST_CUSTOMER_ID": true,
+            "MM_EU_WITHDRAWAL_REQUEST_STATUS": true,
+            "MM_EU_WITHDRAWAL_REQUEST_SUBMITTED_AT": true,
+            "MM_EU_WITHDRAWAL_REQUEST_JURISDICTION": true,
+            "MM_EU_WITHDRAWAL_REQUEST_RECEIPT_STATUS_RECEIPT_NEXT_SEND_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MM_EU_WITHDRAWAL_REQUEST_INCREMENT_ID": true
+        }
+    },
+    "mm_eu_withdrawal_item": {
+        "column": {
+            "item_id": true,
+            "request_id": true,
+            "order_item_id": true,
+            "sku": true,
+            "qty_withdraw": true,
+            "refund_amount": true,
+            "eligibility": true,
+            "exclusion_basis": true,
+            "reason_code": true,
+            "reason_text": true
+        },
+        "index": {
+            "MM_EU_WITHDRAWAL_ITEM_REQUEST_ID": true,
+            "MM_EU_WITHDRAWAL_ITEM_ORDER_ITEM_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "FK_FFD5C9399D1A6E90A2A0D2ED629B4F77": true,
+            "MM_EU_WITHDRAWAL_ITEM_REQUEST_ID_ORDER_ITEM_ID": true
+        }
+    },
+    "mm_eu_withdrawal_rule": {
+        "column": {
+            "rule_id": true,
+            "preset_code": true,
+            "name": true,
+            "condition_json": true,
+            "action": true,
+            "legal_basis": true,
+            "priority": true,
+            "is_active": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "MM_EU_WITHDRAWAL_RULE_PRESET_CODE": true,
+            "MM_EU_WITHDRAWAL_RULE_IS_ACTIVE": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mm_eu_withdrawal_waiver_event": {
+        "column": {
+            "event_id": true,
+            "order_id": true,
+            "event_type": true,
+            "consent_value": true,
+            "waiver_text_snapshot": true,
+            "confirmation_sent_at": true,
+            "ip": true,
+            "user_agent": true,
+            "created_at": true,
+            "order_item_id": true,
+            "quote_item_id": true,
+            "product_sku": true,
+            "locale": true,
+            "jurisdiction": true,
+            "waiver_text_hash": true,
+            "performance_trigger": true,
+            "customer_email": true
+        },
+        "index": {
+            "MM_EU_WITHDRAWAL_WAIVER_EVENT_ORDER_ID": true,
+            "MM_EU_WITHDRAWAL_WAIVER_EVENT_EVENT_TYPE": true,
+            "MM_EU_WITHDRAWAL_WAIVER_EVENT_ORDER_ITEM_ID": true,
+            "MM_EU_WITHDRAWAL_WAIVER_EVENT_QUOTE_ITEM_ID": true,
+            "MM_EU_WITHDRAWAL_WAIVER_EVENT_ORDER_ITEM_ID_EVENT_TYPE": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "mm_eu_withdrawal_waiver_confirmation_state": {
+        "column": {
+            "state_id": true,
+            "order_id": true,
+            "status": true,
+            "attempts": true,
+            "next_send_at": true,
+            "last_error": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "MM_EU_WITHDRAWAL_WAIVER_CONFIRMATION_STATE_STATUS_NEXT_SEND_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MM_EU_WITHDRAWAL_WAIVER_CONFIRMATION_STATE_ORDER_ID": true
+        }
+    },
+    "mm_eu_withdrawal_request_note": {
+        "column": {
+            "note_id": true,
+            "request_id": true,
+            "author_type": true,
+            "author_id": true,
+            "note_text": true,
+            "created_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "index": {
+            "IDX_MM_EU_WITHDRAWAL_REQUEST_NOTE_REQUEST_ID": true,
+            "MM_EU_WITHDRAWAL_REQUEST_NOTE_REQUEST_ID": true
+        }
+    }
+}

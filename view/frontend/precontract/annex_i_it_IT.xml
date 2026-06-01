@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version IT.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Lei ha il diritto di recedere dal contratto, senza indicarne le ragioni, entro {period_days} giorni.</section>
+        <section id="period_start">Il periodo di recesso scade dopo {period_days} giorni dal giorno in cui Lei o un terzo, diverso dal vettore e da Lei designato, acquisisce il possesso fisico dei beni. Per il contenuto digitale che non è fornito su un supporto materiale, il termine scade dopo 14 giorni dalla conclusione del contratto (salvo che Lei abbia rinunciato a tale diritto al momento dell’acquisto).</section>
+        <section id="how_to_exercise">Per esercitare il diritto di recesso, Lei è tenuto a informarci — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — della sua decisione di recedere dal presente contratto tramite una dichiarazione esplicita (ad esempio lettera inviata per posta, fax o posta elettronica). A tal fine può utilizzare il modulo tipo di recesso riportato di seguito, ma non è obbligatorio.</section>
+        <section id="effects">Se Lei recede dal presente contratto, Le saranno rimborsati tutti i pagamenti che ha effettuato a nostro favore, compresi i costi di consegna standard (ad eccezione dei costi supplementari derivanti dalla Sua eventuale scelta di un tipo di consegna diverso dal tipo meno costoso di consegna standard da noi offerto), senza indebito ritardo e in ogni caso non oltre 14 giorni dal giorno in cui siamo informati della Sua decisione di recedere dal presente contratto. Detti rimborsi saranno effettuati utilizzando lo stesso mezzo di pagamento da Lei usato per la transazione iniziale.</section>
+        <section id="return_address">I beni devono essere restituiti al seguente indirizzo: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MODULO DI RECESSO TIPO
+(compilare e restituire il presente modulo solo se si desidera recedere dal contratto)
+
+— Destinatario: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Con la presente io/noi (*) notifichiamo il recesso dal mio/nostro (*) contratto di vendita dei seguenti beni/servizi (*):
+
+— Ordinato il (*)/ricevuto il (*):
+
+— Nome del/dei consumatore(i):
+
+— Indirizzo del/dei consumatore(i):
+
+— Firma del/dei consumatore(i) (solo se il presente modulo è notificato in versione cartacea):
+
+— Data:
+
+(*) Cancellare la dicitura inutile.
+
+—
+Questo è il modulo di recesso tipo ufficiale prescritto dall’allegato I, lettera B, della direttiva 2011/83/UE. L’uso di questo modulo è FACOLTATIVO — può anche notificarci la Sua decisione di recedere mediante qualsiasi altra dichiarazione esplicita (lettera, fax o posta elettronica) inviata al contatto sopra indicato.</annex_ib>
+</config>

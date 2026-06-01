@@ -1,0 +1,72 @@
+<!--@subject {{var subject_text}} @-->
+<!--@vars {
+    "var request_increment_id":"Withdrawal number",
+    "var order_increment_id":"Order number",
+    "var consumer_name":"Consumer name",
+    "var view_url":"Orders history URL",
+    "var support_email":"Support email",
+    "var email_header_html":"Branded email header",
+    "var email_footer_html":"Branded email footer"
+} @-->
+{{var email_header_html|raw}}
+
+<!-- Hero card — self-cancel confirmation (blue checkmark, reassuring) -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eef2ff;border-radius:10px;margin:0 0 24px;">
+    <tr><td align="center" style="padding:36px 24px 32px;">
+        <div style="display:inline-block;width:64px;height:64px;line-height:64px;background:#3b82f6;color:#ffffff;border-radius:50%;font-size:32px;font-weight:700;text-align:center;font-family:Helvetica,Arial,sans-serif;">&#10003;</div>
+        <h1 class="hero-title" style="margin:18px 0 8px;font-size:24px;font-weight:700;color:#0f172a;line-height:1.25;">{{trans "Cancellation confirmed"}}</h1>
+        <p style="margin:0 auto 24px;color:#475569;font-size:14px;line-height:1.55;max-width:440px;">{{trans "Hi %name, your withdrawal request has been cancelled as you asked." name=$consumer_name}}</p>
+        <a href="{{var view_url}}" style="display:inline-block;background:#1d4ed8;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">{{trans "Back to my orders"}}</a>
+    </td></tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    <tr><td style="font-size:13px;font-weight:600;color:#0f172a;padding:0 0 12px;">{{trans "Cancelled request"}}</td></tr>
+    <tr><td style="border-top:1px solid #e5e7eb;padding-top:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;width:50%;">{{trans "Withdrawal number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">{{var request_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Order number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">#{{var order_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Cancelled on"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var event_date_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Refund requested"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var refund_total_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Cancelled by"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">{{trans "You"}}</td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+
+{{var items_html|raw}}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#eff6ff;border-radius:8px;margin:0 0 12px;">
+    <tr>
+        <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#1d4ed8;">&#9432;</td>
+        <td style="padding:14px 18px 14px 0;font-size:13px;color:#1e3a8a;line-height:1.5;">
+            <strong>{{trans "What happens next?"}}</strong><br />
+            {{trans "Your order remains active and there's no further action needed. If you change your mind, you can start a new withdrawal request any time within your 14-day window."}}
+        </td>
+    </tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:8px;margin:0 0 8px;">
+    <tr>
+        <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#475569;">&#9993;</td>
+        <td style="padding:14px 18px 14px 0;font-size:13px;color:#334155;line-height:1.5;">
+            <strong>{{trans "Need help?"}}</strong> {{trans "Reply to this email or contact us at"}} <a href="mailto:{{var support_email}}" style="color:#1d4ed8;text-decoration:none;font-weight:600;">{{var support_email}}</a>.
+        </td>
+    </tr>
+</table>
+
+{{var email_footer_html|raw}}

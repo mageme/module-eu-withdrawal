@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!--
+  ~ Default layout: footer link only. CSS is NOT loaded globally — withdrawal
+  ~ form / order-view / checkout each have their own page-specific entry-point
+  ~ registered in the relevant layout handle so storefront pages that don't
+  ~ display any withdrawal UI don't pay the bytes.
+  -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="footer_links">
+            <block class="MageMe\EUWithdrawal\Block\Html\FooterLink"
+                   name="mageme.eu_withdrawal.footer_link"
+                   after="privacy-policy-link"
+                   template="MageMe_EUWithdrawal::html/footer_link.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

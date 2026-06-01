@@ -1,0 +1,354 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\Form $block */
+/** @var \Magento\Framework\Escaper $escaper */
+$formKey      = method_exists($block, 'getFormKey') ? $block->getFormKey() : '';
+$finalizeUrl  = $block->getUrl('withdraw-contract/api/finalize');
+$orderHistory = $block->getUrl('sales/order/history');
+$indexUrl     = $block->getUrl('withdraw-contract');
+$homeUrl      = $block->getUrl('');
+$orderMeta    = $block->getChildBlock('order_meta');
+$orderIncrement = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta
+    ? $orderMeta->getOrderIncrementId()
+    : '';
+// All lines ineligible? Push flag down to the sidebar so it can swap the
+// empty-state message for an explanatory notice.
+$noEligibleItems = method_exists($block, 'hasAnyEligibleItem') && !$block->hasAnyEligibleItem();
+$returnSummaryChild = $block->getChildBlock('return_summary');
+if ($returnSummaryChild !== false) {
+    $returnSummaryChild->setData('no_eligible_items', $noEligibleItems);
+}
+
+// Push pending-request map + cancel URL into item_selector so each row can
+// render the inline status strip + cancel button.
+$itemSelectorChild = $block->getChildBlock('item_selector');
+if ($itemSelectorChild !== false && method_exists($block, 'getPendingRequestsByOrderItemId')) {
+    $itemSelectorChild->setData('pending_requests', $block->getPendingRequestsByOrderItemId());
+    $itemSelectorChild->setData('cancel_url', $block->getCancelActionUrl());
+    $itemSelectorChild->setData('form_key_html', $block->getBlockHtml('formkey'));
+}
+
+// Collect per-item tax + shipping amounts for the JS sidebar so it can render
+// the "Tax" row alongside Items/Shipping like the order-view totals block.
+//
+// Bootstrap emits the *raw* `taxAmount` (= order_item.tax_amount) and
+// `qtyOrdered` rather than a pre-divided `unitTax` so that JS can replicate
+// `RefundCalculator::calculate()` arithmetic exactly:
+//
+//     lineTax = roundHalfEven(qty * taxAmount / qtyOrdered, 4)
+//
+// Pre-dividing on the server (`unitTax = round(tax/ordered, 4)`) and then
+// multiplying on the client (`qty * unitTax`) introduced 0.01-cent rounding
+// drift between the displayed total and the value that RefundCalculator wrote
+// to mm_eu_withdrawal_request. Emitting the un-divided pair lets the client
+// run the same single-round formula the server does.
+//
+// eligibleItems[itemId] = { qty, taxAmount, qtyOrdered }
+$shippingPaid   = 0.0;
+$shippingTax    = 0.0;
+$eligibleItems  = [];
+$orderForMeta   = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta
+    ? $orderMeta->getOrder()
+    : null;
+if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector) {
+    $states = $itemSelectorChild->getStates() ?? [];
+    foreach ($states as $s) {
+        if (!$s->isEligible() || $s->remainingQty <= 0) {
+            continue;
+        }
+        $oi = $orderForMeta?->getItemById($s->orderItemId);
+        $rowTax = $oi !== null ? (float) $oi->getTaxAmount() : 0.0;
+        $qtyOrdered = $oi !== null ? (float) $oi->getQtyOrdered() : 0.0;
+        if ($qtyOrdered <= 0) {
+            $qtyOrdered = $s->purchasedQty > 0 ? (float) $s->purchasedQty : 1.0;
+        }
+        $eligibleItems[(int) $s->orderItemId] = [
+            'qty'        => (int) $s->remainingQty,
+            'taxAmount'  => round($rowTax, 4, PHP_ROUND_HALF_EVEN),
+            'qtyOrdered' => $qtyOrdered,
+        ];
+    }
+    if ($orderForMeta !== null) {
+        $shippingPaid = (float) $orderForMeta->getShippingAmount();
+        $shippingTax  = (float) $orderForMeta->getShippingTaxAmount();
+    }
+}
+
+// Inline Tabler-style stroke icons (CSP-safe, scale with currentColor).
+$icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size = 20): string {
+    $paths = [
+        'info' => '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/>',
+        'package' => '<path d="M3 9l9-4 9 4v10l-9 4-9-4z"/><polyline points="3 9 12 13 21 9"/><line x1="12" y1="13" x2="12" y2="22"/>',
+        'truck' => '<path d="M3 6h12v9H3z"/><path d="M15 10h4l2 3v2h-6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>',
+        'card' => '<rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="7" y1="15" x2="11" y2="15"/>',
+        'mail' => '<rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/>',
+        'calendar' => '<rect x="4" y="5" width="16" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="4" y1="11" x2="20" y2="11"/>',
+        'copy' => '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+        'check' => '<polyline points="5 13 9 17 19 7"/>',
+        'check-circle' => '<circle cx="12" cy="12" r="9"/><polyline points="8 12 11 15 16 9"/>',
+        'pin' => '<path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/>',
+    ];
+    $inner = $paths[$name] ?? '';
+    return sprintf(
+        '<svg class="%s" viewBox="0 0 24 24" width="%d" height="%d" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">%s</svg>',
+        htmlspecialchars($class, ENT_QUOTES, 'UTF-8'),
+        $size,
+        $size,
+        $inner,
+    );
+};
+?>
+<section class="mm-eu-w-spa" data-spa>
+    <script type="application/json" data-role="bootstrap">
+        <?= /* @noEscape */ json_encode([
+            'formKey'          => $formKey,
+            'finalizeUrl'      => $finalizeUrl,
+            'orderHistoryUrl'  => $orderHistory,
+            'indexUrl'         => $indexUrl,
+            'homeUrl'          => $homeUrl,
+            'orderIncrementId' => $orderIncrement,
+            'policyUrl'        => $block->getUrl('return-policy'),
+            'shippingPaid'     => round($shippingPaid, 2),
+            'shippingTax'      => round($shippingTax, 2),
+            'eligibleItems'    => $eligibleItems,
+            'i18n'             => [
+                'orderPrefix'        => (string) __('Order #'),
+                'qtyPrefix'          => (string) __('Qty: '),
+                'submissionFailed'   => (string) __('Submission failed. Please try again.'),
+                'networkError'       => (string) __('Network error. Please try again.'),
+                'invalidServerReply' => (string) __('Invalid server response.'),
+            ],
+        ], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    </script>
+
+    <?php if ($block->isRequestedOrderMismatched()): ?>
+        <div class="mm-eu-w-banner mm-eu-w-banner--error">
+            <?= $escaper->escapeHtml(__('That order does not belong to your account. Please select one of your own orders.')) ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- Panel 2: select items (active on load) -->
+    <div class="mm-eu-w-panel is-active" data-step="2">
+        <form class="mm-eu-w-grid" method="post" action="<?= $escaper->escapeUrl($block->getFormAction()) ?>" data-role="step2-form">
+            <?= $block->getBlockHtml('formkey') ?>
+            <div class="mm-eu-w-main">
+                <div class="mm-eu-w-card">
+                    <h2 class="mm-eu-w-card-title"><?= $escaper->escapeHtml(__('Select items to return')) ?></h2>
+                    <p class="mm-eu-w-card-subtitle">
+                        <?= $escaper->escapeHtml(__('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
+                    </p>
+                    <?= $block->getChildHtml('order_meta') ?>
+                    <?= $block->getChildHtml('item_selector') ?>
+                </div>
+                <div class="mm-eu-w-banner mm-eu-w-banner--info">
+                    <span class="mm-eu-w-banner-icon" aria-hidden="true">
+                        <?= /* @noEscape */ $icon('info', 'mm-eu-w-banner-icon-svg', 20) ?>
+                    </span>
+                    <span class="mm-eu-w-banner-text">
+                        <?= $escaper->escapeHtml(__('You have 14 days from the day you received your order to withdraw from the contract without giving a reason.')) ?>
+                    </span>
+                </div>
+            </div>
+            <?= $block->getChildHtml('return_summary') ?>
+            <div class="mm-eu-w-action-bar">
+                <a class="mm-eu-w-link mm-eu-w-link--back" href="<?= $escaper->escapeUrl($indexUrl) ?>">
+                    ← <?= $escaper->escapeHtml(__('Back to order search')) ?>
+                </a>
+                <div class="mm-eu-w-action-bar-right">
+                    <a class="mm-eu-w-btn mm-eu-w-btn--outlined" href="<?= $escaper->escapeUrl($homeUrl) ?>">
+                        <?= $escaper->escapeHtml(__('Cancel')) ?>
+                    </a>
+                    <button type="submit" class="mm-eu-w-btn mm-eu-w-btn--primary" data-role="continue" disabled>
+                        <?= $escaper->escapeHtml(__('Continue to review')) ?>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel 3: review & confirm (hidden until Continue clicked) -->
+    <div class="mm-eu-w-panel" data-step="3" aria-hidden="true">
+        <div class="mm-eu-w-grid">
+            <div class="mm-eu-w-main">
+                <div class="mm-eu-w-card">
+                    <h2 class="mm-eu-w-card-title"><?= $escaper->escapeHtml(__('Review and confirm')) ?></h2>
+                    <?php if ($orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta): ?>
+                        <div class="mm-eu-w-order-bar mm-eu-w-order-bar--review">
+                            <div class="mm-eu-w-order-bar-col">
+                                <span class="mm-eu-w-order-bar-icon" aria-hidden="true">
+                                    <?= /* @noEscape */ $icon('package', '', 18) ?>
+                                </span>
+                                <div>
+                                    <div class="mm-eu-w-order-bar-label">
+                                        <?= $escaper->escapeHtml(__('Order #%1', $orderMeta->getOrderIncrementId())) ?>
+                                    </div>
+                                    <div class="mm-eu-w-order-bar-value">
+                                        <?= $escaper->escapeHtml(__('Placed on %1', $orderMeta->getPlacedAt())) ?>
+                                        <span class="mm-eu-w-order-bar-sep" aria-hidden="true">•</span>
+                                        <?php if ($orderMeta->isAwaitingDelivery()): ?>
+                                            <?= $escaper->escapeHtml(__('Awaiting delivery')) ?>
+                                        <?php else: ?>
+                                            <?= $escaper->escapeHtml(__('Delivered on %1', $orderMeta->getDeliveredAt())) ?>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    <table class="mm-eu-w-items-table mm-eu-w-items-table--review">
+                        <thead>
+                            <tr>
+                                <th class="mm-eu-w-col-thumb"></th>
+                                <th class="mm-eu-w-col-item"><?= $escaper->escapeHtml(__('Item')) ?></th>
+                                <th class="mm-eu-w-col-qty"><?= $escaper->escapeHtml(__('Qty')) ?></th>
+                                <th class="mm-eu-w-col-reason"><?= $escaper->escapeHtml(__('Reason')) ?></th>
+                                <th class="mm-eu-w-col-total"><?= $escaper->escapeHtml(__('Total')) ?></th>
+                            </tr>
+                        </thead>
+                        <tbody data-role="review-items"></tbody>
+                    </table>
+                    <?php
+                    $shippingNotice = method_exists($block, 'getReturnShippingNotice') ? $block->getReturnShippingNotice() : '';
+                    $returnPolicyUrl = method_exists($block, 'getReturnPolicyUrl') ? $block->getReturnPolicyUrl() : '';
+                    ?>
+                    <?php if ($shippingNotice !== ''): ?>
+                        <div class="mm-eu-w-review-row">
+                            <span class="mm-eu-w-review-icon" aria-hidden="true">
+                                <?= /* @noEscape */ $icon('truck', 'mm-eu-w-review-icon-svg', 22) ?>
+                            </span>
+                            <div class="mm-eu-w-review-body">
+                                <div class="mm-eu-w-review-title"><?= $escaper->escapeHtml(__('Return shipping')) ?></div>
+                                <p class="mm-eu-w-review-text"><?= $escaper->escapeHtml($shippingNotice) ?></p>
+                            </div>
+                            <?php if ($returnPolicyUrl !== ''): ?>
+                                <a class="mm-eu-w-review-action"
+                                   href="<?= $escaper->escapeUrl($returnPolicyUrl) ?>"
+                                   target="_blank" rel="noopener">
+                                    <?= $escaper->escapeHtml(__('View return policy')) ?> →
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    <div class="mm-eu-w-review-row">
+                        <span class="mm-eu-w-review-icon" aria-hidden="true">
+                            <?= /* @noEscape */ $icon('card', 'mm-eu-w-review-icon-svg', 22) ?>
+                        </span>
+                        <div class="mm-eu-w-review-body">
+                            <div class="mm-eu-w-review-title"><?= $escaper->escapeHtml(__('Refund method')) ?></div>
+                            <p class="mm-eu-w-review-text"><?= $escaper->escapeHtml(__('Refund will be issued to your original payment method.')) ?></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <aside class="mm-eu-w-sidebar">
+                <div class="mm-eu-w-card">
+                    <h3 class="mm-eu-w-sidebar-title"><?= $escaper->escapeHtml(__('Return summary')) ?></h3>
+                    <dl class="mm-eu-w-totals">
+                        <dt><?= $escaper->escapeHtml(__('Subtotal')) ?></dt>
+                        <dd data-role="review-items-total">—</dd>
+                        <dt><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt>
+                        <dd data-role="review-shipping-paid">—</dd>
+                        <dt><?= $escaper->escapeHtml(__('Tax')) ?></dt>
+                        <dd data-role="review-tax">—</dd>
+                        <dt class="mm-eu-w-total-row"><?= $escaper->escapeHtml(__('Total refund')) ?></dt>
+                        <dd class="mm-eu-w-total-row" data-role="review-total-refund">—</dd>
+                    </dl>
+                    <div class="mm-eu-w-refund-policy">
+                        <span class="mm-eu-w-check" aria-hidden="true">✓</span>
+                        <p><?= $escaper->escapeHtml(__('The refund will be issued using your original payment method within 5-7 business days after we receive your return.')) ?></p>
+                    </div>
+                </div>
+            </aside>
+            <div class="mm-eu-w-action-bar">
+                <a class="mm-eu-w-link mm-eu-w-link--back" href="#" data-role="back-to-items">
+                    ← <?= $escaper->escapeHtml(__('Back to items')) ?>
+                </a>
+                <div class="mm-eu-w-action-bar-right">
+                    <a class="mm-eu-w-btn mm-eu-w-btn--outlined" href="<?= $escaper->escapeUrl($homeUrl) ?>">
+                        <?= $escaper->escapeHtml(__('Cancel')) ?>
+                    </a>
+                    <div class="mm-eu-w-submit-wrap">
+                        <button type="button" class="mm-eu-w-btn mm-eu-w-btn--primary" data-role="submit-request">
+                            <?= $escaper->escapeHtml(__('Submit return request')) ?>
+                        </button>
+                        <small class="mm-eu-w-submit-disclaimer" data-role="submit-error"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel 4: submitted (hidden until finalize success) -->
+    <div class="mm-eu-w-panel" data-step="4" aria-hidden="true">
+        <!-- Top single card with vertical divider between two columns -->
+        <div class="mm-eu-w-card mm-eu-w-card--split mm-eu-w-step4-hero">
+            <div class="mm-eu-w-hero-left">
+                <div class="mm-eu-w-success-check" aria-hidden="true">
+                    <?= /* @noEscape */ $icon('check', 'mm-eu-w-success-check-svg', 28) ?>
+                </div>
+                <h1 class="mm-eu-w-hero-title"><?= $escaper->escapeHtml(__('Your return request has been submitted!')) ?></h1>
+                <p class="mm-eu-w-hero-subtitle">
+                    <?= $escaper->escapeHtml(__("We've emailed you a notification with your return details and a prepaid return label (if applicable). You have 14 days from the delivery date to send your items back.")) ?>
+                </p>
+                <div class="mm-eu-w-rr-label"><?= $escaper->escapeHtml(__('Return request number')) ?></div>
+                <div class="mm-eu-w-rr-pill">
+                    <code data-role="rr-number">#0</code>
+                    <button type="button" class="mm-eu-w-copy-btn" data-role="copy-rr"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Copy request number')) ?>">
+                        <?= /* @noEscape */ $icon('copy', 'mm-eu-w-copy-btn-svg', 16) ?>
+                    </button>
+                    <span class="mm-eu-w-copy-feedback" data-role="copy-feedback">
+                        <?= $escaper->escapeHtml(__('Copied!')) ?>
+                    </span>
+                </div>
+            </div>
+            <div class="mm-eu-w-hero-right">
+                <div class="mm-eu-w-info-card">
+                    <div class="mm-eu-w-info-icon" aria-hidden="true">
+                        <?= /* @noEscape */ $icon('mail', 'mm-eu-w-info-icon-svg', 22) ?>
+                    </div>
+                    <div class="mm-eu-w-info-body">
+                        <div class="mm-eu-w-info-title">
+                            <?= $escaper->escapeHtml(__('Confirmation email sent')) ?>
+                        </div>
+                        <div class="mm-eu-w-info-text">
+                            <?= $escaper->escapeHtml(__("We've sent the details to")) ?>
+                            <div><strong data-role="customer-email">—</strong></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mm-eu-w-info-card">
+                    <div class="mm-eu-w-info-icon" aria-hidden="true">
+                        <?= /* @noEscape */ $icon('calendar', 'mm-eu-w-info-icon-svg', 22) ?>
+                    </div>
+                    <div class="mm-eu-w-info-body">
+                        <div class="mm-eu-w-info-title"><?= $escaper->escapeHtml(__('What happens next?')) ?></div>
+                        <ol class="mm-eu-w-next-steps">
+                            <li><?= $escaper->escapeHtml(__('Pack your items securely')) ?></li>
+                            <li><?= $escaper->escapeHtml(__('Send them back using the provided instructions')) ?></li>
+                            <li><?= $escaper->escapeHtml(__("We'll inspect your return")) ?></li>
+                            <li><?= $escaper->escapeHtml(__('Your refund will be issued to your original payment method')) ?></li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mm-eu-w-step4-footer">
+            <span><?= $escaper->escapeHtml(__('Need more help?')) ?></span>
+            <a class="mm-eu-w-link" href="<?= $escaper->escapeUrl($orderHistory) ?>">
+                <?= $escaper->escapeHtml(__('View my returns')) ?>
+            </a>
+            <span>|</span>
+            <a class="mm-eu-w-link" href="<?= $escaper->escapeUrl($block->getUrl('contact')) ?>">
+                <?= $escaper->escapeHtml(__('Contact support')) ?>
+            </a>
+        </div>
+    </div>
+</section>
+<script type="text/javascript" src="<?= $escaper->escapeUrl($block->getViewFileUrl('MageMe_EUWithdrawal::js/qty-stepper.js')) ?>" defer></script>
+<script type="text/javascript" src="<?= $escaper->escapeUrl($block->getViewFileUrl('MageMe_EUWithdrawal::js/withdrawal-summary.js')) ?>" defer></script>
+<script type="text/javascript" src="<?= $escaper->escapeUrl($block->getViewFileUrl('MageMe_EUWithdrawal::js/withdrawal-app.js')) ?>" defer></script>

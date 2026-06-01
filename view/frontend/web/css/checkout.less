@@ -1,0 +1,11 @@
+// Entry point for checkout integration:
+//   - Pre-contract Annex I info card injected via PrecontractLayoutPlugin into payment step
+//   - Digital-content waiver step (Art. 16(m)) registered between Shipping and Review-Payments
+//
+// Both block types render on `checkout_index_index` so combined into one CSS
+// file → 1 HTTP request instead of 2. Other storefront pages don't pay these
+// bytes.
+
+@import 'source/_vars';
+@import 'source/_precontract';
+@import 'source/_checkout-waiver';

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version SK.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Máte právo odstúpiť od tejto zmluvy bez uvedenia dôvodu v lehote {period_days} dní.</section>
+        <section id="period_start">Lehota na odstúpenie od zmluvy uplynie {period_days} dní odo dňa, keď Vy alebo Vami určená tretia strana s výnimkou dopravcu nadobudnete fyzickú držbu tovaru. V prípade digitálneho obsahu, ktorý sa nedodáva na hmotnom nosiči, lehota uplynie 14 dní po uzavretí zmluvy (ak ste sa tohto práva pri objednaní výslovne nevzdali).</section>
+        <section id="how_to_exercise">Pri uplatnení práva na odstúpenie od zmluvy nás — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — musíte informovať o svojom rozhodnutí odstúpiť od tejto zmluvy jednoznačným vyhlásením (napríklad listom zaslaným poštou, faxom alebo e-mailom). Na tento účel môžete použiť nižšie uvedený vzorový formulár na odstúpenie od zmluvy, ktorý však nie je záväzný.</section>
+        <section id="effects">Keď odstúpite od tejto zmluvy, vrátime Vám všetky uhradené platby vrátane nákladov na štandardné doručenie (s výnimkou dodatočných nákladov súvisiacich s tým, že ste si vybrali iný druh doručenia, ako je najlacnejší druh štandardného doručenia, ktorý ponúkame) bez zbytočného odkladu a v každom prípade najneskôr do 14 dní odo dňa, keď nám bude doručené Vaše rozhodnutie o odstúpení od tejto zmluvy. Túto úhradu uskutočníme rovnakými platobnými prostriedkami, aké ste použili na pôvodnú transakciu.</section>
+        <section id="return_address">Tovar zašlite späť na adresu: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>VZOROVÝ FORMULÁR NA ODSTÚPENIE OD ZMLUVY
+(vyplňte a zašlite tento formulár len v prípade, že si želáte odstúpiť od zmluvy)
+
+— Komu: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Týmto oznamujem/oznamujeme (*), že odstupujem/odstupujeme (*) od kúpnej zmluvy na tento tovar/od zmluvy o poskytnutí tejto služby (*):
+
+— Dátum objednania/dátum prijatia (*):
+
+— Meno spotrebiteľa/spotrebiteľov:
+
+— Adresa spotrebiteľa/spotrebiteľov:
+
+— Podpis spotrebiteľa/spotrebiteľov (iba ak sa tento formulár podáva na papieri):
+
+— Dátum:
+
+(*) Nehodiace sa prečiarknite.
+
+—
+Toto je oficiálny vzorový formulár na odstúpenie od zmluvy stanovený v prílohe I časti B smernice 2011/83/EÚ. Použitie tohto formulára je DOBROVOĽNÉ — o svojom rozhodnutí odstúpiť od zmluvy nás môžete informovať aj akýmkoľvek iným jednoznačným vyhlásením (listom, faxom alebo e-mailom) zaslaným na vyššie uvedený kontakt.</annex_ib>
+</config>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Checkout\Block\Checkout\LayoutProcessor">
+        <plugin name="mageme_eu_withdrawal_waiver_layout_processor"
+                type="MageMe\EUWithdrawal\Plugin\Checkout\LayoutProcessorPlugin"/>
+        <plugin name="mageme_eu_withdrawal_precontract_layout_processor"
+                type="MageMe\EUWithdrawal\Plugin\Checkout\PrecontractLayoutPlugin"
+                sortOrder="20"/>
+    </type>
+    <!-- Custom front-controller router runs before the standard router (30)
+         so that requests on the merchant's configured vanity prefix have
+         their pathInfo rewritten back to `/withdraw-contract/...` before
+         dispatch. See Controller/Router.php for the rewrite logic. -->
+    <type name="Magento\Framework\App\RouterList">
+        <arguments>
+            <argument name="routerList" xsi:type="array">
+                <item name="mageme_eu_withdrawal" xsi:type="array">
+                    <item name="class" xsi:type="string">MageMe\EUWithdrawal\Controller\Router</item>
+                    <item name="disable" xsi:type="boolean">false</item>
+                    <item name="sortOrder" xsi:type="string">25</item>
+                </item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Url">
+        <plugin name="mageme_eu_withdrawal_url_vanity_prefix"
+                type="MageMe\EUWithdrawal\Plugin\Framework\UrlPlugin"
+                sortOrder="10"/>
+    </type>
+    <!-- Dedicated session namespace for the short-lived handoff between
+         Finalize and the Success page (keeps request_id out of the URL). -->
+    <type name="MageMe\EUWithdrawal\Model\Session">
+        <arguments>
+            <argument name="name" xsi:type="string">mageme_eu_withdrawal</argument>
+        </arguments>
+    </type>
+</config>

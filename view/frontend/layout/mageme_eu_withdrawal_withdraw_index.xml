@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="MageMe_EUWithdrawal::css/withdrawal-form.css"/>
+    </head>
+    <body>
+        <referenceBlock name="page.main.title" remove="true"/>
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template"
+                   name="mageme_eu_withdrawal.page_title"
+                   template="MageMe_EUWithdrawal::withdraw/page_title.phtml"
+                   before="-"/>
+        </referenceContainer>
+    </body>
+</page>

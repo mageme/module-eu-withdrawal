@@ -1,0 +1,154 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <preference for="MageMe\EUWithdrawal\Api\FeatureFlagInterface"
+                type="MageMe\EUWithdrawal\Model\FeatureFlag"/>
+
+    <preference for="MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface"
+                type="MageMe\EUWithdrawal\Model\EligibilityRequest"/>
+
+    <preference for="MageMe\EUWithdrawal\Model\Waiver\WaiverTextLoaderInterface"
+                type="MageMe\EUWithdrawal\Model\Waiver\XmlWaiverTextLoader"/>
+
+    <!-- Default: in-memory resolver, no DB persistence. The Pro
+         MageMe_EUWithdrawalAnnexI add-on overrides this to DBSnapshotResolver
+         (lazy-publish + immutable rows in mm_eu_withdrawal_tc_snapshot). -->
+    <preference for="MageMe\EUWithdrawal\Api\Data\Precontract\SnapshotResolverInterface"
+                type="MageMe\EUWithdrawal\Model\Precontract\LiveSnapshotResolver"/>
+
+    <!-- Default: assume the layout-injected Annex I block was shown
+         to the consumer, so the standard 14-day period applies (no Art.
+         10(1) extension). The Pro AnnexI add-on overrides this to a
+         DisplayEventBasedArt10ExtensionChecker that queries
+         mm_eu_withdrawal_display_event for forensic-grade defence. -->
+    <preference for="MageMe\EUWithdrawal\Api\Period\Art10ExtensionCheckerInterface"
+                type="MageMe\EUWithdrawal\Model\Period\NoOpArt10ExtensionChecker"/>
+
+    <virtualType name="MageMe\EUWithdrawal\Model\Rule\Chain\EligibilityRuleChain"
+                 type="MageMe\EUWithdrawal\Model\Rule\Chain\RuleChainProcessor">
+        <arguments>
+            <argument name="rules" xsi:type="array">
+                <item name="period_rule" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\PeriodRule</item>
+                <item name="preset_custom" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\Preset\CustomMadePreset</item>
+                <item name="preset_perishable" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\Preset\PerishablePreset</item>
+                <item name="preset_sealed_hygiene" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\Preset\SealedHygienePreset</item>
+                <item name="preset_sealed_av" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\Preset\SealedAVPreset</item>
+                <item name="preset_digital_waiver" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\Preset\DigitalWaiverPreset</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <preference for="MageMe\EUWithdrawal\Api\EligibilityEngineInterface"
+                type="MageMe\EUWithdrawal\Model\EligibilityEngine"/>
+
+    <type name="MageMe\EUWithdrawal\Model\EligibilityEngine">
+        <arguments>
+            <argument name="chain" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\Chain\EligibilityRuleChain</argument>
+        </arguments>
+    </type>
+
+    <type name="MageMe\EUWithdrawal\Model\Security\RateLimiter">
+        <arguments>
+            <argument name="cache" xsi:type="object">Magento\Framework\App\Cache</argument>
+            <argument name="budget" xsi:type="number">10</argument>
+            <argument name="windowSeconds" xsi:type="number">3600</argument>
+        </arguments>
+    </type>
+
+    <preference for="MageMe\EUWithdrawal\Api\Data\RefundBreakdownInterface"
+                type="MageMe\EUWithdrawal\Model\Refund\RefundBreakdown"/>
+
+    <type name="Magento\Quote\Api\CartManagementInterface">
+        <plugin name="mageme_eu_withdrawal_order_placement_guard"
+                type="MageMe\EUWithdrawal\Plugin\Sales\OrderPlacementGuard"
+                sortOrder="100"/>
+    </type>
+
+    <!-- Audit subsystem (interfaces, DTOs, NoOp, writers/reader) lives entirely
+         in MageMe_EUWithdrawalAudit (Pro). The Free module emits the generic
+         mageme_eu_withdrawal_audit_* events only; nothing in Free consumes them. -->
+
+    <!-- Default: NoOp magic-link service. resolveOrder() returns null,
+         issueOrReuseForOrder() returns ''. The Pro
+         MageMe_EUWithdrawalMagicLink add-on overrides this preference to
+         its DB-backed MagicLinkService that persists configurable-lifetime
+         tokens (30-day default) in
+         mm_eu_withdrawal_magic_link, emits token_issued / token_used
+         audit events, and powers the one-click ?t= URL CTA in the
+         order/shipment confirmation emails. -->
+    <preference for="MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface"
+                type="MageMe\EUWithdrawal\Model\Token\NoOpMagicLinkService"/>
+
+    <!-- Withdrawal-CTA link resolver. Default returns the lookup-form
+         URL `/withdraw-contract/`; Pro MageMe_EUWithdrawalMagicLink overrides
+         this preference to MagicLinkWithdrawalLinkResolver which returns a
+         tokenised `?t=TOKEN` one-click URL. Same observer + email templates,
+         upgraded URL when Pro is installed. -->
+    <preference for="MageMe\EUWithdrawal\Api\Email\WithdrawalLinkResolverInterface"
+                type="MageMe\EUWithdrawal\Model\Email\LookupWithdrawalLinkResolver"/>
+
+    <preference for="MageMe\EUWithdrawal\Api\RequestRepositoryInterface"
+                type="MageMe\EUWithdrawal\Model\Request\RequestRepository"/>
+
+    <type name="MageMe\EUWithdrawal\Model\Request\RequestRepository">
+        <arguments>
+            <argument name="collectionFactory" xsi:type="object">MageMe\EUWithdrawal\Model\ResourceModel\Request\CollectionFactory</argument>
+        </arguments>
+    </type>
+
+    <preference for="MageMe\EUWithdrawal\Api\Data\RequestInterface"
+                type="MageMe\EUWithdrawal\Model\Request\Request"/>
+
+    <preference for="MageMe\EUWithdrawal\Api\Request\StatusMachineInterface"
+                type="MageMe\EUWithdrawal\Model\Request\StatusMachine"/>
+
+    <preference for="MageMe\EUWithdrawal\Api\Data\ItemInterface"
+                type="MageMe\EUWithdrawal\Model\Item\Item"/>
+
+    <preference for="MageMe\EUWithdrawal\Api\ItemRepositoryInterface"
+                type="MageMe\EUWithdrawal\Model\Item\ItemRepository"/>
+
+    <type name="MageMe\EUWithdrawal\Model\ResourceModel\Request\Grid\Collection">
+        <arguments>
+            <argument name="mainTable" xsi:type="string">mm_eu_withdrawal_request</argument>
+            <argument name="resourceModel" xsi:type="string">MageMe\EUWithdrawal\Model\ResourceModel\Request</argument>
+        </arguments>
+    </type>
+
+    <!-- mm_eu_withdrawal_audit_log grid Collection definition moved to
+         MageMe_EUWithdrawalAudit (phase-34). -->
+
+    <virtualType name="MageMe\EUWithdrawal\Ui\DataProvider\Request\ListingDataProvider"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection" xsi:type="object" shared="false">MageMe\EUWithdrawal\Model\ResourceModel\Request\Grid\Collection</argument>
+            <argument name="filterPool" xsi:type="object" shared="false">MageMe\EUWithdrawal\Ui\DataProvider\Request\FilterPool</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="MageMe\EUWithdrawal\Ui\DataProvider\Request\FilterPool"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="mageme_eu_withdrawal_request_listing_data_source" xsi:type="string">MageMe\EUWithdrawal\Model\ResourceModel\Request\Grid\Collection</item>
+                <!-- audit_listing_data_source registered by MageMe_EUWithdrawalAudit (phase-34). -->
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Translate">
+        <plugin name="mageme_eu_withdrawal_translate_parent_language_merge"
+                type="MageMe\EUWithdrawal\Plugin\Translate\MergeParentLanguageStrings"/>
+    </type>
+
+</config>

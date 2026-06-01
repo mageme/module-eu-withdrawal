@@ -1,0 +1,332 @@
+// EU Withdrawal — mobile (≤768px) layout adjustments.
+// Companion to `_module.less`. All rules live inside one media query.
+// Targets the 4 step pages: step 1a (find), step 1b (order list),
+// step 2 (select items), step 3 (review), step 4 (submitted).
+
+@media (max-width: @mm-eu-w-mobile-bp) {
+
+    // ---- Cards / typography scaling ----
+    .column.main .mm-eu-w-card { padding: 18px; border-radius: @mm-eu-w-radius; }
+    .column.main .mm-eu-w-card-title { font-size: 19px; }
+    .column.main .mm-eu-w-card-subtitle { font-size: 14px; margin-bottom: 16px; }
+
+    // ---- Stepper: keep numbers + titles, hide subtitles, tighten layout ----
+    .mm-eu-w-stepper { margin: 12px 0 24px; }
+    .mm-eu-w-step { padding: 0 4px; }
+    .mm-eu-w-step-number {
+        width: 28px; height: 28px; font-size: 13px; margin-bottom: 6px;
+        border-width: 2px;
+    }
+    .mm-eu-w-step::after {
+        top: 13px;
+        left: calc(50% + 18px); right: calc(-50% + 18px);
+    }
+    .mm-eu-w-step-title { font-size: 11px; line-height: 1.25; }
+
+    // ---- Step 1a — Find your order ----
+    .mm-eu-w-help-footer {
+        flex-direction: column; gap: 6px; padding: 16px;
+    }
+
+    // ---- Step 1b — Order list ----
+    .mm-eu-w-order-list { margin-top: 8px; }
+    .mm-eu-w-order-row {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "thumbs"
+            "meta"
+            "total"
+            "action";
+        gap: 12px;
+        padding: 16px 0;
+    }
+    .mm-eu-w-order-thumbs { grid-area: thumbs; }
+    .mm-eu-w-order-meta   { grid-area: meta; }
+    .mm-eu-w-order-total  { grid-area: total; text-align: left; }
+    .mm-eu-w-order-action { grid-area: action; justify-content: stretch; }
+    .mm-eu-w-order-thumb { width: 56px; height: 56px; }
+    .mm-eu-w-order-number { font-size: 16px; }
+    .mm-eu-w-order-dates { font-size: 13px; }
+    .mm-eu-w-order-total-amount { font-size: 17px; }
+    .mm-eu-w-btn--select-order { width: 100%; }
+
+    // ---- Step 2 — Order meta bar (3 columns on desktop) ----
+    .mm-eu-w-order-bar {
+        grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px 14px;
+    }
+    .mm-eu-w-order-bar-col--right {
+        justify-content: flex-start; text-align: left;
+    }
+
+    // ---- Step 2 + Step 3 — Items table → vertical cards ----
+    // CSS-only "responsive table" pattern: table becomes a block container,
+    // each <tr> becomes a card with grid-template-areas mapping the existing
+    // column classes to visual zones. No HTML changes.
+    .mm-eu-w-items-table {
+        display: block;
+        font-size: 14px;
+        table-layout: auto;
+    }
+    .mm-eu-w-items-table thead { display: none; }
+    .mm-eu-w-items-table tbody { display: block; }
+    .mm-eu-w-items-table tr {
+        display: grid;
+        gap: 6px 12px;
+        padding: 14px;
+        margin-bottom: 12px;
+        border: 1px solid @mm-eu-w-border;
+        border-radius: @mm-eu-w-radius;
+        background: @mm-eu-w-bg;
+    }
+    // The generic `tr { display: grid }` above outranks the UA `[hidden]`
+    // rule, so server-hidden rows (per-item reason on qty=0) would show. Pin
+    // them back down with a class-scoped attribute override.
+    .mm-eu-w-items-table tr[hidden] { display: none; }
+    .mm-eu-w-items-table td {
+        display: block;
+        padding: 0;
+        border-bottom: 0;
+        vertical-align: baseline;
+        width: auto;
+    }
+
+    // ---- Step 2 (`item_selector.phtml`) variant ----
+    // Layout:
+    //   [thumb] [name+sku+options]   [Qty: 2]   <- purchased qty top-right
+    //   [   stepper           ]   [    total]   <- controls + line total
+    .mm-eu-w-items-table .mm-eu-w-item-row {
+        grid-template-columns: 64px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "thumb info     purchased"
+            "controls controls total";
+        align-items: start;
+        column-gap: 12px;
+        row-gap: 10px;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-thumb {
+        grid-area: thumb;
+        width: 64px;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-thumb img {
+        width: 64px; height: 64px;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-item {
+        grid-area: info;
+        width: auto;
+    }
+    // Hide Price + Returned qty cells on mobile. Keep Purchased qty (the 4th
+    // cell, td:nth-of-type(4)) so customers see how many units are in the
+    // order; pin it to the top-right corner. The Returned cell (5th) is
+    // already covered by the colored strip badge beneath the row.
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-price,
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-qty {
+        display: none;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row td.mm-eu-w-col-qty:nth-of-type(4) {
+        display: block;
+        grid-area: purchased;
+        width: auto;
+        text-align: right;
+        font-size: 14px;
+        font-weight: 600;
+        color: @mm-eu-w-text;
+        align-self: start;
+        padding-top: 2px;
+        white-space: nowrap;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row td.mm-eu-w-col-qty:nth-of-type(4)::before {
+        content: 'Qty: ';
+        color: @mm-eu-w-text-muted;
+        font-weight: 400;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-rqty {
+        grid-area: controls;
+        width: auto;
+        text-align: left;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-total {
+        grid-area: total;
+        width: auto;
+        text-align: right;
+        align-self: center;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    // Per-item reason row (`<tr>` with colspan=7). On mobile it becomes a
+    // free-standing card BELOW the item card with breathing room — only
+    // shown when the user picks return qty>0 (JS toggles the [hidden] attr,
+    // and `:not([hidden])` keeps the UA `display: none` working).
+    .mm-eu-w-items-table .mm-eu-w-item-reason-row:not([hidden]) {
+        display: block;
+        margin: 10px 0 12px;
+        padding: 12px 14px;
+        border: 1px solid @mm-eu-w-border;
+        border-radius: @mm-eu-w-radius;
+        background: @mm-eu-w-bg-subtle;
+    }
+    // The single inner <td> spans the whole row.
+    .mm-eu-w-items-table .mm-eu-w-item-reason-row td {
+        display: block; padding: 0;
+    }
+
+    // Status strip (pending / done / excluded) — separate spaced card
+    // below the item, not glued to it. Keeps the item card's full bottom
+    // padding intact regardless of whether a strip is present.
+    .mm-eu-w-items-table .mm-eu-w-item-strip {
+        display: block;
+        margin: 10px 0 12px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-strip > td {
+        display: block;
+        padding: 0;
+        border-bottom: 0;
+    }
+    .mm-eu-w-items-table .mm-eu-w-item-strip-body {
+        border-radius: @mm-eu-w-radius;
+        padding: 10px 14px;
+    }
+
+    // Compact stepper: all three elements (− input +) share the same fixed
+    // height so they read as one rounded pill. Buttons stay close to the
+    // desktop 32 px width — the user explicitly asked for them smaller, not
+    // larger. `touch-action: manipulation` removes the iOS double-tap delay
+    // and `:active` darkens the button bg for clear tap feedback.
+    .mm-eu-w-qty-stepper { height: 36px; }
+    .mm-eu-w-qty-btn {
+        width: 36px; flex: 0 0 36px; height: 36px;
+        font-size: 18px; line-height: 1;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: fade(@mm-eu-w-primary, 18%);
+        user-select: none;
+    }
+    .mm-eu-w-qty-btn:active:not([disabled]) { background: darken(@mm-eu-w-bg-subtle, 8%); }
+    // `.column.main` prefix wins over Luma's input height rule (~32 px).
+    .column.main .mm-eu-w-qty-input,
+    .mm-eu-w-qty-input { height: 36px; font-size: 16px; }
+
+    // ---- Step 3 — Review card variant (`mm-eu-w-items-table--review`) ----
+    // Cells emitted by withdrawal-app.js: thumb | item | qty | reason | total.
+    // Rows are bare <tr> (no class) inside data-role=review-items tbody.
+    // Layout: [thumb] [name+qty]
+    //         [reason badge        ]
+    //         [                total]
+    .mm-eu-w-items-table--review tbody tr {
+        grid-template-columns: 56px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "thumb info qty"
+            "reason reason reason"
+            "total total total";
+        align-items: center;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-thumb {
+        grid-area: thumb;
+        width: 56px;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-thumb img {
+        width: 56px; height: 56px;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-item {
+        grid-area: info; width: auto;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-qty {
+        grid-area: qty; width: auto;
+        text-align: right; font-weight: 500;
+        color: @mm-eu-w-text-muted;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-qty::before {
+        content: 'Qty: '; color: @mm-eu-w-text-muted; font-weight: 400;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-reason {
+        grid-area: reason; width: auto;
+        font-size: 13px; color: @mm-eu-w-text-muted;
+        padding-top: 4px; border-top: 1px solid @mm-eu-w-border;
+        margin-top: 4px;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-reason::before {
+        content: 'Reason: '; font-weight: 500; color: @mm-eu-w-text;
+    }
+    .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-total {
+        grid-area: total; width: auto;
+        text-align: right; font-weight: 600; font-size: 15px;
+        padding-top: 4px;
+    }
+
+    // Step 3 review-row footer items (Return shipping / Refund method) — keep
+    // 3-col grid but tighten and let the action wrap below the body.
+    .mm-eu-w-review-row {
+        grid-template-columns: 28px minmax(0, 1fr);
+        grid-template-areas:
+            "icon body"
+            ".    action";
+        gap: 8px 12px; padding: 14px 0;
+    }
+    .mm-eu-w-review-icon { grid-area: icon; width: 28px; height: 28px; }
+    .mm-eu-w-review-icon-svg { width: 16px; height: 16px; }
+    .mm-eu-w-review-body { grid-area: body; }
+    .mm-eu-w-review-action { grid-area: action; justify-self: start; }
+
+    // ---- Step 4 — Submitted hero (split card → stacked) ----
+    // mm-eu-w-card--split is `grid-template-columns: 3fr 2fr` (line 656);
+    // Stack on mobile and turn the dividing border into a top border.
+    .mm-eu-w-card--split { grid-template-columns: minmax(0, 1fr); }
+    .mm-eu-w-card--split > * { padding: 24px 18px; }
+    .mm-eu-w-card--split > * + * {
+        border-left: 0;
+        border-top: 1px solid @mm-eu-w-border;
+    }
+    .mm-eu-w-hero-title { font-size: 19px; }
+    .mm-eu-w-hero-subtitle { font-size: 14px; }
+    .mm-eu-w-success-check { width: 48px; height: 48px; margin-bottom: 14px; }
+    .mm-eu-w-info-card { padding: 14px 0; gap: 12px; }
+    .mm-eu-w-info-icon { width: 32px; height: 32px; }
+    .mm-eu-w-step4-footer {
+        flex-direction: column; gap: 6px; padding: 14px;
+    }
+    .mm-eu-w-step4-footer span:nth-child(3) { display: none; }
+
+    // Magento data-th responsive table fallback for `success.phtml` (uses
+    // Luma's `data table table-order-items`). Native Luma styles already
+    // handle these; tighten only what needs scaling.
+    .mm-eu-withdrawal-success .table-order-items td {
+        font-size: 14px;
+    }
+
+    // ---- Banners / footers ----
+    .mm-eu-w-banner { padding: 12px; gap: 8px; font-size: 14px; }
+
+    // ---- Sidebar (Return summary) ----
+    .mm-eu-w-totals { font-size: 14px; }
+    .mm-eu-w-totals dt.mm-eu-w-total-row,
+    .mm-eu-w-totals dd.mm-eu-w-total-row { font-size: 16px; }
+    .mm-eu-w-refund-policy { padding: 10px 12px; font-size: 14px; }
+
+    // ---- Action bar — primary button on top, full width ----
+    // Both Cancel and primary action share the exact same metrics (height /
+    // padding / radius / font) so they read as a pair. Outlined gets a
+    // stronger border (#cbd1da) than the default very-faint @mm-eu-w-border
+    // so it doesn't disappear into the page background.
+    .mm-eu-w-action-bar { padding-top: 16px; }
+    .mm-eu-w-action-bar > .mm-eu-w-link--back {
+        order: 2; text-align: center; margin-top: 8px;
+    }
+    .mm-eu-w-action-bar-right {
+        gap: 10px; order: 1;
+        // Desktop has `align-items: center` which would shrink the inner
+        // submit-wrap to its content width on step 3 (where the primary
+        // button is wrapped together with a small disclaimer line). Stretch
+        // here makes the wrapped Submit button match the outlined Cancel
+        // button's full-width metric.
+        align-items: stretch;
+    }
+    .column.main .mm-eu-w-action-bar .mm-eu-w-btn {
+        height: 48px; padding: 0 20px; font-size: 16px;
+        border-radius: @mm-eu-w-radius;
+    }
+    .column.main .mm-eu-w-action-bar .mm-eu-w-btn--outlined {
+        border-color: #cbd1da;
+    }
+}

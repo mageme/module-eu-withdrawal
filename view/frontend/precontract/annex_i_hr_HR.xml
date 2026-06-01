@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version HR.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Od ovog ugovora imate pravo odustati u roku od {period_days} dana bez navođenja razloga.</section>
+        <section id="period_start">Rok za odustajanje isteći će {period_days} dana od dana na koji vi ili treća strana koja nije prijevoznik, a koju ste vi naveli, stekne robu u fizički posjed. Za digitalni sadržaj koji se ne isporučuje na materijalnom nosaču podataka rok istječe 14 dana nakon sklapanja ugovora (osim ako ste se odrekli tog prava prilikom narudžbe).</section>
+        <section id="how_to_exercise">Da biste mogli ostvariti pravo odustajanja, o svojoj odluci da odustanete od ovog ugovora morate nas obavijestiti — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — nedvosmislenom izjavom (npr. pismom poslanim poštom, telefaksom ili e-poštom). Možete koristiti uzorak obrasca za odustajanje koji se nalazi niže, ali to nije obvezno.</section>
+        <section id="effects">Ako odustanete od ovog ugovora, vraćamo vam sva plaćanja koja smo od vas primili, uključujući i troškove standardne isporuke (s izuzetkom dodatnih troškova koji su rezultat toga što ste odabrali drugu vrstu isporuke osim najjeftinije standardne isporuke koju smo mi ponudili), bez nepotrebnog odlaganja i u svakom slučaju najkasnije 14 dana od dana na koji smo obaviješteni o vašoj odluci da odustajete od ovog ugovora. Taj ćemo povrat novca izvršiti istim sredstvom plaćanja koje ste vi koristili za prvobitnu transakciju.</section>
+        <section id="return_address">Robu treba vratiti na adresu: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>UZORAK OBRASCA O ODUSTAJANJU
+(ovaj obrazac trebate ispuniti i vratiti nam ga samo ako želite odustati od ugovora)
+
+— Prima: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— ja/mi (*) ovim izjavljujem/izjavljujemo (*) da odustajem/odustajemo (*) od svojeg ugovora za prodaju sljedeće robe (*)/za pružanje sljedeće usluge (*):
+
+— naručene dana (*)/primljene dana (*):
+
+— naziv potrošača:
+
+— adresa potrošača:
+
+— potpis potrošača (samo ako se ovaj obrazac ispunjava na papiru):
+
+— datum:
+
+(*) Prekrižiti nepotrebno.
+
+—
+Ovo je službeni uzorak obrasca o odustajanju propisan Prilogom I. dijelom B Direktive 2011/83/EU. Korištenje ovog obrasca NIJE OBVEZNO — o svojoj odluci da odustanete od ugovora možete nas obavijestiti i bilo kojom drugom nedvosmislenom izjavom (pismom, telefaksom ili e-poštom) poslanom na gore navedeni kontakt.</annex_ib>
+</config>

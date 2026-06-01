@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version PL.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Mają Państwo prawo odstąpić od niniejszej umowy w terminie {period_days} dni bez podania jakiejkolwiek przyczyny.</section>
+        <section id="period_start">Okres na odstąpienie od umowy wygasa po upływie {period_days} dni od dnia, w którym weszli Państwo w fizyczne posiadanie towarów lub w którym osoba trzecia inna niż przewoźnik i wskazana przez Państwa weszła w fizyczne posiadanie towarów. W przypadku treści cyfrowych dostarczanych nie na trwałym nośniku termin wygasa 14 dni po zawarciu umowy (chyba że zrzekli się Państwo tego prawa w trakcie składania zamówienia).</section>
+        <section id="how_to_exercise">Aby skorzystać z prawa do odstąpienia od umowy, muszą Państwo poinformować nas — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — o swojej decyzji o odstąpieniu od niniejszej umowy w drodze jednoznacznego oświadczenia (na przykład pismo wysłane pocztą, faksem lub pocztą elektroniczną). Mogą Państwo skorzystać z poniższego wzoru formularza odstąpienia od umowy, jednak nie jest to obowiązkowe.</section>
+        <section id="effects">W przypadku odstąpienia od niniejszej umowy zwracamy Państwu wszystkie otrzymane od Państwa płatności, w tym koszty standardowego dostarczenia (z wyjątkiem dodatkowych kosztów wynikających z wybranego przez Państwa sposobu dostarczenia innego niż najtańszy standardowy sposób dostarczenia oferowany przez nas), bez zbędnej zwłoki, a w każdym przypadku nie później niż 14 dni od dnia, w którym zostaliśmy poinformowani o Państwa decyzji o wykonaniu prawa do odstąpienia od niniejszej umowy. Zwrotu płatności dokonamy przy użyciu takich samych sposobów płatności, jakie zostały przez Państwa użyte w początkowej transakcji.</section>
+        <section id="return_address">Towary należy zwrócić na adres: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>WZÓR FORMULARZA ODSTĄPIENIA OD UMOWY
+(formularz ten należy wypełnić i odesłać tylko w przypadku chęci odstąpienia od umowy)
+
+— Adresat: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Ja/My (*) niniejszym informuję/informujemy (*) o moim/naszym (*) odstąpieniu od umowy sprzedaży następujących towarów (*)/o świadczenie następującej usługi (*):
+
+— Data zamówienia (*)/odbioru (*):
+
+— Imię i nazwisko/Nazwa/nazwisko konsumenta(-ów):
+
+— Adres konsumenta(-ów):
+
+— Podpis konsumenta(-ów) (tylko jeżeli formularz jest przesyłany w wersji papierowej):
+
+— Data:
+
+(*) Niepotrzebne skreślić.
+
+—
+Jest to oficjalny wzór formularza odstąpienia od umowy określony w załączniku I część B do dyrektywy 2011/83/UE. Korzystanie z tego formularza jest DOBROWOLNE — o swojej decyzji o odstąpieniu od umowy mogą Państwo poinformować nas również za pomocą innego jednoznacznego oświadczenia (pismem, faksem lub pocztą elektroniczną) wysłanym na powyższy kontakt.</annex_ib>
+</config>

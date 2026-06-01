@@ -1,0 +1,60 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\FindOrderForm $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$svgInfo = '<svg class="mm-eu-w-banner-icon-svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>';
+?>
+<section class="mm-eu-w-step1a">
+    <div class="mm-eu-w-card mm-eu-w-card--centered">
+        <h2 class="mm-eu-w-card-title"><?= $escaper->escapeHtml(__('Find your order')) ?></h2>
+        <p class="mm-eu-w-card-subtitle">
+            <?= $escaper->escapeHtml(__('Enter the details you used during checkout to start a return or withdrawal.')) ?>
+        </p>
+        <?php if ($block->isLookupFailed()): ?>
+            <div class="mm-eu-w-banner mm-eu-w-banner--error">
+                <?= $escaper->escapeHtml(__('We could not find an order matching that email. Double-check your order number and email address.')) ?>
+            </div>
+        <?php endif; ?>
+        <form class="mm-eu-w-find-form" method="post" action="<?= $escaper->escapeUrl($block->getFormAction()) ?>">
+            <?= /* @noEscape */ $block->getBlockHtml('formkey') ?>
+            <div class="mm-eu-w-field">
+                <label for="mm-eu-w-order-id"><?= $escaper->escapeHtml(__('Order number')) ?></label>
+                <input id="mm-eu-w-order-id" type="text" name="order_id" required
+                       placeholder="<?= $escaper->escapeHtmlAttr(__('e.g. 12345')) ?>">
+                <small class="mm-eu-w-field-help">
+                    <?= $escaper->escapeHtml(__('You can find this in your order confirmation email.')) ?>
+                </small>
+            </div>
+            <div class="mm-eu-w-field">
+                <label for="mm-eu-w-email"><?= $escaper->escapeHtml(__('Email address')) ?></label>
+                <input id="mm-eu-w-email" type="email" name="email" required
+                       placeholder="<?= $escaper->escapeHtmlAttr(__('you@example.com')) ?>">
+                <small class="mm-eu-w-field-help">
+                    <?= $escaper->escapeHtml(__('Must match the email used for the order.')) ?>
+                </small>
+            </div>
+            <button type="submit" class="mm-eu-w-btn mm-eu-w-btn--primary mm-eu-w-btn--block">
+                <?= $escaper->escapeHtml(__('Find my order')) ?>
+            </button>
+            <?= /* @noEscape */ $block->renderReCaptcha() ?>
+        </form>
+    </div>
+    <div class="mm-eu-w-banner mm-eu-w-banner--info">
+        <span class="mm-eu-w-banner-icon" aria-hidden="true"><?= /* @noEscape */ $svgInfo ?></span>
+        <span class="mm-eu-w-banner-text">
+            <?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?>
+        </span>
+    </div>
+    <div class="mm-eu-w-help-footer">
+        <span class="mm-eu-w-help-prompt">
+            <?= $escaper->escapeHtml(__('Need help finding your order?')) ?>
+        </span>
+        <a class="mm-eu-w-help-link" href="<?= $escaper->escapeUrl($block->getSupportUrl()) ?>">
+            <?= $escaper->escapeHtml(__('Contact support')) ?>
+        </a>
+    </div>
+</section>

@@ -1,0 +1,36 @@
+<!--@subject {{trans "Verzichtsbestätigung digitaler Inhalte — Bestellung %increment_id" increment_id=$waiver.order_increment_id}}@-->
+<!--@vars {
+    "var waiver.order_increment_id":"Bestellnummer",
+    "var waiver.customer_name":"Name des Kunden",
+    "var waiver.customer_email":"E-Mail des Kunden",
+    "var waiver.items":"Digitale Inhalte mit Verzicht",
+    "var waiver.consent_snapshot":"Snapshot des Einwilligungstexts",
+    "var waiver.ack_snapshot":"Snapshot des Bestätigungstexts",
+    "var waiver.consent_at":"Zeitstempel der Einwilligung",
+    "var waiver.ack_at":"Zeitstempel der Bestätigung",
+    "var waiver.waiver_reference":"Verzichtsreferenz-ID"
+} @-->
+<html><body>
+<p>{{trans "Sehr geehrte/r %name," name=$waiver.customer_name}}</p>
+<p>{{trans "Dies ist die Bestätigung auf einem dauerhaften Datenträger Ihrer ausdrücklichen Einwilligung zum Beginn der Ausführung folgender digitaler Inhalte sowie Ihrer Bestätigung, dass Sie dadurch Ihr Widerrufsrecht verlieren (Art. 16(m) VRL)."}}</p>
+
+<h3>{{trans "Durch den Verzicht abgedeckte digitale Inhalte"}}</h3>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li><strong>{{var item.name}}</strong> ({{var item.sku}}) &mdash; {{var item.product_type}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+
+<h3>{{trans "Ihre ausdrückliche Einwilligung"}}</h3>
+<blockquote>{{var waiver.consent_snapshot}}</blockquote>
+<p><small>{{trans "Eingewilligt am:"}} {{var waiver.consent_at}}</small></p>
+
+<h3>{{trans "Ihre Bestätigung zum Verlust des Widerrufsrechts"}}</h3>
+<blockquote>{{var waiver.ack_snapshot}}</blockquote>
+<p><small>{{trans "Bestätigt am:"}} {{var waiver.ack_at}}</small></p>
+
+<p>{{trans "Verzichtsreferenz:"}} <code>{{var waiver.waiver_reference}}</code></p>
+<p><small>{{trans "Rechtsgrundlage: Art. 16(m) Verbraucherrechterichtlinie 2011/83/EU."}}</small></p>
+</body></html>

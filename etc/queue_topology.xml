@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/topology.xsd">
+    <exchange name="eu_withdrawal_receipt_exchange" type="topic" connection="db">
+        <binding id="eu_withdrawal_receipt_binding"
+                 topic="eu_withdrawal.receipt.send"
+                 destinationType="queue"
+                 destination="eu_withdrawal.receipt.send.queue"/>
+    </exchange>
+    <exchange name="eu_withdrawal_waiver_exchange" type="topic" connection="db">
+        <binding id="eu_withdrawal_waiver_binding"
+                 topic="eu_withdrawal.waiver_confirmation.send"
+                 destinationType="queue"
+                 destination="eu_withdrawal.waiver_confirmation.send.queue"/>
+    </exchange>
+</config>

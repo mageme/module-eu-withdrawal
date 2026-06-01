@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="MageMe_EUWithdrawal::menu"
+             title="Withdrawals"
+             module="MageMe_EUWithdrawal"
+             sortOrder="20"
+             parent="Magento_Sales::sales"
+             resource="MageMe_EUWithdrawal::menu"/>
+
+        <add id="MageMe_EUWithdrawal::request"
+             title="Withdrawal Requests"
+             module="MageMe_EUWithdrawal"
+             sortOrder="10"
+             parent="MageMe_EUWithdrawal::menu"
+             action="mageme_eu_withdrawal/request/index"
+             resource="MageMe_EUWithdrawal::request_view"/>
+
+        <add id="MageMe_EUWithdrawal::config"
+             title="Settings"
+             module="MageMe_EUWithdrawal"
+             sortOrder="20"
+             parent="MageMe_EUWithdrawal::menu"
+             action="adminhtml/system_config/edit/section/mageme_eu_withdrawal"
+             resource="MageMe_EUWithdrawal::config"/>
+    </menu>
+</config>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Button label whitelist v2 — frozen for Free 1.0 per Art. 11a(2) CRD.
+    Source of truth: _research/button-labels-v1.md (do not edit here without legal re-review).
+
+    Phase-10 (2026-04-29): expanded from 17 to 22 entries (en_EU fallback + 21
+    language-specific). Country-variant rows (de_AT, de_BE, fr_BE, fr_LU, nl_BE,
+    sv_FI) removed — handled at runtime by Model\Locale\LocaleFallbackResolver
+    chain. New languages (bg, cs, el, et, hr, hu, lt, lv, ro, sk, sl) added with
+    AI-drafted labels pending counsel review (deadline 2026-05-15).
+
+    Sidebar derivation rule (for legal reviewers):
+    The <sidebar> label is the <step1> label with the locative deictic removed:
+      "here" / "ici" / "tästä" / "här" / "her" / "qui" / "aquí" / "tutaj" / "aqui"
+      / "тук" / "zde" / "εδώ" / "siit" / "ovdje" / "itt" / "čia" / "šeit" / "aici" / "tu" / "tukaj".
+    The verb + direct object are preserved verbatim from step1; only the deictic pointer
+    that presumes co-location with the CTA button is dropped, since the sidebar link
+    renders in a persistent menu rather than next to the order in question.
+-->
+<config>
+    <locale code="en_EU" fallback="true">
+        <step1>Withdraw from contract here</step1>
+        <step2>Confirm withdrawal</step2>
+        <sidebar>Withdraw from contract</sidebar>
+    </locale>
+    <!-- Existing languages, keep as-is from v1 -->
+    <locale code="de_DE">
+        <step1>Vertrag hier widerrufen</step1>
+        <step2>Widerruf bestätigen</step2>
+        <sidebar>Vertrag widerrufen</sidebar>
+    </locale>
+    <locale code="fr_FR">
+        <step1>Me rétracter ici</step1>
+        <step2>Confirmer la rétractation</step2>
+        <sidebar>Me rétracter</sidebar>
+    </locale>
+    <locale code="nl_NL">
+        <step1>Contract hier herroepen</step1>
+        <step2>Bevestig herroeping</step2>
+        <sidebar>Contract herroepen</sidebar>
+    </locale>
+    <locale code="fi_FI">
+        <step1>Peru sopimus tästä</step1>
+        <step2>Vahvista peruutus</step2>
+        <sidebar>Peru sopimus</sidebar>
+    </locale>
+    <locale code="sv_SE">
+        <step1>Ångra avtal här</step1>
+        <step2>Bekräfta ångerrätt</step2>
+        <sidebar>Ångra avtal</sidebar>
+    </locale>
+    <locale code="da_DK">
+        <step1>Fortryd kontrakten her</step1>
+        <step2>Bekræft fortrydelse</step2>
+        <sidebar>Fortryd kontrakten</sidebar>
+    </locale>
+    <locale code="it_IT">
+        <step1>Recedi dal contratto qui</step1>
+        <step2>Conferma il recesso</step2>
+        <sidebar>Recedi dal contratto</sidebar>
+    </locale>
+    <locale code="es_ES">
+        <step1>Desiste del contrato aquí</step1>
+        <step2>Confirmar desistimiento</step2>
+        <sidebar>Desiste del contrato</sidebar>
+    </locale>
+    <locale code="pl_PL">
+        <step1>Odstąp od umowy tutaj</step1>
+        <step2>Potwierdź odstąpienie</step2>
+        <sidebar>Odstąp od umowy</sidebar>
+    </locale>
+    <locale code="pt_PT">
+        <step1>Desistir do contrato aqui</step1>
+        <step2>Confirmar desistência</step2>
+        <sidebar>Desistir do contrato</sidebar>
+    </locale>
+    <!-- NEW Phase-10 — 11 EU languages, AI-drafted, counsel review pending (deadline 2026-05-15) -->
+    <locale code="bg_BG">
+        <step1>Откажете се от договора тук</step1>
+        <step2>Потвърдете отказа</step2>
+        <sidebar>Откажете се от договора</sidebar>
+    </locale>
+    <locale code="cs_CZ">
+        <step1>Odstoupit od smlouvy zde</step1>
+        <step2>Potvrdit odstoupení</step2>
+        <sidebar>Odstoupit od smlouvy</sidebar>
+    </locale>
+    <locale code="el_GR">
+        <step1>Υπαναχωρήστε από τη σύμβαση εδώ</step1>
+        <step2>Επιβεβαίωση υπαναχώρησης</step2>
+        <sidebar>Υπαναχωρήστε από τη σύμβαση</sidebar>
+    </locale>
+    <locale code="et_EE">
+        <step1>Taganege lepingust siit</step1>
+        <step2>Kinnita taganemine</step2>
+        <sidebar>Taganege lepingust</sidebar>
+    </locale>
+    <locale code="hr_HR">
+        <step1>Odustanite od ugovora ovdje</step1>
+        <step2>Potvrdi odustajanje</step2>
+        <sidebar>Odustanite od ugovora</sidebar>
+    </locale>
+    <locale code="hu_HU">
+        <step1>Itt elálljon a szerződéstől</step1>
+        <step2>Elállás megerősítése</step2>
+        <sidebar>Elálljon a szerződéstől</sidebar>
+    </locale>
+    <locale code="lt_LT">
+        <step1>Atsisakykite sutarties čia</step1>
+        <step2>Patvirtinkite atsisakymą</step2>
+        <sidebar>Atsisakykite sutarties</sidebar>
+    </locale>
+    <locale code="lv_LV">
+        <step1>Atteikties no līguma šeit</step1>
+        <step2>Apstiprināt atteikšanos</step2>
+        <sidebar>Atteikties no līguma</sidebar>
+    </locale>
+    <locale code="ro_RO">
+        <step1>Retrageți-vă din contract aici</step1>
+        <step2>Confirmați retragerea</step2>
+        <sidebar>Retrageți-vă din contract</sidebar>
+    </locale>
+    <locale code="sk_SK">
+        <step1>Odstúpiť od zmluvy tu</step1>
+        <step2>Potvrdiť odstúpenie</step2>
+        <sidebar>Odstúpiť od zmluvy</sidebar>
+    </locale>
+    <locale code="sl_SI">
+        <step1>Odstopite od pogodbe tukaj</step1>
+        <step2>Potrdite odstop</step2>
+        <sidebar>Odstopite od pogodbe</sidebar>
+    </locale>
+</config>

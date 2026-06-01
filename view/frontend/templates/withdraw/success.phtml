@@ -1,0 +1,160 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\Success $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+if (!$block->hasWithdrawalRequest()): ?>
+    <section class="mm-eu-withdrawal-success mm-eu-w-success-empty"
+             aria-label="<?= $escaper->escapeHtmlAttr(__('No recent withdrawal')) ?>">
+        <p>
+            <?= $escaper->escapeHtml(__('We could not find a recent withdrawal in this session. If you have just submitted one, please check your inbox for the confirmation email.')) ?>
+        </p>
+        <p>
+            <a href="<?= $escaper->escapeUrl($block->getWithdrawalLandingUrl()) ?>" class="action secondary">
+                <span><?= $escaper->escapeHtml(__('Start a new withdrawal')) ?></span>
+            </a>
+        </p>
+    </section>
+    <?php return;
+endif; ?>
+
+<?php
+$incrementDisplay = $block->getIncrementIdDisplay();
+$orderIncrement = $block->getOrderIncrementId();
+$orderUrl = $block->getOrderUrl();
+$items = $block->getItems();
+$shipping = $block->getShippingRefund();
+?>
+<section class="mm-eu-withdrawal-success"
+         aria-labelledby="mm-eu-w-success-title"
+         tabindex="-1">
+    <div class="mm-eu-w-success-banner" role="status">
+        <strong id="mm-eu-w-success-title" class="mm-eu-w-success-title">
+            <?= $escaper->escapeHtml(__('Withdrawal #%1 submitted', $incrementDisplay)) ?>
+        </strong>
+        <p class="mm-eu-w-success-meta">
+            <?= $escaper->escapeHtml(__('Submitted %1', $block->formatSubmittedAt())) ?>
+        </p>
+    </div>
+
+    <?php if ($orderIncrement !== ''): ?>
+        <p class="mm-eu-w-success-order">
+            <?= $escaper->escapeHtml(__('Related order:')) ?>
+            <?php if ($orderUrl !== ''): ?>
+                <a href="<?= $escaper->escapeUrl($orderUrl) ?>">
+                    <?= $escaper->escapeHtml('#' . $orderIncrement) ?>
+                </a>
+            <?php else: ?>
+                <?= $escaper->escapeHtml('#' . $orderIncrement) ?>
+            <?php endif; ?>
+        </p>
+    <?php endif; ?>
+
+    <?php if ($items !== []): ?>
+        <section class="mm-eu-w-success-items" aria-labelledby="mm-eu-w-success-items-title">
+            <h2 id="mm-eu-w-success-items-title" class="legend">
+                <span><?= $escaper->escapeHtml(__('Items')) ?></span>
+            </h2>
+            <table class="data table table-order-items">
+                <caption class="visually-hidden">
+                    <?= $escaper->escapeHtml(__('Items included in this withdrawal')) ?>
+                </caption>
+                <thead>
+                    <tr>
+                        <th scope="col" class="col name"><?= $escaper->escapeHtml(__('Item')) ?></th>
+                        <th scope="col" class="col qty"><?= $escaper->escapeHtml(__('Qty')) ?></th>
+                        <th scope="col" class="col subtotal"><?= $escaper->escapeHtml(__('Line Total')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php foreach ($items as $item): ?>
+                    <?php
+                    $oid = (int) $item->getOrderItemId();
+                    $orderItem = $block->getOrderItem($oid);
+                    $name = $orderItem !== null ? (string) $orderItem->getName() : '';
+                    $options = $block->getOrderItemOptions($oid);
+                    ?>
+                    <tr>
+                        <td class="col name" data-th="<?= $escaper->escapeHtmlAttr(__('Item')) ?>">
+                            <?php if ($name !== ''): ?>
+                                <strong class="product name"><?= $escaper->escapeHtml($name) ?></strong>
+                            <?php endif; ?>
+                            <span class="mm-eu-w-sku">
+                                <?= $escaper->escapeHtml(__('SKU: %1', (string) $item->getSku())) ?>
+                            </span>
+                            <?php if ($options !== []): ?>
+                                <dl class="item-options mm-eu-w-item-options">
+                                    <?php foreach ($options as $opt): ?>
+                                        <dt><?= $escaper->escapeHtml($opt['label']) ?></dt>
+                                        <dd><?= $escaper->escapeHtml($opt['value']) ?></dd>
+                                    <?php endforeach; ?>
+                                </dl>
+                            <?php endif; ?>
+                        </td>
+                        <td class="col qty" data-th="<?= $escaper->escapeHtmlAttr(__('Qty')) ?>">
+                            <?= (int) (float) $item->getQtyWithdraw() ?>
+                        </td>
+                        <td class="col subtotal" data-th="<?= $escaper->escapeHtmlAttr(__('Line Total')) ?>">
+                            <?= $escaper->escapeHtml($block->formatPrice((float) $item->getRefundAmount())) ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+                <tfoot>
+                    <tr class="subtotal">
+                        <th scope="row" colspan="2">
+                            <?= $escaper->escapeHtml(__('Items Subtotal')) ?>
+                        </th>
+                        <td class="col subtotal">
+                            <?= $escaper->escapeHtml($block->formatPrice($block->getItemsSubtotal())) ?>
+                        </td>
+                    </tr>
+                    <?php if ($shipping > 0): ?>
+                        <tr class="shipping">
+                            <th scope="row" colspan="2">
+                                <?= $escaper->escapeHtml(__('Shipping Refund')) ?>
+                            </th>
+                            <td class="col subtotal">
+                                <?= $escaper->escapeHtml($block->formatPrice($shipping)) ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                    <tr class="grand_total">
+                        <th scope="row" colspan="2">
+                            <strong><?= $escaper->escapeHtml(__('Total Refund')) ?></strong>
+                        </th>
+                        <td class="col subtotal">
+                            <strong><?= $escaper->escapeHtml($block->formatPrice($block->getTotalRefund())) ?></strong>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </section>
+    <?php endif; ?>
+
+    <aside class="mm-eu-w-success-next" aria-labelledby="mm-eu-w-success-next-title">
+        <h2 id="mm-eu-w-success-next-title" class="mm-eu-w-success-next-title">
+            <?= $escaper->escapeHtml(__('What happens next')) ?>
+        </h2>
+        <ul class="mm-eu-w-success-next-list">
+            <li>
+                <?= $escaper->escapeHtml(__('You will receive a receipt email with the full withdrawal statement and integrity hash within a few minutes.')) ?>
+            </li>
+            <li>
+                <?= $escaper->escapeHtml(__('The 14-day window under Art. 9 CRD is locked to the moment you confirmed the withdrawal — nothing further is required from you to preserve the right.')) ?>
+            </li>
+            <li>
+                <?= $escaper->escapeHtml(__('The final refund is determined after we receive the returned items (Art. 14(2)) and is issued to the original payment method. Expect the funds within 14 days of receipt.')) ?>
+            </li>
+        </ul>
+    </aside>
+
+    <div class="mm-eu-w-success-actions">
+        <a href="<?= $escaper->escapeUrl($block->getWithdrawalLandingUrl()) ?>" class="action secondary">
+            <span><?= $escaper->escapeHtml(__('Back to Withdrawals')) ?></span>
+        </a>
+    </div>
+</section>

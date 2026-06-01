@@ -1,0 +1,91 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\ExistingWithdrawals $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+if (!$block->isApplicable()) {
+    return;
+}
+$actionUrl = $block->getCancelActionUrl();
+$magicToken = $block->getMagicToken();
+?>
+<section class="mm-eu-w-section mm-eu-w-existing-section"
+         aria-labelledby="mm-eu-w-existing-title"
+         data-role="mm-eu-w-existing">
+    <header class="mm-eu-w-section-header">
+        <h2 id="mm-eu-w-existing-title" class="mm-eu-w-section-title">
+            <?= $escaper->escapeHtml(__('Existing withdrawals for this order')) ?>
+        </h2>
+        <p class="mm-eu-w-section-hint">
+            <?= $escaper->escapeHtml(__('You can cancel a withdrawal here until it is approved.')) ?>
+        </p>
+    </header>
+    <ul class="mm-eu-w-existing-list">
+        <?php foreach ($block->getRequests() as $req): ?>
+            <li class="mm-eu-w-existing-item mm-eu-w-existing-item--<?= $escaper->escapeHtmlAttr($req->status) ?>">
+                <header class="mm-eu-w-existing-head">
+                    <span class="mm-eu-w-existing-status mm-eu-w-existing-status--<?= $escaper->escapeHtmlAttr($req->status) ?>">
+                        <?= $escaper->escapeHtml($block->getStatusLabel($req->status)) ?>
+                    </span>
+                    <strong class="mm-eu-w-existing-number">
+                        <?= $escaper->escapeHtml(__('Request #%1', $req->incrementId)) ?>
+                    </strong>
+                    <time class="mm-eu-w-existing-date" datetime="<?= $escaper->escapeHtmlAttr($req->submittedAt) ?>">
+                        <?= $escaper->escapeHtml($req->submittedAt) ?>
+                    </time>
+                </header>
+                <?php if ($req->items !== []): ?>
+                    <ul class="mm-eu-w-existing-items">
+                        <?php foreach ($req->items as $item): ?>
+                            <li>
+                                <strong><?= $escaper->escapeHtml($item['name']) ?></strong>
+                                <span class="mm-eu-w-sku"><?= $escaper->escapeHtml(__('SKU: %1', $item['sku'])) ?></span>
+                                <span class="mm-eu-w-qty">× <?= (int) $item['qty'] ?></span>
+                                <span class="mm-eu-w-amount"><?= $escaper->escapeHtml($item['refund_amount']) ?> <?= $escaper->escapeHtml($req->currency) ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+                <p class="mm-eu-w-existing-total">
+                    <?= $escaper->escapeHtml(__('Estimated refund: %1 %2', $req->refundTotal, $req->currency)) ?>
+                </p>
+                <?php if ($req->cancellable): ?>
+                    <div class="mm-eu-w-existing-actions" data-role="cancel-container">
+                        <button type="button"
+                                class="action secondary"
+                                data-role="reveal-cancel"
+                                data-request-id="<?= (int) $req->requestId ?>">
+                            <?= $escaper->escapeHtml(__('Cancel this withdrawal')) ?>
+                        </button>
+                        <form method="post"
+                              action="<?= $escaper->escapeUrl($actionUrl) ?>"
+                              class="mm-eu-w-existing-confirm"
+                              data-role="cancel-confirm"
+                              hidden>
+                            <?= $block->getBlockHtml('formkey') ?>
+                            <input type="hidden" name="request_id" value="<?= (int) $req->requestId ?>"/>
+                            <?php if ($magicToken !== null): ?>
+                                <input type="hidden" name="t" value="<?= $escaper->escapeHtmlAttr($magicToken) ?>"/>
+                            <?php endif; ?>
+                            <p class="mm-eu-w-existing-confirm-msg">
+                                <?= $escaper->escapeHtml(__('Are you sure? This cannot be undone.')) ?>
+                            </p>
+                            <div class="actions-toolbar">
+                                <button type="submit" class="action primary">
+                                    <?= $escaper->escapeHtml(__('Yes, cancel')) ?>
+                                </button>
+                                <button type="button" class="action secondary" data-role="abort-cancel">
+                                    <?= $escaper->escapeHtml(__('Keep it')) ?>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                <?php endif; ?>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</section>
+<script type="text/javascript" src="<?= $escaper->escapeUrl($block->getViewFileUrl('MageMe_EUWithdrawal::js/existing-withdrawals.js')) ?>" defer></script>

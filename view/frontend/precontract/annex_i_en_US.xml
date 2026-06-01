@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">You have the right to withdraw from this contract within {period_days} days without giving any reason.</section>
+        <section id="period_start">The withdrawal period will expire {period_days} days after the day on which you (or a third party other than the carrier and indicated by you) acquire physical possession of the goods. For digital content delivered without a tangible medium, the period expires 14 days after contract conclusion (unless you waived this right at checkout).</section>
+        <section id="how_to_exercise">To exercise the right of withdrawal, you must inform us — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — of your decision to withdraw from this contract by an unequivocal statement (a letter sent by post, fax, or email). You may use the model withdrawal form below, but it is not obligatory.</section>
+        <section id="effects">If you withdraw from this contract, we will reimburse to you all payments received from you, including the costs of standard delivery (except for the supplementary costs arising if you chose a type of delivery other than the least expensive type of standard delivery offered by us), without undue delay and in any event not later than 14 days from the day on which we are informed about your decision to withdraw. Reimbursement is to your original payment method.</section>
+        <section id="return_address">Goods should be returned to: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MODEL WITHDRAWAL FORM
+(complete and return this form only if you wish to withdraw from the contract)
+
+— To: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— I/We (*) hereby give notice that I/We (*) withdraw from my/our (*) contract of sale of the following goods (*) / for the provision of the following service (*):
+
+— Ordered on (*) / received on (*):
+
+— Name of consumer(s):
+
+— Address of consumer(s):
+
+— Signature of consumer(s) (only if this form is notified on paper):
+
+— Date:
+
+(*) Delete as appropriate.
+
+—
+This is the official model withdrawal form prescribed by Annex I(B) of Directive 2011/83/EU. Use of this form is OPTIONAL — you may also notify us of your decision to withdraw by any other clear statement (letter, fax, or email) sent to the contact above.</annex_ib>
+</config>

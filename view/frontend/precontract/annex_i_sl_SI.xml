@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version SL.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Imate pravico, da brez navedbe razlogov v {period_days} dneh odstopite od te pogodbe.</section>
+        <section id="period_start">Odstopni rok poteče v {period_days} dneh od dne, ko pridobite fizično posest na blagu ali jo pridobi namesto vas tretja oseba, ki ni prevoznik, in jo v ta namen določite vi. Pri digitalni vsebini, ki se ne dostavi na otipljivem nosilcu podatkov, rok poteče 14 dni po sklenitvi pogodbe (razen če ste se tej pravici ob naročilu odpovedali).</section>
+        <section id="how_to_exercise">Za uveljavitev pravice do odstopa nas — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — morate o svoji odločitvi o odstopu od te pogodbe obvestiti z nedvoumno izjavo (npr. s pismom, poslanim po pošti, po telefaksu ali po elektronski pošti). V ta namen lahko uporabite spodaj priloženi vzorčni odstopni obrazec, vendar to ni obvezno.</section>
+        <section id="effects">Če odstopite od te pogodbe, vam brez nepotrebnega odlašanja in v vsakem primeru najpozneje v 14 dneh od dneva prejetja obvestila o vaši odločitvi o odstopu od te pogodbe, povrnemo vsa z vaše strani prejeta plačila, vključno s stroški standardne dostave (razen dodatnih stroškov zaradi izbire vrste dostave, ki ni z naše strani ponujena cenovno najugodnejša standardna oblika dostave). Takšno povračilo bomo izvršili z enakim plačilnim sredstvom, ki ste ga uporabili sami pri izvedbi prvotne transakcije.</section>
+        <section id="return_address">Blago se vrne na naslov: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>VZORČNI ODSTOPNI OBRAZEC
+(ta obrazec izpolnite in pošljite samo, če želite odstopiti od pogodbe)
+
+— Naslovljeno na: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Obveščam/Obveščamo (*) vas, da odstopam/odstopamo (*) od pogodbe za prodajo naslednjega blaga (*)/za zagotovitev naslednje storitve (*):
+
+— Naročeno dne (*)/prejeto dne (*):
+
+— Ime potrošnika(-ov):
+
+— Naslov potrošnika(-ov):
+
+— Podpis potrošnika(-ov) (samo če se obrazec pošlje na papirju):
+
+— Datum:
+
+(*) Po potrebi črtajte.
+
+—
+To je uradni vzorčni odstopni obrazec, določen v Prilogi I, del B Direktive 2011/83/EU. Uporaba tega obrazca je PROSTOVOLJNA — o svoji odločitvi o odstopu od pogodbe nas lahko obvestite tudi s katero koli drugo nedvoumno izjavo (s pismom, telefaksom ali elektronsko pošto), poslano na zgornji naslov.</annex_ib>
+</config>

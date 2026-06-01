@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version ET.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Teil on õigus põhjusi esitamata taganeda käesolevast lepingust {period_days} päeva jooksul.</section>
+        <section id="period_start">Taganemistähtaeg lõpeb {period_days} päeva möödumisel alates päevast, mil teie või kolmas isik, kes ei ole kauba kättetoimetaja ja kelle te olete selleks otstarbeks määranud, on saanud kauba füüsiliselt oma valdusse. Digitaalse infosisu puhul, mida ei edastata füüsilisel andmekandjal, lõpeb tähtaeg 14 päeva pärast lepingu sõlmimist (välja arvatud juhul, kui te olete tellimisel sellest õigusest loobunud).</section>
+        <section id="how_to_exercise">Taganemisõiguse kasutamiseks teavitage meid — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — oma otsusest taganeda käesolevast lepingust ühemõttelise avaldusega (nt posti, faksi või e-postiga saadetud kiri). Te võite selleks kasutada allpool esitatud taganemisteate näidisvormi, kuid see ei ole kohustuslik.</section>
+        <section id="effects">Kui te taganete käesolevast lepingust, tagastame teile kõik teilt saadud maksed, sealhulgas tavalised kättetoimetamiskulud (välja arvatud täiendavad kulud, mis tulenevad teie valitud kättetoimetamisviisist, mis erineb meie pakutud kõige odavamast tavalisest kättetoimetamisviisist) põhjendamatu viivituseta ja igal juhul hiljemalt 14 päeva jooksul alates päevast, mil me saame teada teie otsusest käesolevast lepingust taganeda. Me teeme nimetatud tagasimaksed, kasutades sama makseviisi, mida te kasutasite algses tehingus.</section>
+        <section id="return_address">Kaup tuleb tagastada aadressile: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>TAGANEMISTEATE NÄIDISVORM
+(täitke ja tagastage käesolev vorm üksnes juhul, kui soovite lepingust taganeda)
+
+— Kellele: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Käesolevaga soovin/soovime (*) taganeda lepingust, millega on ostetud järgmine kaup (*) / on tellitud järgmine teenus (*):
+
+— Tellimuse esitamise kuupäev (*) / kättesaamise kuupäev (*):
+
+— Tarbija nimi / tarbijate nimed:
+
+— Tarbija(te) aadress(id):
+
+— Tarbija allkiri / tarbijate allkirjad (ainult juhul, kui käesolev vorm esitatakse paberkandjal):
+
+— Kuupäev:
+
+(*) Mittevajalik maha tõmmata.
+
+—
+See on direktiivi 2011/83/EL I lisa B-osas ettenähtud ametlik taganemisteate näidisvorm. Selle vormi kasutamine on VABATAHTLIK — te võite oma taganemisotsusest meid teavitada ka mis tahes muu ühemõttelise avaldusega (kiri, faks või e-kiri), mis saadetakse ülaltoodud kontaktile.</annex_ib>
+</config>

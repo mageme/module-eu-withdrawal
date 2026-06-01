@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="controller_action_predispatch">
+        <observer name="mageme_eu_withdrawal_guard_disabled"
+                  instance="MageMe\EUWithdrawal\Observer\GuardDisabledModule"/>
+    </event>
+    <event name="controller_action_predispatch_mageme_eu_withdrawal_withdraw_lookup">
+        <observer name="mageme_eu_withdrawal_recaptcha_on_lookup"
+                  instance="MageMe\EUWithdrawal\Observer\ReCaptchaLookupObserver"/>
+    </event>
+    <!--
+        controller_action_predispatch_checkout_index_index server-side
+        fallback (RecordPrecontractDisplayServerSide) moved to
+        MageMe_EUWithdrawalAnnexI (phase-33). The base module has no need for the
+        server-side display fallback because LiveSnapshotResolver does
+        not persist anything.
+    -->
+</config>

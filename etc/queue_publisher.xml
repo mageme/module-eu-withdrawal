@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/publisher.xsd">
+    <publisher topic="eu_withdrawal.receipt.send">
+        <connection name="db" exchange="eu_withdrawal_receipt_exchange"/>
+    </publisher>
+    <publisher topic="eu_withdrawal.waiver_confirmation.send">
+        <connection name="db" exchange="eu_withdrawal_waiver_exchange"/>
+    </publisher>
+</config>

@@ -1,0 +1,156 @@
+// MageMe EUWithdrawal — admin overrides mirroring Magento_Sales order view.
+
+// Two-column layout inside admin__page-section-content, matching
+// .order-information / .order-account-information on sales/order/view.
+.mm-eu-w-col-left,
+.mm-eu-w-col-right {
+    float: left;
+    width: 49%;
+}
+
+.mm-eu-w-col-right {
+    float: right;
+}
+
+.admin__page-section-content::after {
+    content: '';
+    display: block;
+    clear: both;
+}
+
+// Items table — size and spacing consistent with order view "Items Ordered".
+.mm-eu-w-items-table {
+    width: 100%;
+}
+
+.mm-eu-w-items-table th {
+    border-top: 0;
+}
+
+.mm-eu-w-items-table tfoot tr,
+.mm-eu-w-totals-table tr.grand_total th,
+.mm-eu-w-totals-table tr.grand_total td {
+    font-weight: 600;
+}
+
+// Totals table on the right side, visually matches order view's Order Totals.
+.mm-eu-w-totals-table {
+    width: 100%;
+}
+
+.mm-eu-w-totals-table th {
+    font-weight: 400;
+    text-align: left;
+}
+
+.mm-eu-w-totals-table td {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.mm-eu-w-totals-table tr.grand_total th,
+.mm-eu-w-totals-table tr.grand_total td {
+    border-top: 0.1rem solid #e3e3e3;
+    padding-top: 1rem;
+}
+
+// Comments/Notes list — mirrors order view's Comments History.
+.mm-eu-w-notes-hint {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.mm-eu-w-note-form {
+    margin-bottom: 2rem;
+}
+
+.mm-eu-w-col-left .admin__field-control textarea {
+    margin-bottom: 1rem;
+}
+
+.mm-eu-w-notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mm-eu-w-note-item {
+    padding: 1rem 1.5rem;
+    border-left: 0.3rem solid #006bb4;
+    background: #fbfbfb;
+    margin-bottom: 0.8rem;
+}
+
+.mm-eu-w-note-meta {
+    color: #666;
+    font-size: 1.2rem;
+    margin-bottom: 0.4rem;
+}
+
+.mm-eu-w-note-by {
+    margin-left: 1rem;
+}
+
+.mm-eu-w-note-text {
+    font-size: 1.3rem;
+    color: #222;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.mm-eu-w-no-notes {
+    color: #888;
+    padding: 1rem 0;
+}
+
+// Status badges in the request listing grid. Palette mirrors the Hyva
+// storefront pill (sales/order/withdrawals_section.phtml) using the
+// equivalent Tailwind 3 default-palette hex pairs so the same status
+// reads identically on the front and in admin.
+.mageme-eu-w-status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.9rem;
+    border-radius: 5px;
+    border: 1px solid #e5e7eb; // gray-200
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+    min-width: 11rem;
+    text-align: center;
+    box-sizing: border-box;
+    background: #f3f4f6; // gray-100
+    color: #374151;      // gray-700
+}
+
+.mageme-eu-w-status-badge--pending {
+    background: #fef3c7; // amber-100
+    border-color: #fde68a; // amber-200
+    color: #92400e;      // amber-800
+}
+
+.mageme-eu-w-status-badge--approved {
+    background: #d1fae5; // emerald-100
+    border-color: #a7f3d0; // emerald-200
+    color: #065f46;      // emerald-800
+}
+
+.mageme-eu-w-status-badge--denied {
+    background: #fee2e2; // red-100
+    border-color: #fecaca; // red-200
+    color: #991b1b;      // red-800
+}
+
+.mageme-eu-w-status-badge--cancelled {
+    background: #e5e7eb; // gray-200
+    border-color: #d1d5db; // gray-300
+    color: #374151;      // gray-700
+}
+
+.mageme-eu-w-status-badge--anonymised {
+    background: #f3f4f6; // gray-100
+    border-color: #d1d5db; // gray-300
+    color: #6b7280;      // gray-500
+}

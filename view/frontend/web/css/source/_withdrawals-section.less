@@ -1,0 +1,391 @@
+// EU Withdrawal — sales/order/view section.
+// Renders above the Items Ordered table on the storefront order-view page:
+// a deadline + start-CTA card followed by an optional history list with
+// inline expand and self-cancel.
+//
+// Reuses the base typography / radius / colour tokens from `_module.less`.
+
+.column.main .mm-eu-w-section {
+    font-family: @mm-eu-w-font-stack;
+    color: @mm-eu-w-text;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0 0 24px;
+    -webkit-font-smoothing: antialiased;
+}
+
+// ---- Deadline card ----
+.column.main .mm-eu-w-deadline-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: @mm-eu-w-info-bg;
+    border: 1px solid @mm-eu-w-info-border;
+    border-radius: @mm-eu-w-radius-lg;
+    padding: 18px 22px;
+    margin: 0 0 16px;
+    box-sizing: border-box;
+}
+.column.main .mm-eu-w-deadline-card--pending,
+.column.main .mm-eu-w-deadline-card--expired,
+.column.main .mm-eu-w-deadline-card--excluded {
+    background: @mm-eu-w-bg-subtle;
+    border-color: @mm-eu-w-border;
+}
+.column.main .mm-eu-w-deadline-card--pending .mm-eu-w-deadline-icon,
+.column.main .mm-eu-w-deadline-card--expired .mm-eu-w-deadline-icon,
+.column.main .mm-eu-w-deadline-card--excluded .mm-eu-w-deadline-icon {
+    color: @mm-eu-w-text-muted;
+}
+.column.main .mm-eu-w-deadline-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: @mm-eu-w-primary;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.column.main .mm-eu-w-deadline-body {
+    flex: 1;
+    min-width: 0;
+}
+.column.main .mm-eu-w-deadline-body h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: @mm-eu-w-text;
+    line-height: 1.3;
+}
+.column.main .mm-eu-w-deadline-body p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: @mm-eu-w-text;
+}
+.column.main .mm-eu-w-deadline-body p time {
+    font-weight: 600;
+    color: @mm-eu-w-text;
+}
+.column.main .mm-eu-w-deadline-cite {
+    color: @mm-eu-w-text-muted;
+    font-size: 12px;
+    margin-left: 4px;
+}
+.column.main .mm-eu-w-deadline-hint {
+    margin-top: 4px !important;
+    color: @mm-eu-w-text-muted;
+    font-size: 13px;
+}
+.column.main .mm-eu-w-deadline-cta {
+    flex-shrink: 0;
+}
+.column.main a.mm-eu-w-start,
+.column.main .mm-eu-w-start {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: @mm-eu-w-primary;
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: @mm-eu-w-radius;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+    border: 1px solid @mm-eu-w-primary;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+}
+.column.main a.mm-eu-w-start:hover,
+.column.main .mm-eu-w-start:hover {
+    background: @mm-eu-w-primary-dark;
+    border-color: @mm-eu-w-primary-dark;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+// ---- History card ----
+.column.main .mm-eu-w-history {
+    background: #ffffff;
+    border: 1px solid @mm-eu-w-border;
+    border-radius: @mm-eu-w-radius-lg;
+    padding: 16px 20px;
+    margin: 0 0 24px;
+    box-sizing: border-box;
+}
+.column.main .mm-eu-w-history-header {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid @mm-eu-w-border;
+    margin-bottom: 8px;
+}
+.column.main .mm-eu-w-history-header .title {
+    font-size: 15px;
+    font-weight: 600;
+    color: @mm-eu-w-text;
+}
+.column.main .mm-eu-w-history-header .count {
+    color: @mm-eu-w-text-muted;
+    font-size: 14px;
+}
+.column.main .mm-eu-w-history-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.column.main .mm-eu-w-history-row {
+    border-top: 1px solid @mm-eu-w-border;
+    padding: 14px 0;
+}
+.column.main .mm-eu-w-history-row:first-child {
+    border-top: 0;
+}
+.column.main .mm-eu-w-row-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+// Status pill — shared reusable
+.column.main .mm-eu-w-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+.column.main .mm-eu-w-rid {
+    font-family: 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: @mm-eu-w-text;
+}
+.column.main .mm-eu-w-when {
+    font-size: 13px;
+    color: @mm-eu-w-text-muted;
+}
+.column.main .mm-eu-w-meta {
+    font-size: 13px;
+    color: @mm-eu-w-text-muted;
+}
+
+.column.main .mm-eu-w-row-actions {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.column.main .mm-eu-w-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid @mm-eu-w-border;
+    border-radius: 50%;
+    background: #ffffff;
+    color: @mm-eu-w-text-muted;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.18s ease, background 0.15s, border-color 0.15s;
+}
+.column.main .mm-eu-w-toggle:hover {
+    background: @mm-eu-w-bg-subtle;
+    color: @mm-eu-w-text;
+}
+.column.main .mm-eu-w-toggle.is-open {
+    transform: rotate(180deg);
+}
+
+.column.main button.mm-eu-w-cancel,
+.column.main .mm-eu-w-cancel {
+    background: #ffffff;
+    color: @mm-eu-w-text;
+    border: 1px solid @mm-eu-w-border;
+    border-radius: @mm-eu-w-radius;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.column.main button.mm-eu-w-cancel:hover,
+.column.main .mm-eu-w-cancel:hover {
+    background: @mm-eu-w-bg-subtle;
+    border-color: darken(@mm-eu-w-border, 10%);
+    color: @mm-eu-w-danger;
+}
+
+// ---- Detail (expanded) panel ----
+.column.main .mm-eu-w-row-detail {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: @mm-eu-w-bg-subtle;
+    border-radius: @mm-eu-w-radius;
+}
+.column.main .mm-eu-w-detail-reason-card {
+    background: #ffffff;
+    border: 1px solid @mm-eu-w-border;
+    border-radius: @mm-eu-w-radius;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+}
+.column.main .mm-eu-w-detail-reason-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: @mm-eu-w-text;
+    margin-bottom: 4px;
+}
+.column.main .mm-eu-w-detail-reason-text {
+    font-size: 13px;
+    color: @mm-eu-w-text;
+    line-height: 1.5;
+}
+.column.main .mm-eu-w-detail-reason-text.is-secondary {
+    color: @mm-eu-w-text-muted;
+    margin-top: 4px;
+}
+
+.column.main .mm-eu-w-detail-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.column.main .mm-eu-w-detail-item {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr) 60px 140px 80px;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid @mm-eu-w-border;
+    font-size: 13px;
+    color: @mm-eu-w-text;
+}
+.column.main .mm-eu-w-detail-item:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+.column.main .mm-eu-w-detail-thumb {
+    width: 56px;
+    height: 56px;
+    border: 1px solid @mm-eu-w-border;
+    border-radius: @mm-eu-w-radius;
+    background: #ffffff;
+    overflow: hidden;
+    display: inline-block;
+}
+.column.main .mm-eu-w-detail-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.column.main .mm-eu-w-detail-name {
+    min-width: 0;
+}
+.column.main .mm-eu-w-detail-name strong {
+    display: block;
+    font-weight: 600;
+    color: @mm-eu-w-text;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.column.main .mm-eu-w-detail-sku {
+    color: @mm-eu-w-text-muted;
+    font-size: 11px;
+    margin-top: 2px;
+    display: block;
+}
+.column.main .mm-eu-w-detail-qty {
+    color: @mm-eu-w-text-muted;
+    font-size: 12px;
+    text-align: center;
+}
+.column.main .mm-eu-w-detail-reason {
+    color: @mm-eu-w-text-muted;
+    font-size: 12px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.column.main .mm-eu-w-detail-refund {
+    font-weight: 600;
+    color: @mm-eu-w-text;
+    text-align: right;
+}
+
+// ---- Mobile (≤640 px) ----
+@media (max-width: 640px) {
+    .column.main .mm-eu-w-deadline-card {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: left;
+    }
+    .column.main .mm-eu-w-deadline-cta { width: 100%; }
+    .column.main a.mm-eu-w-start,
+    .column.main .mm-eu-w-start { width: 100%; }
+    .column.main .mm-eu-w-row-summary { row-gap: 8px; }
+    .column.main .mm-eu-w-row-actions { margin-left: 0; width: 100%; justify-content: flex-end; }
+    .column.main .mm-eu-w-detail-item {
+        grid-template-columns: 48px minmax(0, 1fr);
+        grid-auto-rows: auto;
+    }
+    .column.main .mm-eu-w-detail-qty,
+    .column.main .mm-eu-w-detail-reason,
+    .column.main .mm-eu-w-detail-refund {
+        grid-column: 2;
+        text-align: left;
+    }
+}
+
+// Conditional caveats (Art. 16(e)/(i)/(m)) shown under the deadline message
+.column.main .mm-eu-w-caveats {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+}
+.column.main .mm-eu-w-caveat {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: #fff8e6;
+    border: 1px solid #fde7b0;
+    border-left: 3px solid #f59e0b;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: #5b6471;
+}
+.column.main .mm-eu-w-caveat:last-child {
+    margin-bottom: 0;
+}
+.column.main .mm-eu-w-caveat-icon {
+    flex: 0 0 auto;
+    color: #f59e0b;
+    font-size: 16px;
+    line-height: 1;
+    padding-top: 2px;
+}
+.column.main .mm-eu-w-caveat-text {
+    flex: 1;
+}
+.column.main .mm-eu-w-caveat-cite {
+    color: #9ca3af;
+    font-size: 12px;
+    margin-left: 6px;
+    white-space: nowrap;
+}

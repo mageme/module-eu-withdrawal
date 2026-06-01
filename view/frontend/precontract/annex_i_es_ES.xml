@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version ES.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Tiene usted derecho a desistir del presente contrato en un plazo de {period_days} días sin necesidad de justificación.</section>
+        <section id="period_start">El plazo de desistimiento expirará a los {period_days} días del día que usted o un tercero por usted indicado, distinto del transportista, adquiera la posesión material de los bienes. En caso de contenido digital que no se preste en un soporte material, el plazo expirará a los 14 días de la celebración del contrato (salvo que haya renunciado a este derecho en el momento de la compra).</section>
+        <section id="how_to_exercise">Para ejercer el derecho de desistimiento, deberá usted notificarnos — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — su decisión de desistir del contrato a través de una declaración inequívoca (por ejemplo, una carta enviada por correo postal, fax o correo electrónico). Podrá utilizar el modelo de formulario de desistimiento que figura a continuación, aunque su uso no es obligatorio.</section>
+        <section id="effects">En caso de desistimiento por su parte, le devolveremos todos los pagos recibidos de usted, incluidos los gastos de entrega ordinaria (con la excepción de los gastos adicionales resultantes de la elección por su parte de una modalidad de entrega diferente a la modalidad menos costosa de entrega ordinaria que ofrezcamos) sin ninguna demora indebida y, en todo caso, a más tardar 14 días a partir de la fecha en la que se nos informe de su decisión de desistir del presente contrato. Procederemos a efectuar dicho reembolso utilizando el mismo medio de pago empleado por usted para la transacción inicial.</section>
+        <section id="return_address">Los bienes deberán devolverse a la dirección: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MODELO DE FORMULARIO DE DESISTIMIENTO
+(solo debe cumplimentar y enviar el presente formulario si desea desistir del contrato)
+
+— A la atención de: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Por la presente le comunico/comunicamos (*) que desisto de mi/desistimos de nuestro (*) contrato de venta del siguiente bien/prestación del siguiente servicio (*):
+
+— Pedido el/recibido el (*):
+
+— Nombre del consumidor o de los consumidores:
+
+— Dirección del consumidor o de los consumidores:
+
+— Firma del consumidor o de los consumidores (solo si el presente formulario se presenta en papel):
+
+— Fecha:
+
+(*) Táchese lo que no proceda.
+
+—
+Este es el modelo oficial de formulario de desistimiento previsto en el anexo I, letra B, de la Directiva 2011/83/UE. La utilización de este formulario es FACULTATIVA — también puede comunicarnos su decisión de desistir mediante cualquier otra declaración inequívoca (carta, fax o correo electrónico) enviada al contacto indicado anteriormente.</annex_ib>
+</config>

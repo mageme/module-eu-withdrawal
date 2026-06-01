@@ -1,0 +1,106 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/**
+ * CSP-friendly replacement for Magento_Backend::widget/tabs.phtml.
+ * The stock template relies on SecureHtmlRenderer-generated nonced <script>
+ * tags to (1) hide tab-content divs except the active one and (2) initialise
+ * the mage/backend/tabs jQuery widget. This dev environment's CSP config does
+ * not inject nonces, so the inline scripts are blocked and tabs render without
+ * click-switching. This template replaces the inline scripts with a data-mage-init
+ * attribute + CSS-based initial-hide, which is CSP-compliant by design.
+ *
+ * @var \Magento\Backend\Block\Widget\Tabs $block
+ * @var array<int, \Magento\Framework\DataObject> $tabs
+ */
+
+if (empty($tabs)) {
+    return;
+}
+
+$tabsId = $block->getId();
+$initConfig = [
+    'active'          => $block->getActiveTabId(),
+    'destination'     => '#' . $block->getDestElementId(),
+    'shadowTabs'      => json_decode((string) $block->getAllShadowTabs(), true) ?: new stdClass(),
+    'tabsBlockPrefix' => $tabsId . '_',
+    'tabIdArgument'   => 'active_tab',
+];
+$mageInit = [
+    'mage/backend/tabs'                             => $initConfig,
+    'MageMe_EUWithdrawal/js/edit-form-submit-guard' => new stdClass(),
+];
+?>
+<div class="admin__page-nav"
+     data-role="container"
+     id="<?= $escaper->escapeHtmlAttr($tabsId) ?>"
+     data-mage-init='<?= /* @noEscape */ $escaper->escapeHtmlAttr(json_encode($mageInit)) ?>'>
+    <?php if ($block->getTitle()): ?>
+        <div class="admin__page-nav-title" data-role="title" <?= /* @noEscape */ $block->getUiId('title') ?>>
+            <strong><?= $escaper->escapeHtml($block->getTitle()) ?></strong>
+            <span data-role="title-messages" class="admin__page-nav-title-messages"></span>
+        </div>
+    <?php endif; ?>
+    <ul <?= /* @noEscape */ $block->getUiId('tab', $tabsId) ?>
+        class="<?= /* @noEscape */ $block->getIsHoriz() ? 'tabs-horiz' : 'tabs admin__page-nav-items' ?>">
+        <?php foreach ($tabs as $_tab): ?>
+            <?php if (!$block->canShowTab($_tab)) { continue; } ?>
+            <?php
+            $isAjax = preg_match('/\s?ajax\s?/', (string) $_tab->getClass());
+            $tabId = $block->getTabId($_tab);
+            $tabHref = $block->getTabUrl($_tab) === '#' ? '#' . $tabId . '_content' : $block->getTabUrl($_tab);
+            $tabClass = 'tab-item-link ' . $block->getTabClass($_tab) . ($isAjax ? ' notloaded' : '');
+            $tabType = (!$isAjax && $block->getTabUrl($_tab) !== '#') ? 'link' : '';
+            $liClass = 'admin__page-nav-item';
+            if ($block->getTabIsHidden($_tab)) {
+                $liClass .= ' no-display';
+            }
+            ?>
+            <li class="<?= $escaper->escapeHtmlAttr($liClass) ?>"
+                id="<?= $escaper->escapeHtmlAttr($tabId) ?>"
+                <?= /* @noEscape */ $block->getUiId('tab', 'item', $_tab->getId()) ?>>
+                <a href="<?= $escaper->escapeUrl($tabHref) ?>"
+                   id="<?= $escaper->escapeHtmlAttr($tabId) ?>"
+                   name="<?= $escaper->escapeHtmlAttr($block->getTabId($_tab, false)) ?>"
+                   title="<?= $escaper->escapeHtmlAttr($block->getTabTitle($_tab)) ?>"
+                   class="admin__page-nav-link <?= $escaper->escapeHtmlAttr($tabClass) ?>"
+                   data-tab-type="<?= $escaper->escapeHtmlAttr($tabType) ?>"
+                   <?= /* @noEscape */ $block->getUiId('tab', 'link', $_tab->getId()) ?>>
+                    <span><?= $escaper->escapeHtml($block->getTabLabel($_tab)) ?></span>
+                    <span class="admin__page-nav-item-messages" data-role="item-messages">
+                        <span class="admin__page-nav-item-message _changed">
+                            <span class="admin__page-nav-item-message-icon"></span>
+                            <span class="admin__page-nav-item-message-tooltip">
+                                <?= $escaper->escapeHtml(__(
+                                    'Changes have been made to this section that have not been saved.'
+                                )) ?>
+                            </span>
+                        </span>
+                        <span class="admin__page-nav-item-message _error">
+                            <span class="admin__page-nav-item-message-icon"></span>
+                            <span class="admin__page-nav-item-message-tooltip">
+                                <?= $escaper->escapeHtml(__(
+                                    'This tab contains invalid data. Please resolve this before saving.'
+                                )) ?>
+                            </span>
+                        </span>
+                        <span class="admin__page-nav-item-message-loader">
+                            <span class="spinner">
+                                <span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span>
+                            </span>
+                        </span>
+                    </span>
+                </a>
+                <div id="<?= $escaper->escapeHtmlAttr($tabId) ?>_content"
+                     class="mm-eu-w-tab-content"
+                     style="<?= $tabId === $block->getActiveTabId() ? '' : 'display:none' ?>"
+                     <?= /* @noEscape */ $block->getUiId('tab', 'content', $_tab->getId()) ?>>
+                    <?= /* @noEscape */ $block->getTabContent($_tab) ?>
+                </div>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+</div>

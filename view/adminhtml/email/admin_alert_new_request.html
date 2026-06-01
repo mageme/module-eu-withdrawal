@@ -1,0 +1,16 @@
+<!--@subject {{trans "[Withdrawal] New request %request_increment_id · Order #%order_increment_id · %refund_total" request_increment_id=$request_increment_id order_increment_id=$order_increment_id refund_total=$refund_total_formatted}} @-->
+<!--@vars {
+    "var request_increment_id":"Withdrawal request increment",
+    "var order_increment_id":"Order increment",
+    "var customer_email":"Customer email",
+    "var refund_total_formatted":"Formatted refund total"
+} @-->
+
+<h1>{{trans "New Withdrawal Request"}}</h1>
+
+<p>{{trans "A new withdrawal request was just submitted."}}</p>
+
+<p><strong>{{trans "Request:"}}</strong> {{var request_increment_id}}</p>
+<p><strong>{{trans "Order:"}}</strong> #{{var order_increment_id}}</p>
+<p><strong>{{trans "Customer:"}}</strong> <a href="mailto:{{var customer_email}}">{{var customer_email}}</a></p>
+<p><strong>{{trans "Refund Total:"}}</strong> {{var refund_total_formatted}}</p>

@@ -1,0 +1,36 @@
+<!--@subject {{trans "Confirmation de renonciation au contenu numérique — Commande %increment_id" increment_id=$waiver.order_increment_id}}@-->
+<!--@vars {
+    "var waiver.order_increment_id":"Numéro de commande",
+    "var waiver.customer_name":"Nom du client",
+    "var waiver.customer_email":"Adresse e-mail du client",
+    "var waiver.items":"Contenus numériques couverts par la renonciation",
+    "var waiver.consent_snapshot":"Instantané du texte de consentement",
+    "var waiver.ack_snapshot":"Instantané du texte de reconnaissance",
+    "var waiver.consent_at":"Horodatage du consentement",
+    "var waiver.ack_at":"Horodatage de la reconnaissance",
+    "var waiver.waiver_reference":"Référence de renonciation"
+} @-->
+<html><body>
+<p>{{trans "Cher/Chère %name," name=$waiver.customer_name}}</p>
+<p>{{trans "Ceci est la confirmation sur un support durable de votre consentement exprès à commencer l'exécution des contenus numériques suivants, et de votre reconnaissance que vous perdez ainsi votre droit de rétractation (Art. L. 221-28 Code consommation)."}}</p>
+
+<h3>{{trans "Contenus numériques couverts par la présente renonciation"}}</h3>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li><strong>{{var item.name}}</strong> ({{var item.sku}}) &mdash; {{var item.product_type}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+
+<h3>{{trans "Votre consentement exprès"}}</h3>
+<blockquote>{{var waiver.consent_snapshot}}</blockquote>
+<p><small>{{trans "Consenti le :"}} {{var waiver.consent_at}}</small></p>
+
+<h3>{{trans "Votre reconnaissance de la perte du droit de rétractation"}}</h3>
+<blockquote>{{var waiver.ack_snapshot}}</blockquote>
+<p><small>{{trans "Reconnu le :"}} {{var waiver.ack_at}}</small></p>
+
+<p>{{trans "Référence de renonciation :"}} <code>{{var waiver.waiver_reference}}</code></p>
+<p><small>{{trans "Base légale : Art. L. 221-28 Code consommation / Art. 16(m) Directive 2011/83/UE."}}</small></p>
+</body></html>

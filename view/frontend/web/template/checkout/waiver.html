@@ -1,0 +1,77 @@
+<li id="checkout-step-eu-withdrawal-waiver-step"
+    role="presentation"
+    class="checkout-eu-withdrawal-waiver"
+    data-bind="fadeVisible: isVisible">
+    <div class="step-title" data-role="title" data-bind="i18n: 'Digital content waiver'"></div>
+    <div id="checkout-step-eu-withdrawal-waiver-step-content"
+         class="step-content"
+         data-role="content">
+        <div class="mageme-waiver-card">
+            <div class="mageme-waiver-card-header">
+                <svg class="mageme-waiver-shield" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <circle cx="12" cy="16" r="0.5"></circle>
+                </svg>
+                <div>
+                    <h3 class="mageme-waiver-title" data-bind="i18n: 'Digital content waiver'"></h3>
+                    <p class="mageme-waiver-subhead" data-bind="i18n: 'We need your explicit consent before you can buy this digital item — please read both points carefully.'"></p>
+                </div>
+            </div>
+
+            <div class="mageme-waiver-products" data-bind="foreach: items">
+                <span class="mageme-waiver-product-chip">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span data-bind="text: name"></span>
+                </span>
+            </div>
+
+            <label class="mageme-waiver-row">
+                <input type="checkbox" class="mageme-waiver-checkbox" data-bind="checked: consentExpress"/>
+                <span class="mageme-waiver-row-icon mageme-waiver-row-icon-ok" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
+                </span>
+                <span class="mageme-waiver-row-text mageme-waiver-row-text--emphasis"
+                      data-bind="i18n: 'I expressly consent to begin performance of the digital content before the withdrawal period expires.'"></span>
+            </label>
+
+            <label class="mageme-waiver-row">
+                <input type="checkbox" class="mageme-waiver-checkbox" data-bind="checked: lossAck"/>
+                <span class="mageme-waiver-row-icon mageme-waiver-row-icon-warn" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </span>
+                <span class="mageme-waiver-row-text mageme-waiver-row-text--emphasis"
+                      data-bind="i18n: 'I acknowledge that by giving this consent I lose my right of withdrawal once performance has begun (Art. 16(m) CRD).'"></span>
+            </label>
+
+            <p class="mageme-waiver-microcopy" data-bind="i18n: 'We log this consent with your IP and timestamp for our audit record.'"></p>
+
+            <div class="mageme-waiver-actions">
+                <button type="button"
+                        class="action primary checkout mageme-waiver-continue"
+                        data-bind="enable: canProceed, click: saveAndProceed">
+                    <span data-bind="i18n: 'Continue'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</li>

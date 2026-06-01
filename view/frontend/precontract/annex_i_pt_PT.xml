@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version PT.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Tem direito à retractação do presente contrato no prazo de {period_days} dias de calendário, sem necessidade de indicar qualquer motivo.</section>
+        <section id="period_start">O prazo de retractação expira {period_days} dias a contar do dia seguinte ao dia em que adquire ou um terceiro por si indicado, que não seja o transportador, adquire a posse física dos bens. No caso de conteúdos digitais que não sejam fornecidos num suporte material, o prazo expira 14 dias após a celebração do contrato (salvo se renunciou a este direito no momento da encomenda).</section>
+        <section id="how_to_exercise">A fim de exercer o seu direito de retractação, tem de nos comunicar — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — a sua decisão de retractação do presente contrato por meio de uma declaração inequívoca (por exemplo, carta enviada pelo correio, fax ou correio electrónico). Pode utilizar o modelo de formulário de retractação abaixo, mas tal não é obrigatório.</section>
+        <section id="effects">Em caso de retractação do presente contrato, ser-lhe-ão reembolsados todos os pagamentos efectuados, incluindo os custos de envio normal (com excepção de custos suplementares resultantes da sua escolha de uma modalidade de envio diferente da modalidade menos onerosa de envio normal por nós oferecida), sem demora injustificada e, em qualquer caso, o mais tardar 14 dias a contar da data em que formos informados da sua decisão de retractação do presente contrato. Efectuamos esses reembolsos usando o mesmo meio de pagamento que usou na transacção inicial.</section>
+        <section id="return_address">Os bens devem ser devolvidos para o endereço: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MODELO DE FORMULÁRIO DE RETRACTAÇÃO
+(só deve preencher e devolver o presente formulário se quiser retractar-se do contrato)
+
+— Para: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Pela presente comunico/comunicamos (*) que me retracto/nos retractamos (*) do meu/nosso (*) contrato de compra e venda relativo ao seguinte bem/para a prestação do seguinte serviço (*):
+
+— Solicitado em (*)/recebido em (*):
+
+— Nome do(s) consumidor(es):
+
+— Endereço do(s) consumidor(es):
+
+— Assinatura do(s) consumidor(es) (só no caso de o presente formulário ser notificado em papel):
+
+— Data:
+
+(*) Riscar o que não interessa.
+
+—
+Este é o modelo oficial de formulário de retractação previsto no anexo I, parte B, da Directiva 2011/83/UE. A utilização deste formulário é FACULTATIVA — pode também comunicar-nos a sua decisão de retractação por meio de qualquer outra declaração inequívoca (carta, fax ou correio electrónico) enviada para o contacto acima indicado.</annex_ib>
+</config>

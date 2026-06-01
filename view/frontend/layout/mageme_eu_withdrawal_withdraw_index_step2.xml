@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="content">
+            <block class="MageMe\EUWithdrawal\Block\Withdraw\ProgressStepper"
+                   name="mageme_eu_withdrawal.stepper.step2"
+                   template="MageMe_EUWithdrawal::withdraw/progress_stepper.phtml">
+                <arguments>
+                    <argument name="active_step" xsi:type="number">2</argument>
+                </arguments>
+            </block>
+            <block class="MageMe\EUWithdrawal\Block\Withdraw\Form"
+                   name="mageme_eu_withdrawal.form"
+                   cacheable="false"
+                   template="MageMe_EUWithdrawal::withdraw/form.phtml">
+                <block class="MageMe\EUWithdrawal\Block\Withdraw\OrderMeta"
+                       name="mageme_eu_withdrawal.form.order_meta"
+                       as="order_meta"
+                       template="MageMe_EUWithdrawal::withdraw/order_meta.phtml"/>
+                <block class="MageMe\EUWithdrawal\Block\Withdraw\ExistingWithdrawals"
+                       name="mageme_eu_withdrawal.form.existing_withdrawals"
+                       as="existing_withdrawals"
+                       template="MageMe_EUWithdrawal::withdraw/existing_withdrawals.phtml"/>
+                <block class="MageMe\EUWithdrawal\Block\Withdraw\ItemSelector"
+                       name="mageme_eu_withdrawal.form.item_selector"
+                       as="item_selector"
+                       template="MageMe_EUWithdrawal::withdraw/item_selector.phtml"/>
+                <block class="MageMe\EUWithdrawal\Block\Withdraw\ReturnSummary"
+                       name="mageme_eu_withdrawal.form.return_summary"
+                       as="return_summary"
+                       template="MageMe_EUWithdrawal::withdraw/return_summary.phtml"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

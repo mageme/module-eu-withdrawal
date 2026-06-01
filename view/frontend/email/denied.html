@@ -1,0 +1,72 @@
+<!--@subject {{var subject_text}} @-->
+<!--@vars {
+    "var request_increment_id":"Withdrawal number",
+    "var order_increment_id":"Order number",
+    "var consumer_name":"Consumer name",
+    "var denial_reason":"Denial reason",
+    "var support_email":"Support email",
+    "var email_header_html":"Branded email header",
+    "var email_footer_html":"Branded email footer"
+} @-->
+{{var email_header_html|raw}}
+
+<!-- Hero card — denied (amber accent) -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffbeb;border-radius:10px;margin:0 0 24px;">
+    <tr><td align="center" style="padding:36px 24px 32px;">
+        <div style="display:inline-block;width:64px;height:64px;line-height:64px;background:#f59e0b;color:#ffffff;border-radius:50%;font-size:34px;font-weight:700;text-align:center;font-family:Helvetica,Arial,sans-serif;">!</div>
+        <h1 class="hero-title" style="margin:18px 0 8px;font-size:24px;font-weight:700;color:#78350f;line-height:1.25;">{{trans "We can't process this withdrawal"}}</h1>
+        <p style="margin:0 auto 24px;color:#475569;font-size:14px;line-height:1.55;max-width:440px;">{{trans "Hi %name, after reviewing your withdrawal request we're unable to approve it." name=$consumer_name}}</p>
+        <a href="mailto:{{var support_email}}" style="display:inline-block;background:#1e293b;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">{{trans "Contact support"}}</a>
+    </td></tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+    <tr><td style="font-size:13px;font-weight:600;color:#0f172a;padding:0 0 12px;">{{trans "Request details"}}</td></tr>
+    <tr><td style="border-top:1px solid #e5e7eb;padding-top:12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;width:50%;">{{trans "Withdrawal number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">{{var request_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Order number"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;font-weight:600;">#{{var order_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Reviewed on"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var event_date_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Refund requested"}}</td>
+                <td style="padding:6px 0;font-size:13px;color:#0f172a;text-align:right;">{{var refund_total_formatted}}</td>
+            </tr>
+            <tr>
+                <td style="padding:6px 0;font-size:12px;color:#6b7280;">{{trans "Decision"}}</td>
+                <td style="padding:6px 0;font-size:13px;text-align:right;"><span style="display:inline-block;background:#fee2e2;color:#991b1b;font-size:11px;font-weight:600;padding:3px 10px;border-radius:10px;">{{trans "Denied"}}</span></td>
+            </tr>
+        </table>
+    </td></tr>
+</table>
+
+{{var items_html|raw}}
+
+{{depend denial_reason}}
+<!-- Reason card — only when denial reason supplied -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fafafa;border:1px solid #e5e7eb;border-radius:8px;margin:0 0 16px;">
+    <tr><td style="padding:16px 18px;">
+        <div style="font-size:12px;font-weight:600;color:#0f172a;margin:0 0 6px;">{{trans "Reason from our team"}}</div>
+        <div style="font-size:13px;color:#475569;font-style:italic;line-height:1.55;">{{var denial_reason}}</div>
+    </td></tr>
+</table>
+{{/depend}}
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f9fafb;border-radius:8px;margin:0 0 12px;">
+    <tr>
+        <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#475569;">&#9993;</td>
+        <td style="padding:14px 18px 14px 0;font-size:13px;color:#334155;line-height:1.5;">
+            <strong>{{trans "Need help?"}}</strong> {{trans "If you'd like to discuss this decision, our team is here to help. Reply to this email or use the button above."}}
+        </td>
+    </tr>
+</table>
+
+{{var email_footer_html|raw}}

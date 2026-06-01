@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd"
+      layout="1column">
+    <head>
+        <title>Withdrawal submitted</title>
+        <meta name="robots" content="NOINDEX,NOFOLLOW"/>
+        <css src="MageMe_EUWithdrawal::css/withdrawal-form.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="MageMe\EUWithdrawal\Block\Withdraw\Success"
+                   name="mageme_eu_withdrawal.success"
+                   template="MageMe_EUWithdrawal::withdraw/success.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

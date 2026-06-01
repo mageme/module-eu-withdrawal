@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version FI.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Teillä on oikeus peruuttaa tämä sopimus {period_days} päivän kuluessa syytä ilmoittamatta.</section>
+        <section id="period_start">Peruuttamisen määräaika päättyy {period_days} päivän kuluttua siitä, kun te olette saanut tai osoittamanne kolmas osapuoli, joka ei ole rahdinkuljettaja, on saanut tavarat fyysisesti hallintaansa. Sellaisen digitaalisen sisällön osalta, jota ei toimiteta aineellisella välineellä, määräaika päättyy 14 päivän kuluttua sopimuksen tekemisestä (paitsi jos olette luopunut tästä oikeudesta tilauksen yhteydessä).</section>
+        <section id="how_to_exercise">Peruuttamisoikeuden käyttämiseksi teidän on ilmoitettava meille — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — päätöksestänne peruuttaa sopimus yksiselitteisellä ilmoituksella (esimerkiksi kirjeellä postitse, faksilla tai sähköpostilla). Voitte käyttää alla olevaa malliperuuttamislomaketta, mutta mallilomakkeen käyttö ei ole pakollista.</section>
+        <section id="effects">Jos peruutatte tämän sopimuksen, palautamme teille kaikki teiltä saamamme maksut, myös vakiotoimituskustannukset (paitsi lisäkustannuksia siitä, että olette valinnut tarjoamastamme edullisimmasta vakiotoimitustavasta poikkeavan toimitustavan), ilman aiheetonta viivytystä ja joka tapauksessa viimeistään 14 päivän kuluttua päivästä, jona saamme tietää päätöksestänne peruuttaa sopimus. Suoritamme palautuksen sillä maksuvälineellä, jota olette käyttänyt alkuperäisessä liiketoimessa.</section>
+        <section id="return_address">Tavarat on palautettava osoitteeseen: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MALLIPERUUTTAMISLOMAKE
+(täyttäkää ja palauttakaa tämä lomake vain siinä tapauksessa, että haluatte peruuttaa sopimuksen)
+
+— Vastaanottaja: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Ilmoitan/Ilmoitamme (*), että haluan/haluamme (*) peruuttaa tekemäni/tekemämme (*) sopimuksen, joka koskee seuraavien tavaroiden toimittamista (*) / seuraavan palvelun suorittamista (*):
+
+— Tilauspäivä (*) / Vastaanottopäivä (*):
+
+— Kuluttajan nimi (*) / Kuluttajien nimet (*):
+
+— Kuluttajan osoite (*) / Kuluttajien osoitteet (*):
+
+— Kuluttajan allekirjoitus (*) / Kuluttajien allekirjoitukset (*) (vain jos lomake täytetään paperimuodossa):
+
+— Päiväys:
+
+(*) Tarpeeton yliviivataan.
+
+—
+Tämä on direktiivin 2011/83/EU liitteessä I olevassa B osassa säädetty virallinen malliperuuttamislomake. Tämän lomakkeen käyttö on VAPAAEHTOISTA — voitte ilmoittaa meille päätöksestänne peruuttaa sopimus myös millä tahansa muulla yksiselitteisellä ilmoituksella (kirjeellä, faksilla tai sähköpostilla), joka lähetetään yllä olevaan yhteystietoon.</annex_ib>
+</config>

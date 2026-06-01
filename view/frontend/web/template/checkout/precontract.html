@@ -1,0 +1,26 @@
+<div class="mm-eu-w-precontract-block" data-bind="visible: true">
+    <div class="mm-eu-w-precontract-header">
+        <span class="mm-eu-w-precontract-heading" data-bind="text: heading"></span>
+        <span class="mm-eu-w-precontract-pill" data-bind="text: articlePill"></span>
+    </div>
+    <p class="mm-eu-w-precontract-subhead" data-bind="text: subhead"></p>
+
+    <div class="mm-eu-w-precontract-accordion-toggle" data-bind="click: toggleExpand">
+        <span data-bind="text: accordionTitle"></span>
+        <span class="mm-eu-w-precontract-chevron" data-bind="css: { 'mm-eu-w-precontract-chevron--up': isExpanded() }">▾</span>
+    </div>
+
+    <div class="mm-eu-w-precontract-accordion-body" data-bind="visible: isExpanded()">
+        <!-- ko foreach: annexIaSections -->
+        <p class="mm-eu-w-precontract-section" data-bind="text: text"></p>
+        <!-- /ko -->
+        <div class="mm-eu-w-precontract-cta">
+            <a class="mm-eu-w-precontract-download-btn"
+               data-bind="attr: { href: downloadAnnexIbUrl }, text: downloadLabel"
+               target="_blank" rel="noopener"></a>
+        </div>
+        <p class="mm-eu-w-precontract-download-hint" data-bind="text: downloadHint"></p>
+    </div>
+
+    <p class="mm-eu-w-precontract-footer" data-bind="text: footerText"></p>
+</div>

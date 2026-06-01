@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">mageme_eu_withdrawal_request_listing.mageme_eu_withdrawal_request_listing_data_source</item>
+        </item>
+    </argument>
+    <settings>
+        <spinner>mageme_eu_withdrawal_request_columns</spinner>
+        <deps>
+            <dep>mageme_eu_withdrawal_request_listing.mageme_eu_withdrawal_request_listing_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="mageme_eu_withdrawal_request_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">request_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>MageMe_EUWithdrawal::request_view</aclResource>
+        <dataProvider name="mageme_eu_withdrawal_request_listing_data_source"
+                      class="MageMe\EUWithdrawal\Ui\DataProvider\Request\ListingProvider">
+            <settings>
+                <requestFieldName>request_id</requestFieldName>
+                <primaryFieldName>request_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <exportButton name="export_button"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters"/>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+    <columns name="mageme_eu_withdrawal_request_columns">
+        <settings>
+            <childDefaults>
+                <param name="fieldAction" xsi:type="array">
+                    <item name="provider" xsi:type="string">mageme_eu_withdrawal_request_listing.mageme_eu_withdrawal_request_listing.mageme_eu_withdrawal_request_columns.actions</item>
+                    <item name="target" xsi:type="string">applyAction</item>
+                    <item name="params" xsi:type="array">
+                        <item name="0" xsi:type="string">view</item>
+                        <item name="1" xsi:type="string">${ $.$data.rowIndex }</item>
+                    </item>
+                </param>
+            </childDefaults>
+        </settings>
+        <column name="increment_id" sortOrder="10">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+        <column name="order_increment_id" sortOrder="20">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Order #</label>
+            </settings>
+        </column>
+        <column name="status"
+                class="MageMe\EUWithdrawal\Ui\Component\Listing\Column\StatusBadge"
+                component="MageMe_EUWithdrawal/js/grid/columns/status-badge"
+                sortOrder="30">
+            <settings>
+                <options class="MageMe\EUWithdrawal\Model\Request\Source\Status"/>
+                <dataType>select</dataType>
+                <filter>select</filter>
+                <bodyTmpl>ui/grid/cells/html</bodyTmpl>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+        <column name="jurisdiction" sortOrder="40">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Jurisdiction</label>
+            </settings>
+        </column>
+        <column name="contract_type" component="Magento_Ui/js/grid/columns/select" sortOrder="50">
+            <settings>
+                <options class="MageMe\EUWithdrawal\Model\Config\Source\ContractType"/>
+                <dataType>select</dataType>
+                <filter>select</filter>
+                <label translate="true">Contract</label>
+            </settings>
+        </column>
+        <column name="customer_name" sortOrder="60">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Submitter</label>
+            </settings>
+        </column>
+        <column name="customer_email" sortOrder="70">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Email</label>
+            </settings>
+        </column>
+        <column name="items_count" sortOrder="80">
+            <settings>
+                <filter>textRange</filter>
+                <dataType>text</dataType>
+                <label translate="true">Items</label>
+            </settings>
+        </column>
+        <column name="items_refund_total" class="Magento\Sales\Ui\Component\Listing\Column\Price" sortOrder="90">
+            <settings>
+                <filter>textRange</filter>
+                <dataType>text</dataType>
+                <label translate="true">Refund Total</label>
+            </settings>
+        </column>
+        <column name="submitted_at" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date" sortOrder="100">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Submitted</label>
+            </settings>
+        </column>
+        <column name="confirmed_at" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date" sortOrder="110">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Confirmed</label>
+            </settings>
+        </column>
+        <actionsColumn name="actions" class="MageMe\EUWithdrawal\Ui\Component\Listing\Column\RequestActions" sortOrder="200">
+            <settings>
+                <indexField>request_id</indexField>
+            </settings>
+        </actionsColumn>
+    </columns>
+</listing>

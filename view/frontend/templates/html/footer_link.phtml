@@ -1,0 +1,13 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Html\FooterLink $block */
+/** @var \Magento\Framework\Escaper $escaper */
+?>
+<li class="mageme-withdrawal-footer-link">
+    <a href="<?= $escaper->escapeUrl($block->getWithdrawUrl()) ?>">
+        <?= $escaper->escapeHtml($block->getLabel()) ?>
+    </a>
+</li>

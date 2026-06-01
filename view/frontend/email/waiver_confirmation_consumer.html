@@ -1,0 +1,88 @@
+<!--@subject {{var subject_text}} @-->
+<!--@vars {
+    "var email_header_html|raw":"Branded header HTML",
+    "var email_footer_html|raw":"Branded footer HTML",
+    "var waiver.order_increment_id":"Order increment ID",
+    "var waiver.customer_name":"Customer name",
+    "var waiver.customer_email":"Customer email",
+    "var waiver.items_html|raw":"Waived digital items table",
+    "var waiver.consent_snapshot":"Consent text snapshot",
+    "var waiver.ack_snapshot":"Acknowledgment text snapshot",
+    "var waiver.consent_at_formatted":"Consent timestamp",
+    "var waiver.ack_at_formatted":"Acknowledgment timestamp",
+    "var waiver.ip":"IP address recorded with the consent",
+    "var waiver.waiver_reference":"Waiver reference ID",
+    "var waiver.text_hash_short":"Short SHA-256 fingerprint of the legal text",
+    "var view_url":"URL to the customer's order"
+} @-->
+{{var email_header_html|raw}}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+    <tr><td style="padding:0 24px 24px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fffaf0;border:1px solid #fde7b0;border-left:3px solid #f59e0b;border-radius:4px;">
+            <tr><td style="padding:24px 24px 8px;text-align:center;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin:0 auto 12px;">
+                    <tr><td style="width:60px;height:60px;background:#f59e0b;border-radius:50%;text-align:center;vertical-align:middle;color:#fff;font-size:30px;line-height:60px;">&#10004;</td></tr>
+                </table>
+                <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:22px;line-height:1.3;color:#1a1a1a;margin:0 0 8px;">{{trans "Your digital content waiver is on file"}}</h1>
+                <p style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#5b6471;margin:0 24px 16px;">
+                    {{trans "Hi %name, you've consented to immediate digital delivery of the items below — this is your durable-medium copy of that consent (Art. 11a(4) CRD)." name=$waiver.customer_name}}
+                </p>
+                <a href="{{var view_url}}" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:10px 24px;border-radius:4px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;">{{trans "View order"}}</a>
+            </td></tr>
+        </table>
+    </td></tr>
+
+    <tr><td style="padding:0 24px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;border:1px solid #e5e7eb;border-radius:4px;">
+            <tr>
+                <td style="padding:10px 14px;font-family:Helvetica,Arial,sans-serif;font-size:13px;color:#374151;">
+                    <strong>{{trans "Waiver reference:"}}</strong>
+                    <code style="font-family:Menlo,Consolas,monospace;background:#fff;border:1px solid #e5e7eb;border-radius:3px;padding:2px 6px;color:#1a1a1a;">{{var waiver.waiver_reference}}</code>
+                </td>
+                <td align="right" style="padding:10px 14px;font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#6b7280;">
+                    {{var waiver.consent_at_formatted}}
+                </td>
+            </tr>
+        </table>
+    </td></tr>
+
+    <tr><td style="padding:0 24px 16px;">
+        <h3 style="font-family:Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#1a1a1a;margin:0 0 8px;">{{trans "Digital items covered by this waiver"}}</h3>
+        {{var waiver.items_html|raw}}
+    </td></tr>
+
+    <tr><td style="padding:0 24px 12px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #10b981;border-radius:4px;">
+            <tr><td style="padding:14px 16px;font-family:Helvetica,Arial,sans-serif;">
+                <div style="font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:6px;">&#9989; {{trans "Your express consent"}}</div>
+                <blockquote style="margin:0 0 8px;padding:0;font-style:italic;font-size:13px;line-height:1.5;color:#374151;">
+                    {{var waiver.consent_snapshot}}
+                </blockquote>
+                <div style="font-size:11px;color:#6b7280;">{{trans "Consented at"}} {{var waiver.consent_at_formatted}} · IP {{var waiver.ip}}</div>
+            </td></tr>
+        </table>
+    </td></tr>
+
+    <tr><td style="padding:0 24px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #f59e0b;border-radius:4px;">
+            <tr><td style="padding:14px 16px;font-family:Helvetica,Arial,sans-serif;">
+                <div style="font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:6px;">&#9888; {{trans "Your acknowledgment of loss of withdrawal right"}}</div>
+                <blockquote style="margin:0 0 8px;padding:0;font-style:italic;font-size:13px;line-height:1.5;color:#374151;">
+                    {{var waiver.ack_snapshot}}
+                </blockquote>
+                <div style="font-size:11px;color:#6b7280;">{{trans "Acknowledged at"}} {{var waiver.ack_at_formatted}}</div>
+            </td></tr>
+        </table>
+    </td></tr>
+
+    <tr><td style="padding:0 24px 8px;text-align:center;">
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#6b7280;line-height:1.5;margin:0;">
+            {{trans "Keep this email as your durable-medium record. The merchant has stored the SHA-256 hash of the legal text you accepted:"}}
+            <code style="font-family:Menlo,Consolas,monospace;color:#374151;">{{var waiver.text_hash_short}}</code>
+        </p>
+        <p style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#9ca3af;margin:6px 0 0;">
+            {{trans "Legal basis: Art. 16(m) Consumer Rights Directive 2011/83/EU."}}
+        </p>
+    </td></tr>
+</table>
+{{var email_footer_html|raw}}

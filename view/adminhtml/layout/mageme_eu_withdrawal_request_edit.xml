@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      layout="admin-2columns-left"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <update handle="styles"/>
+    <head>
+        <css src="MageMe_EUWithdrawal::css/withdrawal-admin.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="MageMe\EUWithdrawal\Block\Adminhtml\Request\Edit" name="mageme_eu_withdrawal_request_edit"/>
+        </referenceContainer>
+        <referenceContainer name="left">
+            <!--
+                The audit-listing uiComponent and the precontract_proof
+                block are added under this Tabs widget by their respective
+                Pro add-ons (MageMe_EUWithdrawalAudit, MageMe_EUWithdrawalAnnexI)
+                via referenceBlock layout merges. the base module's Tabs::_beforeToHtml
+                looks them up by name and skips silently when the lookup
+                returns null.
+            -->
+            <block class="MageMe\EUWithdrawal\Block\Adminhtml\Request\Edit\Tabs" name="mageme_eu_withdrawal_request_edit_tabs">
+                <!--
+                    Internal-notes section — rendered inline in the General
+                    ("Information") tab's left column by
+                    request/tab/general.phtml via
+                    getLayout()->getBlock('mageme_eu_withdrawal_request_notes').
+                    First-class Free feature (mm_eu_withdrawal_request_note);
+                    Pro additionally forensic-logs each note via the
+                    admin_note_added event.
+                -->
+                <block class="MageMe\EUWithdrawal\Block\Adminhtml\Request\Notes"
+                       name="mageme_eu_withdrawal_request_notes"
+                       template="MageMe_EUWithdrawal::request/notes.phtml"/>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

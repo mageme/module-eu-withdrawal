@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="mageme_eu_withdrawal_request_create_after">
+        <observer name="mageme_eu_withdrawal_save_eligibility_snapshot"
+                  instance="MageMe\EUWithdrawal\Observer\SaveEligibilitySnapshot"/>
+        <observer name="mageme_eu_withdrawal_publish_receipt"
+                  instance="MageMe\EUWithdrawal\Observer\PublishReceiptOnFinalize"/>
+        <observer name="mageme_eu_withdrawal_admin_alert_on_request_create"
+                  instance="MageMe\EUWithdrawal\Observer\AdminAlertOnRequestCreate"/>
+        <!-- audit observer (mageme_audit_on_request_confirmed) moved to
+             MageMe_EUWithdrawalAudit (phase-34). -->
+    </event>
+    <!--
+        Withdrawal-CTA injector for sales-email transports. The base module ships the
+        observer + 4 opt-in email templates (vanilla Magento + one CTA row).
+        The URL behind the CTA is resolved through
+        `WithdrawalLinkResolverInterface` — the base module's default impl returns the
+        lookup-form URL `/withdraw-contract/`. When `MageMe_EUWithdrawalMagicLink`
+        Pro is installed, its DI <preference> overrides the binding to
+        `MagicLinkWithdrawalLinkResolver` which returns a tokenised
+        `?t=TOKEN` one-click variant — same observer + templates,
+        upgraded URL.
+    -->
+    <event name="email_order_set_template_vars_before">
+        <observer name="mageme_eu_withdrawal_append_cta_to_order_email"
+                  instance="MageMe\EUWithdrawal\Observer\Email\AppendWithdrawalCtaToOrderEmails"/>
+    </event>
+    <event name="email_shipment_set_template_vars_before">
+        <observer name="mageme_eu_withdrawal_append_cta_to_shipment_email"
+                  instance="MageMe\EUWithdrawal\Observer\Email\AppendWithdrawalCtaToOrderEmails"/>
+    </event>
+    <!-- Both observers fire on `sales_model_service_quote_submit_success`
+         (after order + items are fully persisted) instead of
+         `sales_order_place_after`. At place_after, `getAllVisibleItems()`
+         can return rows whose `quote_item_id` is still 0 and quote-item
+         product instances may have EAV custom attributes (`is_digital_content`)
+         missing — so the digital-content detection fails and the waiver
+         events never get linked. quote_submit_success runs after commit. -->
+    <event name="sales_model_service_quote_submit_success">
+        <observer name="mageme_eu_withdrawal_promote_waiver_events"
+                  instance="MageMe\EUWithdrawal\Observer\PromoteWaiverEventsOnOrderPlace"/>
+        <observer name="mageme_eu_withdrawal_publish_waiver_confirmation"
+                  instance="MageMe\EUWithdrawal\Observer\PublishWaiverConfirmationOnOrderPlace"/>
+    </event>
+    <!-- `downloadable_link_purchased` doesn't exist as a Magento event. The
+         model `Link\Purchased\Item` dispatches `_save_after` on every save,
+         and `Controller\Download\Link::execute` saves the row after each
+         successful download (incrementing `number_of_downloads_used`). The
+         observer guards on that delta so only real download clicks fire
+         performance_started, not the initial post-place save. -->
+    <!-- The Purchased\Item model has no `_eventPrefix` so its specific
+         `_save_after` event name is generic. Listen on the global
+         `model_save_after` and filter by class inside the observer. -->
+    <event name="model_save_after">
+        <observer name="mageme_eu_withdrawal_mark_performance_downloadable"
+                  instance="MageMe\EUWithdrawal\Observer\MarkPerformanceOnDownloadablePurchased"/>
+    </event>
+    <!--
+        Audit-event listeners (15 observers) moved to
+        MageMe_EUWithdrawalAudit (phase-34); 2 further audit listeners
+        for the Annex I subsystem moved to MageMe_EUWithdrawalAnnexI
+        (phase-33).
+
+        The base module emits all 17 audit-event names regardless of tier — they
+        are dispatched by RequestCreator, ReceiptSendConsumer,
+        WaiverConfirmationConsumer, MagicLinkService, AntiEnumeration,
+        admin controllers, and the Annex I config reader. In module-only
+        installs no observer listens, so the events go nowhere
+        (NoOpAuditLogWriter handles any direct writer call).
+
+        The mageme_eu_withdrawal_status_change_notifier observer
+        remains here — it sends the customer email notification on
+        admin status change and is not part of the audit subsystem.
+    -->
+    <event name="mageme_eu_withdrawal_audit_admin_status_changed">
+        <observer name="mageme_eu_withdrawal_status_change_notifier"
+                  instance="MageMe\EUWithdrawal\Observer\StatusChangeNotifier"/>
+    </event>
+</config>

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version DE.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Sie haben das Recht, binnen {period_days} Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen.</section>
+        <section id="period_start">Die Widerrufsfrist beträgt {period_days} Tage ab dem Tag, an dem Sie oder ein von Ihnen benannter Dritter, der nicht der Beförderer ist, die Waren in Besitz genommen haben bzw. hat. Bei digitalen Inhalten, die nicht auf einem körperlichen Datenträger geliefert werden, endet die Frist 14 Tage nach Vertragsabschluss (es sei denn, Sie haben beim Kauf auf dieses Recht verzichtet).</section>
+        <section id="how_to_exercise">Um Ihr Widerrufsrecht auszuüben, müssen Sie uns — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — mittels einer eindeutigen Erklärung (z. B. ein mit der Post versandter Brief, Telefax oder E-Mail) über Ihren Entschluss, diesen Vertrag zu widerrufen, informieren. Sie können dafür das untenstehende Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.</section>
+        <section id="effects">Wenn Sie diesen Vertrag widerrufen, haben wir Ihnen alle Zahlungen, die wir von Ihnen erhalten haben, einschließlich der Kosten der Standardlieferung (mit Ausnahme der zusätzlichen Kosten, die sich daraus ergeben, dass Sie eine andere Art der Lieferung als die von uns angebotene, günstigste Standardlieferung gewählt haben), unverzüglich und spätestens binnen 14 Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über Ihren Widerruf dieses Vertrags bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das Sie bei der ursprünglichen Transaktion eingesetzt haben.</section>
+        <section id="return_address">Die Waren sind zurückzusenden an: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MUSTER-WIDERRUFSFORMULAR
+(Wenn Sie den Vertrag widerrufen wollen, dann füllen Sie bitte dieses Formular aus und senden Sie es zurück.)
+
+— An: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden Waren (*)/die Erbringung der folgenden Dienstleistung (*):
+
+— Bestellt am (*)/erhalten am (*):
+
+— Name des/der Verbraucher(s):
+
+— Anschrift des/der Verbraucher(s):
+
+— Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier):
+
+— Datum:
+
+(*) Unzutreffendes streichen.
+
+—
+Dies ist das offizielle Muster-Widerrufsformular gemäß Anhang I Buchstabe B der Richtlinie 2011/83/EU. Die Verwendung dieses Formulars ist FREIWILLIG — Sie können uns Ihren Entschluss, den Vertrag zu widerrufen, auch durch jede andere eindeutige Erklärung (Brief, Telefax oder E-Mail) an die oben genannten Kontaktdaten mitteilen.</annex_ib>
+</config>

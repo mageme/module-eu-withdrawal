@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <table name="mm_eu_withdrawal_request" resource="default" engine="innodb" comment="EU withdrawal requests (Art. 11a)">
+        <column xsi:type="int" name="request_id" unsigned="true" nullable="false" identity="true" comment="Request ID"/>
+        <column xsi:type="varchar" name="increment_id" length="32" nullable="true" comment="Human-facing ID (zero-padded request_id), shown in UI/receipts. Null on legacy rows until backfilled."/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="FK to sales_order.entity_id"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" default="0" comment="Store scope"/>
+        <column xsi:type="varchar" name="jurisdiction" length="16" nullable="false" comment="Locale code e.g. de_DE (widened to 16 for BCP-47 future-proofing)"/>
+        <column xsi:type="int" name="customer_id" unsigned="true" nullable="true" comment="Customer (null for guest)"/>
+        <column xsi:type="varchar" name="customer_email" length="255" nullable="false" comment="Art. 11a(2)(c)"/>
+        <column xsi:type="varchar" name="customer_name" length="255" nullable="false" comment="Art. 11a(2)(a)"/>
+        <column xsi:type="varchar" name="contract_identifier" length="64" nullable="false" comment="Art. 11a(2)(b)"/>
+        <column xsi:type="varchar" name="contract_type" length="32" nullable="false" default="physical_goods" comment="physical_goods|digital_content|digital_service|financial"/>
+        <column xsi:type="varchar" name="status" length="32" nullable="false" default="pending" comment="pending|approved|denied|cancelled|anonymised"/>
+        <column xsi:type="text" name="reason_text" nullable="true" comment="Always optional (Art. 9(1), gap #2)"/>
+        <column xsi:type="smallint" name="is_partial" unsigned="true" nullable="false" default="0" comment="Partial withdrawal flag"/>
+        <column xsi:type="varchar" name="locale" length="16" nullable="false" default="en_EU" comment="UI locale at submit (BCP-47 e.g. de_DE, fr_FR). 'en_EU' is an internal sentinel for EU-wide fallback English (not BCP-47); real locales override it when set by the frontend."/>
+        <column xsi:type="varbinary" name="ip" length="16" nullable="true" comment="IPv4/IPv6 packed"/>
+        <column xsi:type="varchar" name="user_agent" length="512" nullable="true" comment="UA string"/>
+        <column xsi:type="varchar" name="content_hash" length="64" nullable="true" comment="SHA-256 of serialized content (Pro ReceiptVerify only; Free writes NULL)"/>
+        <column xsi:type="text" name="receipt_snapshot" nullable="true" comment="Frozen canonical receipt DTO (JSON) captured at finalize; ReceiptBuilder reads it so the content hash stays stable against later config/order edits"/>
+        <column xsi:type="decimal" name="pro_rata_refund" scale="4" precision="12" nullable="true" comment="For digital_service (Art. 14(4)(a))"/>
+        <column xsi:type="decimal" name="shipping_refund" scale="4" precision="12" nullable="true" comment="Delivery cost refunded on full withdrawal (Art. 13(2) CRD). Null for partial/historic rows."/>
+        <column xsi:type="timestamp" name="submitted_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Art. 11a(4) timestamp (UTC)"/>
+        <column xsi:type="timestamp" name="confirmed_at" nullable="true" comment="When step 2 activated"/>
+        <column xsi:type="timestamp" name="acknowledged_at" nullable="true" comment="Durable medium sent"/>
+        <column xsi:type="varchar" name="receipt_status" length="32" nullable="false" default="pending" comment="pending|sent|failed_retry|failed_permanent"/>
+        <column xsi:type="smallint" name="receipt_send_attempts" unsigned="true" nullable="false" default="0" comment="Number of delivery attempts (incl. failures)"/>
+        <column xsi:type="timestamp" name="receipt_next_send_at" nullable="true" comment="When RetryRunner should re-publish (UTC)"/>
+        <column xsi:type="varchar" name="receipt_last_error" length="500" nullable="true" comment="First 500 chars of last exception message"/>
+        <column xsi:type="timestamp" name="period_end_at" nullable="true" comment="Anchor + 14 days (NULL until PeriodRule computes; never rely on default)"/>
+        <column xsi:type="timestamp" name="anonymised_at" nullable="true" comment="GDPR retention cron (gap #12)"/>
+        <column xsi:type="int" name="refund_creditmemo_id" unsigned="true" nullable="true" comment="FK to sales_creditmemo.entity_id once admin issues the refund through the StartCreditMemo flow"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated"/>
+        <column xsi:type="text" name="status_change_note" nullable="true" comment="Latest admin/customer status-change note (denial/cancellation); shown to the consumer. First-class request state — independent of the Pro audit log."/>
+        <column xsi:type="varchar" name="status_change_legal_basis" length="255" nullable="true" comment="Latest denial legal basis supplied at status change"/>
+        <column xsi:type="varchar" name="status_change_actor" length="64" nullable="true" comment="Actor of the latest status change (admin id, or 'customer-self'); selects the consumer-facing label"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="request_id"/>
+        </constraint>
+        <index referenceId="MM_EU_WITHDRAWAL_REQUEST_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_REQUEST_CUSTOMER_ID" indexType="btree">
+            <column name="customer_id"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_REQUEST_STATUS" indexType="btree">
+            <column name="status"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_REQUEST_SUBMITTED_AT" indexType="btree">
+            <column name="submitted_at"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_REQUEST_JURISDICTION" indexType="btree">
+            <column name="jurisdiction"/>
+        </index>
+        <index referenceId="IDX_MM_EU_WITHDRAWAL_REQUEST_RECEIPT_RETRY" indexType="btree">
+            <column name="receipt_status"/>
+            <column name="receipt_next_send_at"/>
+        </index>
+        <constraint xsi:type="unique" referenceId="MM_EU_WITHDRAWAL_REQUEST_INCREMENT_ID">
+            <column name="increment_id"/>
+        </constraint>
+    </table>
+
+    <table name="mm_eu_withdrawal_item" resource="default" engine="innodb" comment="Withdrawal line items (partial support)">
+        <column xsi:type="int" name="item_id" unsigned="true" nullable="false" identity="true" comment="Item ID"/>
+        <column xsi:type="int" name="request_id" unsigned="true" nullable="false" comment="FK to request"/>
+        <column xsi:type="int" name="order_item_id" unsigned="true" nullable="false" comment="FK to sales_order_item.item_id"/>
+        <column xsi:type="varchar" name="sku" length="64" nullable="false" comment="Snapshot SKU"/>
+        <column xsi:type="decimal" name="qty_withdraw" scale="4" precision="12" nullable="false" default="0" comment="Qty withdrawn"/>
+        <column xsi:type="decimal" name="refund_amount" scale="4" precision="12" nullable="false" default="0" comment="Computed refund"/>
+        <column xsi:type="varchar" name="eligibility" length="32" nullable="false" default="eligible" comment="eligible|excluded_art16c|excluded_art16d|..."/>
+        <column xsi:type="varchar" name="exclusion_basis" length="64" nullable="true" comment="Art. 16 letter"/>
+        <column xsi:type="varchar" name="reason_code" length="32" nullable="true" comment="Per-item reason preset (changed_mind|wrong_size|defective|not_as_described|other). Always optional (Art. 9(1))."/>
+        <column xsi:type="varchar" name="reason_text" length="500" nullable="true" comment="Free-text reason (used when reason_code='other'). Always optional (Art. 9(1))."/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="item_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="MM_EU_WITHDRAWAL_ITEM_REQUEST_ID_ORDER_ITEM_ID">
+            <column name="request_id"/>
+            <column name="order_item_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MM_EU_WITHDRAWAL_ITEM_REQUEST_ID_REQUEST_ID"
+                    table="mm_eu_withdrawal_item" column="request_id"
+                    referenceTable="mm_eu_withdrawal_request" referenceColumn="request_id"
+                    onDelete="CASCADE"/>
+        <index referenceId="MM_EU_WITHDRAWAL_ITEM_REQUEST_ID" indexType="btree">
+            <column name="request_id"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_ITEM_ORDER_ITEM_ID" indexType="btree">
+            <column name="order_item_id"/>
+        </index>
+    </table>
+
+    <table name="mm_eu_withdrawal_rule" resource="default" engine="innodb" comment="Eligibility rules (presets Free, advanced Pro)">
+        <column xsi:type="int" name="rule_id" unsigned="true" nullable="false" identity="true" comment="Rule ID"/>
+        <column xsi:type="varchar" name="preset_code" length="32" nullable="true" comment="custom|perishable|sealed_hygiene|sealed_av|digital_waiver"/>
+        <column xsi:type="varchar" name="name" length="255" nullable="false" comment="Human name"/>
+        <column xsi:type="text" name="condition_json" nullable="false" comment="Rule condition"/>
+        <column xsi:type="varchar" name="action" length="32" nullable="false" default="exclude" comment="exclude|require_seal_check|require_waiver_event"/>
+        <column xsi:type="varchar" name="legal_basis" length="64" nullable="true" comment="Art. 16(c) etc"/>
+        <column xsi:type="int" name="priority" nullable="false" default="0" comment="Execution order"/>
+        <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1" comment="Active flag"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="rule_id"/>
+        </constraint>
+        <index referenceId="MM_EU_WITHDRAWAL_RULE_PRESET_CODE" indexType="btree">
+            <column name="preset_code"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_RULE_IS_ACTIVE" indexType="btree">
+            <column name="is_active"/>
+        </index>
+    </table>
+
+    <table name="mm_eu_withdrawal_waiver_event" resource="default" engine="innodb" comment="Digital content waiver events (Art. 16(m), gap #5)">
+        <column xsi:type="int" name="event_id" unsigned="true" nullable="false" identity="true" comment="Event ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="FK to order"/>
+        <column xsi:type="varchar" name="event_type" length="48" nullable="false" comment="digital_consent_express|digital_loss_acknowledged|confirmation_sent"/>
+        <column xsi:type="smallint" name="consent_value" unsigned="true" nullable="false" default="0" comment="0/1 consent"/>
+        <column xsi:type="text" name="waiver_text_snapshot" nullable="true" comment="Frozen text shown to customer"/>
+        <column xsi:type="timestamp" name="confirmation_sent_at" nullable="true" comment="Waiver confirmation email sent"/>
+        <column xsi:type="varbinary" name="ip" length="16" nullable="true" comment="IP packed"/>
+        <column xsi:type="varchar" name="user_agent" length="512" nullable="true" comment="UA"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <column xsi:type="int" name="order_item_id" unsigned="true" nullable="true" comment="FK sales_order_item.item_id (post-promotion)"/>
+        <column xsi:type="int" name="quote_item_id" unsigned="true" nullable="true" comment="FK quote_item.item_id (pre-order sentinel order_id=0)"/>
+        <column xsi:type="varchar" name="product_sku" length="64" nullable="true" comment="Snapshot SKU at event time"/>
+        <column xsi:type="varchar" name="locale" length="16" nullable="true" comment="BCP-47 locale at event time"/>
+        <column xsi:type="char" name="jurisdiction" length="2" nullable="true" comment="ISO-3166 alpha-2 at event time (DE/FI/NL/FR/EU)"/>
+        <column xsi:type="varchar" name="waiver_text_hash" length="64" nullable="true" comment="SHA-256 hex of composed waiver attributes (consent||ack||locale||jurisdiction); NOT a hash of waiver_text_snapshot"/>
+        <column xsi:type="varchar" name="performance_trigger" length="32" nullable="true" comment="downloadable_link_purchased|virtual_timer_0min|bundle_digital_child"/>
+        <column xsi:type="varchar" name="customer_email" length="255" nullable="true" comment="Customer email at event time (guest checkout)"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="event_id"/>
+        </constraint>
+        <index referenceId="MM_EU_WITHDRAWAL_WAIVER_EVENT_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_WAIVER_EVENT_EVENT_TYPE" indexType="btree">
+            <column name="event_type"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_WAIVER_EVENT_ORDER_ITEM_ID" indexType="btree">
+            <column name="order_item_id"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_WAIVER_EVENT_QUOTE_ITEM_ID" indexType="btree">
+            <column name="quote_item_id"/>
+        </index>
+        <index referenceId="MM_EU_WITHDRAWAL_WAIVER_EVENT_LOOKUP" indexType="btree">
+            <column name="order_item_id"/>
+            <column name="event_type"/>
+        </index>
+    </table>
+
+    <!-- mm_eu_withdrawal_display_event moved to MageMe_EUWithdrawalAnnexI (phase-33). -->
+
+    <!-- mm_eu_withdrawal_magic_link moved to MageMe_EUWithdrawalMagicLink (phase-35). -->
+
+    <!-- mm_eu_withdrawal_tc_snapshot moved to MageMe_EUWithdrawalAnnexI (phase-33). -->
+
+    <table name="mm_eu_withdrawal_waiver_confirmation_state" resource="default" engine="innodb" comment="Per-order retry state for waiver confirmation email pipeline">
+        <column xsi:type="int" name="state_id" unsigned="true" nullable="false" identity="true" comment="PK"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="FK sales_order.entity_id"/>
+        <column xsi:type="varchar" name="status" length="32" nullable="false" default="pending" comment="pending|sent|failed_retry|failed_permanent"/>
+        <column xsi:type="smallint" name="attempts" unsigned="true" nullable="false" default="0" comment="Delivery attempt count"/>
+        <column xsi:type="timestamp" name="next_send_at" nullable="true" comment="When consumer should re-attempt (UTC)"/>
+        <column xsi:type="varchar" name="last_error" length="500" nullable="true" comment="First 500 chars of last exception"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="state_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="MM_EU_WITHDRAWAL_WAIVER_CONF_STATE_ORDER_ID">
+            <column name="order_id"/>
+        </constraint>
+        <index referenceId="IDX_MM_EU_WITHDRAWAL_WAIVER_CONF_STATE_RETRY" indexType="btree">
+            <column name="status"/>
+            <column name="next_send_at"/>
+        </index>
+    </table>
+
+    <table name="mm_eu_withdrawal_request_note" resource="default" engine="innodb"
+           comment="Admin internal notes per withdrawal request (first-class Free state; the Pro audit log forensically mirrors each via the admin_note_added event)">
+        <column xsi:type="int" name="note_id" unsigned="true" nullable="false" identity="true" comment="Note ID"/>
+        <column xsi:type="int" name="request_id" unsigned="true" nullable="false" comment="FK mm_eu_withdrawal_request.request_id"/>
+        <column xsi:type="varchar" name="author_type" length="32" nullable="false" default="admin" comment="admin|system"/>
+        <column xsi:type="varchar" name="author_id" length="64" nullable="true" comment="Admin user id (null for system)"/>
+        <column xsi:type="text" name="note_text" nullable="false" comment="Internal note (admin-only, never sent to the customer)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="note_id"/>
+        </constraint>
+        <index referenceId="IDX_MM_EU_WITHDRAWAL_REQUEST_NOTE_REQUEST_ID" indexType="btree">
+            <column name="request_id"/>
+        </index>
+    </table>
+
+</schema>

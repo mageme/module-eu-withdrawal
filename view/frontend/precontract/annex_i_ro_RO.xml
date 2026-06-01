@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version RO.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Aveți dreptul de a vă retrage din prezentul contract, fără a preciza motivele, în termen de {period_days} zile.</section>
+        <section id="period_start">Perioada de retragere expiră după {period_days} zile începând de la ziua la care intrați dumneavoastră sau o parte terță, alta decât transportatorul, indicată de dumneavoastră, în posesia fizică a bunurilor. În cazul conținuturilor digitale care nu sunt livrate pe un suport material, perioada expiră după 14 zile de la încheierea contractului (cu excepția cazului în care ați renunțat la acest drept la momentul plasării comenzii).</section>
+        <section id="how_to_exercise">Pentru a vă exercita dreptul de retragere, trebuie să ne informați — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — cu privire la decizia dumneavoastră de a vă retrage din prezentul contract utilizând o declarație neechivocă (de exemplu, o scrisoare trimisă prin poștă, fax sau e-mail). În acest scop, puteți folosi modelul de formular de retragere de mai jos; folosirea lui nu este însă obligatorie.</section>
+        <section id="effects">Dacă vă retrageți, vom rambursa orice sumă pe care am primit-o de la dumneavoastră, inclusiv costurile livrării standard (cu excepția costurilor suplimentare determinate de faptul că ați ales altă modalitate de livrare decât cel mai ieftin tip de livrare standard oferit de noi), fără întârzieri nejustificate și, în orice caz, nu mai târziu de 14 zile de la data la care suntem informați cu privire la decizia dumneavoastră de a vă retrage din prezentul contract. Vom efectua această rambursare folosind aceeași modalitate de plată ca și cea folosită pentru tranzacția inițială.</section>
+        <section id="return_address">Bunurile se returnează la adresa: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>MODEL DE FORMULAR DE RETRAGERE
+(prezentul formular se trimite înapoi completat doar dacă doriți să vă retrageți din contract)
+
+— Către: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Vă informez/vă informăm (*) prin prezenta cu privire la retragerea mea/noastră (*) din contractul referitor la vânzarea următoarelor bunuri (*)/prestarea următoarelor servicii (*):
+
+— Comandate la data (*)/primite la data (*):
+
+— Numele consumatorului (consumatorilor):
+
+— Adresa consumatorului (consumatorilor):
+
+— Semnătura consumatorului (consumatorilor) (doar în cazul în care acest formular este notificat pe hârtie):
+
+— Data:
+
+(*) A se elimina mențiunea inutilă, după caz.
+
+—
+Acesta este modelul oficial de formular de retragere prevăzut de anexa I partea B la Directiva 2011/83/UE. Utilizarea acestui formular este FACULTATIVĂ — ne puteți comunica decizia dumneavoastră de retragere și prin orice altă declarație neechivocă (scrisoare, fax sau e-mail) trimisă la datele de contact de mai sus.</annex_ib>
+</config>

@@ -1,0 +1,9 @@
+// Entry point for sales-order-view + customer-account integration:
+//   /sales/order/view/order_id/{N}/      (deadline card + history list above Items Ordered)
+//   /customer/account/                    (Withdrawal requests link in nav — server-rendered, no extra CSS needed)
+//
+// Loaded by `sales_order_view.xml` (and `customer_account.xml` for parity).
+// Not loaded on /withdraw-contract/ form pages.
+
+@import 'source/_vars';
+@import 'source/_withdrawals-section';

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version HU.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Önnek {period_days} napon belül joga van indokolás nélkül elállni e szerződéstől.</section>
+        <section id="period_start">Az elállási időszak attól a naptól számított {period_days} nap elteltével jár le, amelyen Ön vagy az Ön által megjelölt, a szállítótól eltérő harmadik személy birtokba veszi az árukat. Nem tárgyi adathordozón rögzített digitális tartalom esetén a határidő a szerződéskötéstől számított 14 nap elteltével jár le (kivéve, ha a megrendeléskor lemondott erről a jogról).</section>
+        <section id="how_to_exercise">Ha Ön elállási jogát gyakorolni kívánja, az e szerződéstől való elállásra vonatkozó döntéséről egyértelmű nyilatkozatban (postán, faxon vagy e-mailben küldött levél útján) értesítenie kell bennünket — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}. Ön felhasználhatja az alábbi elállásinyilatkozat-mintát, ez azonban nem kötelező.</section>
+        <section id="effects">Ha Ön eláll ettől a szerződéstől, az Öntől beérkezett minden kifizetést haladéktalanul, de legkésőbb az Ön e szerződéstől való elállásra vonatkozó döntéséről szóló értesítésének kézhezvételétől számított 14 napon belül visszatérítünk, ideértve a szokásos szállítási költséget is (kivéve azokat a többletköltségeket, amelyek az általunk felkínált, legolcsóbb szokásos szállítási módtól az Ön döntése alapján történő eltérésből adódnak). A visszatérítés során ugyanazt a kifizetési módot alkalmazzuk, mint amelyet Ön az eredeti ügylet során alkalmazott.</section>
+        <section id="return_address">Az árukat az alábbi címre kell visszaküldeni: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>ELÁLLÁSINYILATKOZAT-MINTA
+(csak a szerződéstől való elállási szándék esetén töltse ki és juttassa vissza)
+
+— Címzett: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Alulírott/ak (*) kijelenti/k, hogy alulírott/ak (*) eláll/nak (*) az alábbi áruk adásvételétől (*)/az alábbi szolgáltatás igénybevételétől (*):
+
+— Megrendelés időpontja (*)/átvétel időpontja (*):
+
+— Fogyasztó(k) neve:
+
+— Fogyasztó(k) címe:
+
+— A fogyasztó(k) aláírása (kizárólag írásban történő értesítés esetén):
+
+— Kelt:
+
+(*) A nem kívánt rész törlendő.
+
+—
+Ez a 2011/83/EU irányelv I. melléklet B. része szerinti hivatalos elállásinyilatkozat-minta. E nyomtatvány használata NEM KÖTELEZŐ — a szerződéstől való elállásra vonatkozó döntéséről bármely más egyértelmű nyilatkozattal (levélben, faxon vagy e-mailben) is értesíthet bennünket a fenti elérhetőségen.</annex_ib>
+</config>

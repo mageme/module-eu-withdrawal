@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/consumer.xsd">
+    <consumer name="eu_withdrawal_receipt_send_consumer"
+              queue="eu_withdrawal.receipt.send.queue"
+              connection="db"
+              maxMessages="100"
+              consumerInstance="Magento\Framework\MessageQueue\Consumer"
+              handler="MageMe\EUWithdrawal\Model\Queue\ReceiptSendConsumer::process"/>
+    <consumer name="eu_withdrawal_waiver_confirmation_send_consumer"
+              queue="eu_withdrawal.waiver_confirmation.send.queue"
+              connection="db"
+              maxMessages="100"
+              consumerInstance="Magento\Framework\MessageQueue\Consumer"
+              handler="MageMe\EUWithdrawal\Model\Queue\WaiverConfirmationConsumer::process"/>
+</config>

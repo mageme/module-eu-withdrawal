@@ -1,0 +1,140 @@
+END USER LICENSE AGREEMENT
+
+This End-User License Agreement (hereinafter "License") is a legal agreement between you, the legal
+entity or private person who is being licensed to use the Software (hereinafter “Customer”), and ACTEK d.o.o.,
+a private limited liability company registered under the laws of the Republic of Slovenia with business id
+6515665000 (hereinafter "MageMe"). The License applies to all products/software/scripts/services
+(hereinafter "Software") you obtain from MageMe.
+
+The License comes into legal force when the Customer installs, copies, or otherwise uses the
+Software. If you do not agree to the terms of this License, you are not allowed to install or use the Software.
+
+
+1. LICENSE
+
+    1. MageMe grants you non-exclusive and non-transferable license to use the Software without the
+    rights to sublicense and only as further stipulated under this License. The Customer shall be entitled
+    only to those rights with respect to the Software that are expressly granted under this License.
+
+    2. The Software can have one of the following license types:
+
+        1. Production license. This license type allows Software usage on a single Magento production instance.
+
+        2. Development license. The license type allows the Software to be activated on a development Magento
+        instance for testing purposes. This license doesn't authorise usage on production websites.
+
+    3. The Customer should purchase the License before the Software is downloaded.
+
+    4. The License rights shall take effect after the License is purchased from MageMe and the
+    respective Software is downloaded, but in case of free products - after the Software is downloaded.
+
+
+2. COPYRIGHT
+
+    1. The Software contains proprietary copyrighted material. It is prohibited for the Customer to
+    create any derivative works or other works that are based upon or derived from the Software in whole
+    or any part of it for commercial or non-commercial distribution purposes, without written permission
+    from MageMe. MageMe retains all right, title, and interest in and to the Software, related
+    documentation and upgrades. All rights not expressly granted by this License are reserved for
+    MageMe. The Customer recognizes that the Software and its components are protected by copyright and
+    other applicable laws.
+
+
+3. RESTRICTIONS
+
+    1. The copy of the Software created or transferred pursuant to this License is licensed, not
+    sold, and the Customer receives no title to or ownership of any copy or of the Software itself.
+    Furthermore, the Customer receives no rights to the Software other than those specifically granted
+    in the License.
+
+    2. The Customer is not permitted to:
+
+        1. modify or create derivative works from the Software, except when it is done for personal use
+        or for uses permitted by the aforementioned license types
+
+        2. give, sell, distribute, sub-license, rent, lease or lend any portion of the Software to anyone
+
+        3. use the Software on Magento editions other than it was specified during purchase
+
+        4. place the Software in whole or partially on a server so that its source code (except
+        stylesheet, javascript and images) is accessible for viewing, copying or downloading via a public
+        network such as the Internet, including, to place the Software in publicly accessible repositories
+        (e.g. free Github account)
+
+        5. remove any Software identification, proprietary, copyright or other notices contained in the
+        Software
+
+    3. If MageMe discovers unauthorized use, reproduction, distribution, or other exploitation of the
+    Software, the Customer is liable to:
+
+        1. reimburse MageMe for the License costs for each unauthorized use case, reproduction, distribution, or
+        other exploitation of the Software contradictory to this License. For instance, if the Software is
+        installed on more than one production website, than the License cost shall be paid for each such additional
+        website.
+
+        OR
+
+        2. reimburse a contractual penalty in the amount of EUR 1,000 for each unauthorized use case, reproduction,
+        distribution, or other exploitation of the Software contradictory to this License and compensate MageMe in
+        respect of any other costs or damages.
+
+
+4. WARRANTY
+
+    1. To the extent permitted by applicable law, the Software is provided to the Customer "AS IS"
+    without any warranty, either express or implied, that the Software usage will be uninterrupted and
+    that all errors have been or can be eliminated from the Software or in respect usability of
+    fitness for a particular purpose. The sole liability of MageMe (and the exclusive remedy of the
+    Customer) for any breach of this warranty shall be, in sole discretion of MageMe, to use
+    commercially reasonable efforts to provide the Customer with an error correction or workaround which
+    corrects the reported nonconformity, to provide the Software upgrades and errors correction for the
+    upcoming Software release or service pack. Or if MageMe determines such remedies to be impracticable
+    within a reasonable period of time, to terminate the License and refund the License cost.
+
+    2. The limited warranty provided under the License shall not apply and MageMe shall have no liability
+    to warranty claims arising out of or relating to:
+
+        1. a modification of the Software made by anyone other than MageMe
+
+        2. defects in the Software due to accident, abuse or improper use by the Customer
+
+        3. the Software provided on a no charge or non-commercial trial use basis, if any
+
+        4. the Software being incompatible with the Customer’s other hardware or software
+
+
+5. LIABILITY LIMITATIONS
+
+    1. In no event (including, without limitation, in the event of negligence) will MageMe, its
+    employees or associates be liable for any consequential, incidental or indirect damages whatsoever (including,
+    without limitation, damages for loss of profits, loss of use, business interruption, loss of
+    information or data, pecuniary loss), in connection with or arising out of or related to this
+    License, the Software or the use or inability to use the Software. MageMe shall not be
+    liable for any prosecution arising from use of the Software against law or for any illegal use.
+
+    2. The aggregate liability of MageMe under or in relation to this License, without exceptions, is
+    limited to the amount paid by the Customer to MageMe under this License for the respective License type.
+
+
+6. AMENDMENTS TO THIS AGREEMENT
+
+    1. MageMe reserves the right to change this License and alter its clauses at
+    any given time. The continued use of the Software by the Customer after the changes have been
+    published by MageMe will constitute the acceptance by the Customer of the changed terms.
+
+
+7. TERMINATION
+
+    1. MageMe may terminate this License for any reason or no reason in its sole discretion. Any
+    failure to comply with the terms and conditions of this License will result in automatic and
+    immediate termination of the License in which case the Customer shall immediately cease use of the
+    Software and destroy all copies of the Software supplied under this License. Such termination
+    shall not oblige MageMe to return any amounts received from the Customer pursuant to the License.
+    The financial obligations incurred by the Customer shall survive the expiration or termination of
+    the License.
+
+
+8. GOVERNING LAW
+
+    1. This License agreement and any dispute arising out of or in connection with this License
+    agreement shall be governed by and construed in accordance with the laws of Republic of Slovenia.

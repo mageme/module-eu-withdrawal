@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="MageMe_EUWithdrawal::css/order-view.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="MageMe\EUWithdrawal\Block\Sales\Order\WithdrawalsSection"
+                   name="mageme.eu_withdrawal.order_view_section"
+                   before="sales.order.info.links"
+                   template="MageMe_EUWithdrawal::sales/order/withdrawals_section.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

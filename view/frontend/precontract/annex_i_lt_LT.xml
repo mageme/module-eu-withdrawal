@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<!--
+    MageMe EU Withdrawal — Annex I, Directive 2011/83/EU, official text.
+    Source: EUR-Lex CELEX 32011L0083, language version LT.
+    Placeholder tokens ({period_days}, {merchant_name}, etc.) are module-
+    inserted; the textual matter is the verbatim EU-published translation.
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_EUWithdrawal:etc/precontract.xsd">
+    <annex_ia>
+        <section id="right_of_withdrawal">Jūs turite teisę atsisakyti šios sutarties per {period_days} dienų nenurodydamas jokios priežasties.</section>
+        <section id="period_start">Sutarties atsisakymo laikotarpis baigsis po {period_days} dienų nuo dienos, kurią Jūs fiziškai įgyjate ar Jūsų nurodyta trečioji šalis, išskyrus vežėją, fiziškai įgyja prekes. Fizinėje laikmenoje neįrašyto skaitmeninio turinio atveju laikotarpis baigiasi praėjus 14 dienų nuo sutarties sudarymo (išskyrus atvejus, kai užsakymo metu atsisakėte šios teisės).</section>
+        <section id="how_to_exercise">Norėdamas pasinaudoti teise atsisakyti šios sutarties Jūs turite mums — {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email} — pranešti apie savo sprendimą atsisakyti šios sutarties pateikdamas nedviprasmišką pareiškimą (pvz., paštu, faksu ar elektroniniu laišku). Galite pasinaudoti toliau pateikta pavyzdine forma, bet tai nėra privaloma.</section>
+        <section id="effects">Jei Jūs atsisakote šios sutarties, mes nedelsdami ir bet kuriuo atveju ne vėliau kaip per 14 dienų nuo tos dienos, kai pranešėte apie savo sprendimą atsisakyti šios sutarties, grąžinsime Jums iš Jūsų gautus pinigus, įskaitant standartinio pristatymo išlaidas (išskyrus papildomas išlaidas, patirtas Jums pasirinkus ne mūsų pasiūlytą pigiausią standartinio pristatymo būdą, o kitą pristatymo būdą). Mes atliksime tokį grąžinimą naudodami tokį patį mokėjimo būdą, kokį Jūs naudojote atlikdamas pradinę mokėjimo operaciją.</section>
+        <section id="return_address">Prekes prašome grąžinti šiuo adresu: {merchant_return_address}</section>
+    </annex_ia>
+    <annex_ib>PAVYZDINĖ SUTARTIES ATSISAKYMO FORMA
+(šią formą pildyti ir grąžinti tik tada, jei norite atsisakyti sutarties)
+
+— Kam: {merchant_name}, {merchant_address}, {merchant_phone}, {merchant_email}
+
+— Aš/Mes (*) pranešu (-ame), kad atsisakau (-ome) toliau išvardytų prekių pardavimo (*)/toliau nurodytos paslaugos teikimo sutarties (*):
+
+— Užsakytos (*)/gautos (*):
+
+— Vartotojo (-ų) vardas, pavardė:
+
+— Vartotojo (-ų) adresas:
+
+— Vartotojo (-ų) parašas (-ai) (tik jei forma pateikiama popieriuje):
+
+— Data:
+
+(*) Išbraukti, kas nereikalinga.
+
+—
+Tai – oficiali pavyzdinė sutarties atsisakymo forma, nustatyta Direktyvos 2011/83/ES I priedo B dalyje. Šios formos naudojimas nėra PRIVALOMAS — apie savo sprendimą atsisakyti sutarties mums galite pranešti ir bet kokiu kitu nedviprasmišku pareiškimu (laišku, faksu ar elektroniniu paštu) išsiųstu pirmiau nurodytu kontaktiniu adresu.</annex_ib>
+</config>

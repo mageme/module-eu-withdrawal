@@ -1,0 +1,36 @@
+<!--@subject {{trans "Digitaalisen sisällön luopumisvahvistus — Tilaus %increment_id" increment_id=$waiver.order_increment_id}}@-->
+<!--@vars {
+    "var waiver.order_increment_id":"Tilausnumero",
+    "var waiver.customer_name":"Asiakkaan nimi",
+    "var waiver.customer_email":"Asiakkaan sähköposti",
+    "var waiver.items":"Luopumisen kattamat digitaaliset tuotteet",
+    "var waiver.consent_snapshot":"Suostumustekstin tilannevedos",
+    "var waiver.ack_snapshot":"Vahvistustekstin tilannevedos",
+    "var waiver.consent_at":"Suostumuksen aikaleima",
+    "var waiver.ack_at":"Vahvistuksen aikaleima",
+    "var waiver.waiver_reference":"Luopumisen viitetunnus"
+} @-->
+<html><body>
+<p>{{trans "Hyvä %name," name=$waiver.customer_name}}</p>
+<p>{{trans "Tämä on pysyvällä tietovälineellä annettu vahvistus nimenomaisesta suostumuksestasi aloittaa seuraavien digitaalisten sisältöjen toimitus sekä vahvistuksestasi, että menetät peruuttamisoikeutesi (KSL 6:16)."}}</p>
+
+<h3>{{trans "Luopumisen kattamat digitaaliset sisällöt"}}</h3>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li><strong>{{var item.name}}</strong> ({{var item.sku}}) &mdash; {{var item.product_type}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+
+<h3>{{trans "Nimenomainen suostumuksesi"}}</h3>
+<blockquote>{{var waiver.consent_snapshot}}</blockquote>
+<p><small>{{trans "Suostuttu:"}} {{var waiver.consent_at}}</small></p>
+
+<h3>{{trans "Vahvistuksesi peruuttamisoikeuden menettämisestä"}}</h3>
+<blockquote>{{var waiver.ack_snapshot}}</blockquote>
+<p><small>{{trans "Vahvistettu:"}} {{var waiver.ack_at}}</small></p>
+
+<p>{{trans "Luopumisen viite:"}} <code>{{var waiver.waiver_reference}}</code></p>
+<p><small>{{trans "Oikeusperusta: KSL 6:16 / Art. 16(m) kuluttajanoikeusdirektiivi 2011/83/EU."}}</small></p>
+</body></html>

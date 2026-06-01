@@ -1,0 +1,36 @@
+<!--@subject {{trans "Bevestiging afstand digitale inhoud — Bestelling %increment_id" increment_id=$waiver.order_increment_id}}@-->
+<!--@vars {
+    "var waiver.order_increment_id":"Bestelnummer",
+    "var waiver.customer_name":"Naam van de klant",
+    "var waiver.customer_email":"E-mailadres van de klant",
+    "var waiver.items":"Digitale items waarvan afstand is gedaan",
+    "var waiver.consent_snapshot":"Snapshot van de toestemmingstekst",
+    "var waiver.ack_snapshot":"Snapshot van de bevestigingstekst",
+    "var waiver.consent_at":"Tijdstip van toestemming",
+    "var waiver.ack_at":"Tijdstip van bevestiging",
+    "var waiver.waiver_reference":"Afstandreferentie-ID"
+} @-->
+<html><body>
+<p>{{trans "Beste %name," name=$waiver.customer_name}}</p>
+<p>{{trans "Dit is de bevestiging op een duurzame gegevensdrager van uw uitdrukkelijke toestemming om te beginnen met de levering van de volgende digitale inhoud, en uw erkenning dat u daardoor uw herroepingsrecht verliest (Art. 6:230s BW)."}}</p>
+
+<h3>{{trans "Onder deze afstand vallende digitale items"}}</h3>
+<ul>
+{{depend waiver.items}}
+{{foreach items=$waiver.items as item}}
+    <li><strong>{{var item.name}}</strong> ({{var item.sku}}) &mdash; {{var item.product_type}}</li>
+{{/foreach}}
+{{/depend}}
+</ul>
+
+<h3>{{trans "Uw uitdrukkelijke toestemming"}}</h3>
+<blockquote>{{var waiver.consent_snapshot}}</blockquote>
+<p><small>{{trans "Toestemming verleend op:"}} {{var waiver.consent_at}}</small></p>
+
+<h3>{{trans "Uw erkenning van verlies van herroepingsrecht"}}</h3>
+<blockquote>{{var waiver.ack_snapshot}}</blockquote>
+<p><small>{{trans "Erkend op:"}} {{var waiver.ack_at}}</small></p>
+
+<p>{{trans "Afstandreferentie:"}} <code>{{var waiver.waiver_reference}}</code></p>
+<p><small>{{trans "Rechtsgrondslag: Art. 6:230s BW / Art. 16(m) Richtlijn 2011/83/EU."}}</small></p>
+</body></html>

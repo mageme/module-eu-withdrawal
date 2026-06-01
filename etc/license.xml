@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:MageMe_Core:etc/license.xsd">
+    <module name="MageMe_EUWithdrawal">
+        <section name="mageme_eu_withdrawal"/>
+    </module>
+</config>

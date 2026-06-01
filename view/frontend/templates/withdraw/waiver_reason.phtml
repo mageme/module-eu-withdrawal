@@ -1,0 +1,14 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/** @var \MageMe\EUWithdrawal\Block\Withdraw\WaiverReasonRenderer $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$reason = $block->getReason();
+if ($reason === null) {
+    return;
+}
+?>
+<div class="mm-eu-w-waiver-reason" role="note"><?= $escaper->escapeHtml($reason) ?></div>

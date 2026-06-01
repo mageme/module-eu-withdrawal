@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework-message-queue:etc/communication.xsd">
+    <topic name="eu_withdrawal.receipt.send" request="int"/>
+    <topic name="eu_withdrawal.waiver_confirmation.send" request="int"/>
+</config>
