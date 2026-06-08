@@ -77,6 +77,14 @@ if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelect
     }
 }
 
+// Order-level adjustment preview: base = net item value of the whole order,
+// gap = grand_total minus what the item + shipping fields account for (payment
+// discount, gift card, custom total). JS distributes gap by the returned share,
+// mirroring RefundCalculator. Empty for standard orders.
+$orderLevel = $orderForMeta !== null
+    ? $block->getOrderLevelGap($orderForMeta)
+    : ['base' => 0.0, 'gap' => 0.0];
+
 // Inline Tabler-style stroke icons (CSP-safe, scale with currentColor).
 $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size = 20): string {
     $paths = [
@@ -114,6 +122,8 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             'shippingPaid'     => round($shippingPaid, 2),
             'shippingTax'      => round($shippingTax, 2),
             'eligibleItems'    => $eligibleItems,
+            'orderItemsBase'   => round($orderLevel['base'], 4),
+            'orderLevelGap'    => round($orderLevel['gap'], 4),
             'i18n'             => [
                 'orderPrefix'        => (string) __('Order #'),
                 'qtyPrefix'          => (string) __('Qty: '),

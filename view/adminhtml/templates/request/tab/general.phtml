@@ -265,6 +265,12 @@ $notesBlock = $block->getLayout()->getBlock('mageme_eu_withdrawal_request_notes'
                                 <td><?= $escaper->escapeHtml($block->getShippingRefundDisplay()) ?></td>
                             </tr>
                         <?php endif; ?>
+                        <?php if (abs($block->getOrderAdjustmentRefund()) >= 0.005): ?>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('Order Adjustment')) ?></th>
+                                <td><?= $escaper->escapeHtml($block->getOrderAdjustmentRefundDisplay()) ?></td>
+                            </tr>
+                        <?php endif; ?>
                         <tr class="grand_total">
                             <th><?= $escaper->escapeHtml(__('Total Refund')) ?></th>
                             <td><strong><?= $escaper->escapeHtml($block->getRefundTotal()) ?></strong></td>

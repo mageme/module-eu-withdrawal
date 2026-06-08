@@ -209,19 +209,24 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
             $this->logger->warning('EUWithdrawal Finalize summary hydration failed: ' . $e->getMessage());
         }
 
-        // Pull the real (prefix + padded) increment_id from the persisted
-        // request. RequestCreator already applies the merchant prefix at
-        // insert time, so this string is authoritative — no concatenation
-        // needed here. Falls back to the numeric id if the row's
-        // increment_id is null (shouldn't happen once RequestCreator ran).
+        // Pull the real (prefix + padded) increment_id plus the frozen
+        // shipping + order-level adjustment from the persisted request, so the
+        // summary total matches RefundCalculator, the receipt and the order
+        // view. RequestCreator already applies the merchant prefix at insert
+        // time, so increment_id is authoritative; falls back to the numeric id.
         $incrementId = (string) $requestId;
+        $shippingRefund = 0.0;
+        $orderAdjustment = 0.0;
         try {
-            $candidate = (string) $this->requestRepository->get($requestId)->getIncrementId();
+            $request = $this->requestRepository->get($requestId);
+            $candidate = (string) $request->getIncrementId();
             if ($candidate !== '') {
                 $incrementId = $candidate;
             }
+            $shippingRefund = (float) $request->getShippingRefund();
+            $orderAdjustment = (float) $request->getOrderAdjustmentRefund();
         } catch (\Throwable) {
-            // keep numeric fallback
+            // keep numeric fallback + zero shipping/adjustment
         }
 
         $this->responseTimer->pad(200);
@@ -230,7 +235,7 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
             'requestId' => $requestId,
             'incrementId' => $incrementId,
             'customerEmail' => $customerEmail,
-            'totalRefundFormatted' => $this->formatPrice($itemsTotal, $currency),
+            'totalRefundFormatted' => $this->formatPrice($itemsTotal + $shippingRefund + $orderAdjustment, $currency),
             'currency' => $currency,
             'items' => $items,
             'viewReturnUrl' => $order !== null ? $this->getOrderViewUrl((int) $order->getEntityId()) : '',

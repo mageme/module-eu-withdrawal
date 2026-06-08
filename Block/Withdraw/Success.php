@@ -268,13 +268,27 @@ class Success extends Template
     }
 
     /**
+     * Get order adjustment refund (signed; 0 for standard orders).
+     *
+     * @return float
+     */
+    public function getOrderAdjustmentRefund(): float
+    {
+        $r = $this->getWithdrawalRequest();
+        if ($r === null) {
+            return 0.0;
+        }
+        return (float) $r->getOrderAdjustmentRefund();
+    }
+
+    /**
      * Get total refund.
      *
      * @return float
      */
     public function getTotalRefund(): float
     {
-        return $this->getItemsSubtotal() + $this->getShippingRefund();
+        return $this->getItemsSubtotal() + $this->getShippingRefund() + $this->getOrderAdjustmentRefund();
     }
 
     /**

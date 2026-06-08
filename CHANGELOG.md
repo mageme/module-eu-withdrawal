@@ -1,3 +1,9 @@
+## 1.0.3
+
+- Fix: The refund total now matches the order total when a payment-method discount, gift card or other order-level adjustment applies — such orders previously could not be withdrawn or showed an inflated refund.
+- Fix: The refund total shown right after submitting a withdrawal now includes the shipping refund.
+- Fix: Corrected the German translation of the "Withdraw from contract" label.
+
 ## 1.0.2
 
 + New: Digital-content detection can now recognise digital items inside bundle products.

@@ -280,6 +280,20 @@ class Request extends AbstractModel implements RequestInterface
         return $this;
     }
 
+    /** Get order adjustment refund. */
+    public function getOrderAdjustmentRefund(): ?string
+    {
+        $v = $this->getData(self::ORDER_ADJUSTMENT_REFUND);
+        return $v === null ? null : (string) $v;
+    }
+
+    /** Set order adjustment refund. */
+    public function setOrderAdjustmentRefund(?string $orderAdjustmentRefund): self
+    {
+        $this->setData(self::ORDER_ADJUSTMENT_REFUND, $orderAdjustmentRefund);
+        return $this;
+    }
+
     /** Get submitted at. */
     public function getSubmittedAt(): string
     {

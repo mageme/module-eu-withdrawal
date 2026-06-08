@@ -35,7 +35,8 @@
             "status_change_actor": true,
             "increment_id": true,
             "shipping_refund": true,
-            "refund_creditmemo_id": true
+            "refund_creditmemo_id": true,
+            "order_adjustment_refund": true
         },
         "index": {
             "MM_EU_WITHDRAWAL_REQUEST_ORDER_ID": true,

@@ -145,7 +145,8 @@ class OrderWithdrawalHistoryService
             // "Refund $X" subtitle matches what RefundCalculator + the
             // verify-page show.
             $refundTotal = ($rawTotalsByRequest[$requestId] ?? 0.0)
-                + (float) ($row[RequestInterface::SHIPPING_REFUND] ?? 0.0);
+                + (float) ($row[RequestInterface::SHIPPING_REFUND] ?? 0.0)
+                + (float) ($row[RequestInterface::ORDER_ADJUSTMENT_REFUND] ?? 0.0);
             $views[] = new WithdrawalRequestView(
                 requestId:   $requestId,
                 incrementId: (string) ($row[RequestInterface::INCREMENT_ID] ?? sprintf('%09d', $requestId)),

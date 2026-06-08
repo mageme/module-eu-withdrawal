@@ -10,13 +10,14 @@ namespace MageMe\EUWithdrawal\Api\Data;
 interface RefundBreakdownInterface
 {
     /** toArray() keys. */
-    public const ITEMS          = 'items';
-    public const ITEMS_SUBTOTAL = 'items_subtotal';
-    public const SHIPPING_REFUND = 'shipping_refund';
-    public const TAX_REFUND     = 'tax_refund';
-    public const TOTAL          = 'total';
-    public const CURRENCY       = 'currency';
-    public const IS_FULL_RETURN = 'is_full_return';
+    public const ITEMS                   = 'items';
+    public const ITEMS_SUBTOTAL          = 'items_subtotal';
+    public const SHIPPING_REFUND         = 'shipping_refund';
+    public const TAX_REFUND              = 'tax_refund';
+    public const ORDER_ADJUSTMENT_REFUND = 'order_adjustment_refund';
+    public const TOTAL                   = 'total';
+    public const CURRENCY                = 'currency';
+    public const IS_FULL_RETURN          = 'is_full_return';
 
     /** @return \MageMe\EUWithdrawal\Model\Refund\ItemRefundLine[] concrete type; no interface in the base module tier */
     public function getItems(): array;
@@ -41,6 +42,15 @@ interface RefundBreakdownInterface
      * @return float
      */
     public function getTaxRefund(): float;
+
+    /**
+     * Get order adjustment refund (gross, signed). Order-level total not
+     * captured in item fields (payment-method discount, gift card, custom
+     * total), distributed by return ratio. 0.0 for standard orders.
+     *
+     * @return float
+     */
+    public function getOrderAdjustmentRefund(): float;
 
     /**
      * Get total.

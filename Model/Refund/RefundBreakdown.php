@@ -22,6 +22,7 @@ class RefundBreakdown implements RefundBreakdownInterface
         private readonly float $total,
         private readonly string $currency,
         private readonly bool $isFullReturn,
+        private readonly float $orderAdjustmentRefund = 0.0,
     ) {
     }
 
@@ -66,6 +67,16 @@ class RefundBreakdown implements RefundBreakdownInterface
     }
 
     /**
+     * Get order adjustment refund.
+     *
+     * @return float
+     */
+    public function getOrderAdjustmentRefund(): float
+    {
+        return $this->orderAdjustmentRefund;
+    }
+
+    /**
      * Get total.
      *
      * @return float
@@ -107,6 +118,7 @@ class RefundBreakdown implements RefundBreakdownInterface
             self::ITEMS_SUBTOTAL => $this->itemsSubtotal,
             self::SHIPPING_REFUND => $this->shippingRefund,
             self::TAX_REFUND => $this->taxRefund,
+            self::ORDER_ADJUSTMENT_REFUND => $this->orderAdjustmentRefund,
             self::TOTAL => $this->total,
             self::CURRENCY => $this->currency,
             self::IS_FULL_RETURN => $this->isFullReturn,

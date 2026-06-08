@@ -210,6 +210,20 @@ class General extends Template implements TabInterface
     }
 
     /**
+     * Get order adjustment refund (signed; 0 for standard orders).
+     *
+     * @return float
+     */
+    public function getOrderAdjustmentRefund(): float
+    {
+        $request = $this->getRequestEntity();
+        if ($request === null) {
+            return 0.0;
+        }
+        return (float) $request->getOrderAdjustmentRefund();
+    }
+
+    /**
      * Get items subtotal display.
      *
      * @return string
@@ -230,13 +244,25 @@ class General extends Template implements TabInterface
     }
 
     /**
+     * Get order adjustment refund display.
+     *
+     * @return string
+     */
+    public function getOrderAdjustmentRefundDisplay(): string
+    {
+        return $this->formatPrice($this->getOrderAdjustmentRefund());
+    }
+
+    /**
      * Get refund total.
      *
      * @return string
      */
     public function getRefundTotal(): string
     {
-        return $this->formatPrice($this->getItemsSubtotal() + $this->getShippingRefund());
+        return $this->formatPrice(
+            $this->getItemsSubtotal() + $this->getShippingRefund() + $this->getOrderAdjustmentRefund(),
+        );
     }
 
     /**

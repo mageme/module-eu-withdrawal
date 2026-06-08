@@ -27,6 +27,7 @@ $orderIncrement = $block->getOrderIncrementId();
 $orderUrl = $block->getOrderUrl();
 $items = $block->getItems();
 $shipping = $block->getShippingRefund();
+$adjustment = $block->getOrderAdjustmentRefund();
 ?>
 <section class="mm-eu-withdrawal-success"
          aria-labelledby="mm-eu-w-success-title"
@@ -119,6 +120,16 @@ $shipping = $block->getShippingRefund();
                             </th>
                             <td class="col subtotal">
                                 <?= $escaper->escapeHtml($block->formatPrice($shipping)) ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php if (abs($adjustment) >= 0.005): ?>
+                        <tr class="adjustment">
+                            <th scope="row" colspan="2">
+                                <?= $escaper->escapeHtml(__('Order Adjustment')) ?>
+                            </th>
+                            <td class="col subtotal">
+                                <?= $escaper->escapeHtml($block->formatPrice($adjustment)) ?>
                             </td>
                         </tr>
                     <?php endif; ?>

@@ -41,6 +41,7 @@ interface RequestInterface
     public const RECEIPT_SNAPSHOT         = 'receipt_snapshot';
     public const PRO_RATA_REFUND          = 'pro_rata_refund';
     public const SHIPPING_REFUND          = 'shipping_refund';
+    public const ORDER_ADJUSTMENT_REFUND  = 'order_adjustment_refund';
     public const SUBMITTED_AT             = 'submitted_at';
     public const CONFIRMED_AT             = 'confirmed_at';
     public const ACKNOWLEDGED_AT          = 'acknowledged_at';
@@ -170,6 +171,12 @@ interface RequestInterface
 
     /** Set shipping refund. */
     public function setShippingRefund(?string $shippingRefund): self;
+
+    /** Get order adjustment refund. */
+    public function getOrderAdjustmentRefund(): ?string;
+
+    /** Set order adjustment refund. */
+    public function setOrderAdjustmentRefund(?string $orderAdjustmentRefund): self;
 
     /** Get submitted at. */
     public function getSubmittedAt(): string;

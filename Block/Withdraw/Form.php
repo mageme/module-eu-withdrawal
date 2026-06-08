@@ -18,6 +18,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use MageMe\EUWithdrawal\Model\Order\ShipmentExistenceChecker;
 use MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface;
+use MageMe\EUWithdrawal\Model\Refund\RefundCalculator;
 
 class Form extends Template
 {
@@ -30,6 +31,7 @@ class Form extends Template
      * @param MagicLinkServiceInterface $magicLinkService
      * @param OrderRepositoryInterface $orderRepository
      * @param ShipmentExistenceChecker $shipmentChecker
+     * @param RefundCalculator $refundCalculator
      * @param array $data
      */
     public function __construct(
@@ -39,9 +41,23 @@ class Form extends Template
         private readonly MagicLinkServiceInterface $magicLinkService,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly ShipmentExistenceChecker $shipmentChecker,
+        private readonly RefundCalculator $refundCalculator,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Order-level item base + gross adjustment gap for the given order, so the
+     * JS sidebar can distribute the same order-level adjustment the server
+     * applies. Returns ['base' => float, 'gap' => float].
+     *
+     * @param OrderInterface $order
+     * @return array{base: float, gap: float}
+     */
+    public function getOrderLevelGap(OrderInterface $order): array
+    {
+        return $this->refundCalculator->orderLevelGap($order);
     }
 
     /**

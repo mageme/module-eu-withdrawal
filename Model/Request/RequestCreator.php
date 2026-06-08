@@ -153,6 +153,11 @@ class RequestCreator
                 // Freeze Art. 13(2) delivery refund at consent time — subsequent order edits
                 // must not silently change the already-agreed amount.
                 RequestInterface::SHIPPING_REFUND => $breakdown->getShippingRefund() > 0 ? $breakdown->getShippingRefund() : null,
+                // Order-level refund component (gross, signed) — frozen here so
+                // ReceiptBuilder reconciles the total to grand_total from the row.
+                RequestInterface::ORDER_ADJUSTMENT_REFUND => $breakdown->getOrderAdjustmentRefund() !== 0.0
+                    ? $breakdown->getOrderAdjustmentRefund()
+                    : null,
                 RequestInterface::SUBMITTED_AT => $now,
                 RequestInterface::CONFIRMED_AT => $now,
             ]);

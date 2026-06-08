@@ -94,8 +94,9 @@ class AdminAlertSender
         foreach ($this->itemRepository->getByRequest((int) $request->getRequestId()) as $item) {
             $itemsTotal += (float) $item->getRefundAmount();
         }
-        $shipping = (float) $request->getShippingRefund();
-        $total    = $itemsTotal + $shipping;
+        $shipping   = (float) $request->getShippingRefund();
+        $adjustment = (float) $request->getOrderAdjustmentRefund();
+        $total      = $itemsTotal + $shipping + $adjustment;
 
         $refundFormatted = (string) $this->priceCurrency->format(
             $total,

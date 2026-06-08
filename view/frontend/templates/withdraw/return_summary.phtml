@@ -31,6 +31,8 @@ $t = $block->getInitialTotals();
                 <dd data-role="shipping-paid"><?= $escaper->escapeHtml($block->formatPrice($t['shipping_paid'])) ?></dd>
                 <dt><?= $escaper->escapeHtml(__('Tax')) ?></dt>
                 <dd data-role="tax"><?= $escaper->escapeHtml($block->formatPrice($t['tax'])) ?></dd>
+                <dt data-role="adjustment-row" hidden><?= $escaper->escapeHtml(__('Order adjustment')) ?></dt>
+                <dd data-role="adjustment" hidden><?= $escaper->escapeHtml($block->formatPrice(0.0)) ?></dd>
                 <dt class="mm-eu-w-total-row"><?= $escaper->escapeHtml(__('Total refund')) ?></dt>
                 <dd class="mm-eu-w-total-row" data-role="total-refund">
                     <?= $escaper->escapeHtml($block->formatPrice($t['total_refund'])) ?>

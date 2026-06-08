@@ -23,6 +23,7 @@
         <column xsi:type="text" name="receipt_snapshot" nullable="true" comment="Frozen canonical receipt DTO (JSON) captured at finalize; ReceiptBuilder reads it so the content hash stays stable against later config/order edits"/>
         <column xsi:type="decimal" name="pro_rata_refund" scale="4" precision="12" nullable="true" comment="For digital_service (Art. 14(4)(a))"/>
         <column xsi:type="decimal" name="shipping_refund" scale="4" precision="12" nullable="true" comment="Delivery cost refunded on full withdrawal (Art. 13(2) CRD). Null for partial/historic rows."/>
+        <column xsi:type="decimal" name="order_adjustment_refund" scale="4" precision="12" nullable="true" comment="Order-level refund component (gross, signed) for totals not captured in item fields — payment-method discounts, gift cards, custom totals. Distributed by return ratio at consent time. Null when zero."/>
         <column xsi:type="timestamp" name="submitted_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Art. 11a(4) timestamp (UTC)"/>
         <column xsi:type="timestamp" name="confirmed_at" nullable="true" comment="When step 2 activated"/>
         <column xsi:type="timestamp" name="acknowledged_at" nullable="true" comment="Durable medium sent"/>

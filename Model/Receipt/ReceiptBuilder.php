@@ -134,14 +134,20 @@ class ReceiptBuilder
             $ua = substr($ua, 0, 100);
         }
 
+        // Order-level refund component (gross, signed) frozen at consent time —
+        // payment-method discount, gift card or custom total not present in item
+        // fields. Shown as its own line so item/shipping/tax stay transparent.
+        $orderAdjustment = (float) ($row['order_adjustment_refund'] ?? 0.0);
+
         // Receipt breakdown shows EU Art. 6(1)(d) component split:
-        //   - items   = net subtotal of withdrawn lines (refund_amount - line_tax)
-        //   - shipping = net shipping refund only (no VAT)
-        //   - tax     = combined VAT (line tax + shipping tax)
-        //   - total   = items + shipping + tax (matches gross sum stored in DB)
+        //   - items      = net subtotal of withdrawn lines (refund_amount - line_tax)
+        //   - shipping    = net shipping refund only (no VAT)
+        //   - tax         = combined VAT (line tax + shipping tax)
+        //   - adjustment  = order-level refund component (signed)
+        //   - total       = items + shipping + tax + adjustment
         $taxRefundTotal = round($itemsTaxTotal + $shippingTax, 4, PHP_ROUND_HALF_EVEN);
         $refundTotal    = round(
-            $itemsNetSubtotal + $shippingNet + $taxRefundTotal,
+            $itemsNetSubtotal + $shippingNet + $taxRefundTotal + $orderAdjustment,
             4,
             PHP_ROUND_HALF_EVEN,
         );
@@ -160,10 +166,11 @@ class ReceiptBuilder
             ],
             items: $items,
             refund: [
-                'items'    => number_format($itemsNetSubtotal, 2, '.', ''),
-                'shipping' => number_format($shippingNet, 2, '.', ''),
-                'tax'      => number_format($taxRefundTotal, 2, '.', ''),
-                'total'    => number_format($refundTotal, 2, '.', ''),
+                'items'      => number_format($itemsNetSubtotal, 2, '.', ''),
+                'shipping'   => number_format($shippingNet, 2, '.', ''),
+                'tax'        => number_format($taxRefundTotal, 2, '.', ''),
+                'adjustment' => number_format($orderAdjustment, 2, '.', ''),
+                'total'      => number_format($refundTotal, 2, '.', ''),
             ],
             receipt: [
                 'created_at'   => $this->toIsoZ((string) $row['created_at']),

@@ -93,6 +93,19 @@ class RefundCalculator
         $total = $this->round4($itemsSubtotal + $taxRefund + $shippingRefund);
 
         $grandTotal = $this->round4((float) $order->getGrandTotal());
+
+        // Order-level totals (payment-method discount, gift card, custom-total
+        // collectors) move grand_total without distributing to item
+        // discount_amount. Distribute that gap by the returned share so a full
+        // return reconciles to grand_total exactly and a partial return takes a
+        // proportional slice. Zero for standard orders.
+        ['base' => $orderItemsBase, 'gap' => $orderLevelGap] = $this->orderLevelGap($order);
+        $orderAdjustment = 0.0;
+        if (abs($orderLevelGap) > 0.005 && $orderItemsBase > 0.0) {
+            $orderAdjustment = $this->round4($orderLevelGap * ($itemsSubtotal / $orderItemsBase));
+            $total = $this->round4($total + $orderAdjustment);
+        }
+
         // Epsilon 0.01 (one cent) accommodates Magento's 2-decimal rounding of
         // grand_total vs our 4-decimal sum of parts. Tighter values risk false
         // positives on valid orders with inclusive-tax rounding.
@@ -110,7 +123,43 @@ class RefundCalculator
             total: $total,
             currency: (string) $order->getOrderCurrencyCode(),
             isFullReturn: $isFullReturn,
+            orderAdjustmentRefund: $orderAdjustment,
         );
+    }
+
+    /**
+     * Order-level item base (net, parents only) and the gross gap between
+     * grand_total and what the item + shipping fields account for. The gap is
+     * non-zero when a payment-method discount, gift card or custom-total
+     * collector moved grand_total without touching item discount_amount. Shared
+     * by calculate() and the storefront sidebar preview so both distribute the
+     * same gap.
+     *
+     * @return array{base: float, gap: float}
+     */
+    public function orderLevelGap(OrderInterface $order): array
+    {
+        $base = 0.0;
+        $tax = 0.0;
+        foreach (($order->getItems() ?? []) as $oi) {
+            // Bundle/configurable children carry a zero row total; the parent
+            // line holds the price, so the base sums parents only.
+            if ($oi->getParentItemId()) {
+                continue;
+            }
+            $base += (float) $oi->getRowTotal() - (float) $oi->getDiscountAmount();
+            $tax += (float) $oi->getTaxAmount();
+        }
+
+        $gap = $this->round4(
+            (float) $order->getGrandTotal()
+            - $base
+            - $tax
+            - (float) $order->getShippingAmount()
+            - (float) $order->getShippingTaxAmount(),
+        );
+
+        return ['base' => $this->round4($base), 'gap' => $gap];
     }
 
     /**

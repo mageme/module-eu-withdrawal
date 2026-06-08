@@ -51,6 +51,8 @@
         const itemsTotalEl = sidebar.querySelector('[data-role="items-total"]');
         const shippingPaidEl = sidebar.querySelector('[data-role="shipping-paid"]');
         const taxEl = sidebar.querySelector('[data-role="tax"]');
+        const adjustmentEl = sidebar.querySelector('[data-role="adjustment"]');
+        const adjustmentRow = sidebar.querySelector('[data-role="adjustment-row"]');
         const totalRefundEl = sidebar.querySelector('[data-role="total-refund"]');
         const continueBtn = document.querySelector('[data-role="continue"]');
         const selectionSummary = sidebar.querySelector('[data-role="selection-summary"]');
@@ -66,6 +68,12 @@
         // eligibleItems[id] = { qty: maxRemaining, taxAmount, qtyOrdered }
         // (legacy `unitTax` schema kept as fallback for cached pages)
         const eligibleItems = boot.eligibleItems || {};
+        // Order-level adjustment (payment discount, gift card, custom total):
+        // gap is the order-wide amount not captured in item/shipping fields,
+        // distributed by the returned share to mirror RefundCalculator. Zero for
+        // standard orders.
+        const orderItemsBase = Number(boot.orderItemsBase || 0);
+        const orderLevelGap = Number(boot.orderLevelGap || 0);
 
         const render = () => {
             let itemsTotal = 0;
@@ -182,11 +190,23 @@
             // shipping_amount + shipping_tax_amount). Tax row stays as the
             // pure sum of per-item line tax.
             const shippingRefundEx = fullReturn ? roundHalfEven(shippingPaid + shippingTax, 4) : 0;
-            const totalRefund = roundHalfEven(itemsTotal + tax + shippingRefundEx, 4);
+            // Distribute the order-level gap by the returned share, mirroring
+            // RefundCalculator::calculate() on the server.
+            let orderLevelAdj = 0;
+            if (Math.abs(orderLevelGap) > 0.005 && orderItemsBase > 0) {
+                orderLevelAdj = roundHalfEven(orderLevelGap * (itemsTotal / orderItemsBase), 4);
+            }
+            const totalRefund = roundHalfEven(itemsTotal + tax + shippingRefundEx + orderLevelAdj, 4);
 
             if (itemsTotalEl) itemsTotalEl.textContent = formatPrice(itemsTotal, currency);
             if (shippingPaidEl) shippingPaidEl.textContent = formatPrice(shippingRefundEx, currency);
             if (taxEl) taxEl.textContent = formatPrice(tax, currency);
+            const hideAdj = Math.abs(orderLevelAdj) < 0.005;
+            if (adjustmentEl) {
+                adjustmentEl.textContent = formatPrice(orderLevelAdj, currency);
+                adjustmentEl.hidden = hideAdj;
+            }
+            if (adjustmentRow) adjustmentRow.hidden = hideAdj;
             if (totalRefundEl) totalRefundEl.textContent = formatPrice(totalRefund, currency);
             if (continueBtn) continueBtn.disabled = visibleCount === 0;
 
