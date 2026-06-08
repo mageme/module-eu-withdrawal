@@ -25,9 +25,16 @@ class RefundCalculator
             throw new \InvalidArgumentException('items must not be empty');
         }
 
-        $orderItems = [];
+        $orderItems     = [];
+        $orderItemsBase = 0.0;
+        $orderItemsTax  = 0.0;
         foreach (($order->getItems() ?? []) as $oi) {
             $orderItems[(int) $oi->getItemId()] = $oi;
+            if ($oi->getParentItemId() !== null) {
+                continue; // children carry price=0; parent holds the row total
+            }
+            $orderItemsBase += (float) $oi->getRowTotal() - (float) $oi->getDiscountAmount();
+            $orderItemsTax  += (float) $oi->getTaxAmount();
         }
 
         $lines = [];
@@ -93,6 +100,27 @@ class RefundCalculator
         $total = $this->round4($itemsSubtotal + $taxRefund + $shippingRefund);
 
         $grandTotal = $this->round4((float) $order->getGrandTotal());
+
+        // Detect order-level adjustments that are not captured in item-level
+        // fields — e.g. payment-method discounts, gift cards, or any custom
+        // total collector that modifies grand_total without distributing to
+        // item discount_amount.  The gap is the authoritative grand_total minus
+        // the sum that item fields account for.  Distribute it proportionally
+        // to the fraction of the order's item value being returned, so that a
+        // partial return gets a fair share and a full return always matches
+        // grand_total exactly.
+        $orderLevelGap = $this->round4(
+            $grandTotal
+            - $orderItemsBase
+            - $orderItemsTax
+            - (float) $order->getShippingAmount()
+            - (float) $order->getShippingTaxAmount(),
+        );
+        if (abs($orderLevelGap) > 0.005 && $orderItemsBase > 0.0) {
+            $ratio = $itemsSubtotal / $orderItemsBase;
+            $total = $this->round4($total + $orderLevelGap * $ratio);
+        }
+
         // Epsilon 0.01 (one cent) accommodates Magento's 2-decimal rounding of
         // grand_total vs our 4-decimal sum of parts. Tighter values risk false
         // positives on valid orders with inclusive-tax rounding.

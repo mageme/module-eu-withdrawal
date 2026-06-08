@@ -66,6 +66,11 @@
         // eligibleItems[id] = { qty: maxRemaining, taxAmount, qtyOrdered }
         // (legacy `unitTax` schema kept as fallback for cached pages)
         const eligibleItems = boot.eligibleItems || {};
+        // Order-level gap: difference between grand_total and the sum of item
+        // fields. Non-zero when a custom total (payment-method discount, gift
+        // card, …) modified grand_total without touching item discount_amount.
+        const orderItemsBase = Number(boot.orderItemsBase || 0);
+        const orderLevelGap  = Number(boot.orderLevelGap  || 0);
 
         const render = () => {
             let itemsTotal = 0;
@@ -182,7 +187,13 @@
             // shipping_amount + shipping_tax_amount). Tax row stays as the
             // pure sum of per-item line tax.
             const shippingRefundEx = fullReturn ? roundHalfEven(shippingPaid + shippingTax, 4) : 0;
-            const totalRefund = roundHalfEven(itemsTotal + tax + shippingRefundEx, 4);
+            // Distribute the order-level gap proportionally, mirroring
+            // RefundCalculator::calculate() on the server side.
+            let orderLevelAdj = 0;
+            if (Math.abs(orderLevelGap) > 0.005 && orderItemsBase > 0) {
+                orderLevelAdj = roundHalfEven(orderLevelGap * (itemsTotal / orderItemsBase), 4);
+            }
+            const totalRefund = roundHalfEven(itemsTotal + tax + shippingRefundEx + orderLevelAdj, 4);
 
             if (itemsTotalEl) itemsTotalEl.textContent = formatPrice(itemsTotal, currency);
             if (shippingPaidEl) shippingPaidEl.textContent = formatPrice(shippingRefundEx, currency);

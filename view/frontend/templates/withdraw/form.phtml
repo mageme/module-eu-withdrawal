@@ -77,6 +77,28 @@ if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelect
     }
 }
 
+// Compute the order-level gap so the JS sidebar mirrors RefundCalculator
+// exactly. Any difference between grand_total and the item-field sum is an
+// order-level adjustment (payment-method discount, gift card, custom total)
+// that must be distributed proportionally in the refund preview.
+$orderItemsBase = 0.0;
+$orderItemsTax  = 0.0;
+foreach (($orderForMeta?->getItems() ?? []) as $oi) {
+    if ($oi->getParentItemId()) {
+        continue;
+    }
+    $orderItemsBase += (float) $oi->getRowTotal() - (float) $oi->getDiscountAmount();
+    $orderItemsTax  += (float) $oi->getTaxAmount();
+}
+$orderLevelGap = round(
+    (float) ($orderForMeta?->getGrandTotal() ?? 0.0)
+    - $orderItemsBase
+    - $orderItemsTax
+    - (float) ($orderForMeta?->getShippingAmount() ?? 0.0)
+    - (float) ($orderForMeta?->getShippingTaxAmount() ?? 0.0),
+    4, PHP_ROUND_HALF_EVEN,
+);
+
 // Inline Tabler-style stroke icons (CSP-safe, scale with currentColor).
 $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size = 20): string {
     $paths = [
@@ -114,6 +136,8 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             'shippingPaid'     => round($shippingPaid, 2),
             'shippingTax'      => round($shippingTax, 2),
             'eligibleItems'    => $eligibleItems,
+            'orderItemsBase'   => round($orderItemsBase, 4),
+            'orderLevelGap'    => round($orderLevelGap, 4),
             'i18n'             => [
                 'orderPrefix'        => (string) __('Order #'),
                 'qtyPrefix'          => (string) __('Qty: '),
