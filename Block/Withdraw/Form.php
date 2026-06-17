@@ -232,20 +232,6 @@ class Form extends Template
     }
 
     /**
-     * True when the URL carries an order_id that exists but belongs to a
-     * different customer than the one currently logged in. Anonymous visitors
-     * never trigger this — the anti-enumeration Submit response covers them.
-     */
-    public function isRequestedOrderMismatched(): bool
-    {
-        if (!$this->isCustomerLoggedIn()) {
-            return false;
-        }
-        $order = $this->resolveOrderFromQuery();
-        return $order !== null && $this->isOrderForeign($order);
-    }
-
-    /**
      * True when the customer is viewing their own order that has no shipments
      * yet. Per Art. 9(1) CRD, the right to withdraw exists from contract
      * conclusion; the 14-day period only starts at delivery (Art. 9(2)(b)).
@@ -291,7 +277,7 @@ class Form extends Template
     {
         $order = $this->resolveOrderForChildren();
         if ($order !== null) {
-            foreach (['order_meta', 'return_summary', 'item_selector'] as $alias) {
+            foreach (['order_meta', 'return_summary', 'item_selector', 'photo_step'] as $alias) {
                 $child = $this->getChildBlock($alias);
                 if ($child) {
                     $child->setData('order', $order);

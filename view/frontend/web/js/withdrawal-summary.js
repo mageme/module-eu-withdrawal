@@ -75,6 +75,23 @@
         const orderItemsBase = Number(boot.orderItemsBase || 0);
         const orderLevelGap = Number(boot.orderLevelGap || 0);
 
+        // Continue gate: block while any selected (qty>0) item that carries a
+        // seal question still has no seal radio answered. Mirrors the Hyvä
+        // canContinue() model — the customer must explicitly state whether the
+        // seal is intact before reviewing the request.
+        const sealGateBlocks = () => {
+            for (const [itemId, data] of state.entries()) {
+                if (!data || data.qty <= 0) continue;
+                const sealRow = document.querySelector(
+                    `[data-role="seal-row"][data-item-id="${itemId}"]`,
+                );
+                if (!sealRow) continue;
+                const answered = sealRow.querySelector('input[data-role="seal-input"]:checked');
+                if (!answered) return true;
+            }
+            return false;
+        };
+
         const render = () => {
             let itemsTotal = 0;
             let visibleCount = 0;
@@ -208,7 +225,7 @@
             }
             if (adjustmentRow) adjustmentRow.hidden = hideAdj;
             if (totalRefundEl) totalRefundEl.textContent = formatPrice(totalRefund, currency);
-            if (continueBtn) continueBtn.disabled = visibleCount === 0;
+            if (continueBtn) continueBtn.disabled = visibleCount === 0 || sealGateBlocks();
 
             document.querySelectorAll('.mm-eu-w-item-row').forEach((row) => {
                 const id = Number(row.dataset.itemId);
@@ -312,6 +329,10 @@
                     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             }
+            // Answering the seal question may unblock (or re-block) the
+            // Continue gate without changing any qty — re-render so the
+            // button's disabled state reflects the new answer.
+            render();
         });
 
         // Per-item reason: toggle the free-text textarea when "Other" is picked.

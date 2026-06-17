@@ -30,6 +30,13 @@ if ($itemSelectorChild !== false && method_exists($block, 'getPendingRequestsByO
     $itemSelectorChild->setData('cancel_url', $block->getCancelActionUrl());
     $itemSelectorChild->setData('form_key_html', $block->getBlockHtml('formkey'));
 }
+$selectionModeVm = $itemSelectorChild !== false ? $itemSelectorChild->getData('selection_mode_view_model') : null;
+$isFullOrder = $selectionModeVm !== null && $selectionModeVm->isFullOrderMode();
+
+// Art. 11a(3) confirmation label: counsel-signed per-locale whitelist string,
+// rendered verbatim (never through __()).
+$confirmLabelVm = $block->getData('confirm_button_label_view_model');
+$confirmLabel = $confirmLabelVm !== null ? $confirmLabelVm->getLabel() : 'Confirm withdrawal';
 
 // Collect per-item tax + shipping amounts for the JS sidebar so it can render
 // the "Tax" row alongside Items/Shipping like the order-view totals block.
@@ -53,6 +60,12 @@ $eligibleItems  = [];
 $orderForMeta   = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta
     ? $orderMeta->getOrder()
     : null;
+// Hand the resolved order to the optional seal-photo step (Pro) so it can gate
+// on sealed items and write its session order-state; renders nothing on Free.
+$photoStepChild = $block->getChildBlock('photo_step');
+if ($photoStepChild !== null && $orderForMeta !== null) {
+    $photoStepChild->setData('order', $orderForMeta);
+}
 if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector) {
     $states = $itemSelectorChild->getStates() ?? [];
     foreach ($states as $s) {
@@ -134,12 +147,6 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
         ], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     </script>
 
-    <?php if ($block->isRequestedOrderMismatched()): ?>
-        <div class="mm-eu-w-banner mm-eu-w-banner--error">
-            <?= $escaper->escapeHtml(__('That order does not belong to your account. Please select one of your own orders.')) ?>
-        </div>
-    <?php endif; ?>
-
     <!-- Panel 2: select items (active on load) -->
     <div class="mm-eu-w-panel is-active" data-step="2">
         <form class="mm-eu-w-grid" method="post" action="<?= $escaper->escapeUrl($block->getFormAction()) ?>" data-role="step2-form">
@@ -148,10 +155,13 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                 <div class="mm-eu-w-card">
                     <h2 class="mm-eu-w-card-title"><?= $escaper->escapeHtml(__('Select items to return')) ?></h2>
                     <p class="mm-eu-w-card-subtitle">
-                        <?= $escaper->escapeHtml(__('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
+                        <?= $escaper->escapeHtml($isFullOrder
+                            ? __('Review the items included in your return.')
+                            : __('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
                     </p>
                     <?= $block->getChildHtml('order_meta') ?>
                     <?= $block->getChildHtml('item_selector') ?>
+                    <?= $block->getChildHtml('photo_step') ?>
                 </div>
                 <div class="mm-eu-w-banner mm-eu-w-banner--info">
                     <span class="mm-eu-w-banner-icon" aria-hidden="true">
@@ -282,7 +292,7 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                     </a>
                     <div class="mm-eu-w-submit-wrap">
                         <button type="button" class="mm-eu-w-btn mm-eu-w-btn--primary" data-role="submit-request">
-                            <?= $escaper->escapeHtml(__('Submit return request')) ?>
+                            <?= $escaper->escapeHtml($confirmLabel) ?>
                         </button>
                         <small class="mm-eu-w-submit-disclaimer" data-role="submit-error"></small>
                     </div>

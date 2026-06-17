@@ -14,6 +14,7 @@ class PerOrderEligibility
     public const REASON_ALREADY_IN_PROGRESS = 'already_in_progress';
     public const REASON_NO_ELIGIBLE_ITEMS   = 'no_eligible_items';
     public const REASON_NOT_SHIPPED_YET     = 'not_shipped_yet';
+    public const REASON_OUT_OF_REGION       = 'out_of_region';
 
     /**
      * Constructor.

@@ -15,6 +15,7 @@ use MageMe\EUWithdrawal\Model\EligibilityRequestBuilder;
 use MageMe\EUWithdrawal\Model\Frontend\Dto\PerOrderEligibility;
 use MageMe\EUWithdrawal\Model\Item\OrderPartialStateCalculator;
 use MageMe\EUWithdrawal\Model\Item\RemainingItemState;
+use MageMe\EUWithdrawal\Model\Rule\GeoScopeRule;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -188,6 +189,10 @@ class OrderEligibilityResolver
         // Period-related reasons (period_expired / not_shipped_yet) set exclusionBasis='Art. 9(2)',
         // so they must be matched before the generic exclusionBasis check;
         // Model/Rule/Preset/*Preset.php emit 'art_16_*' reasons with 'Art. 16(*)' basis strings.
+        // Geo-scope denials also carry a basis ('merchant_geo_scope') and must match on reason first.
+        if ($decision->getReason() === GeoScopeRule::REASON) {
+            return PerOrderEligibility::REASON_OUT_OF_REGION;
+        }
         if ($decision->getReason() === 'period_expired') {
             return PerOrderEligibility::REASON_PERIOD_EXPIRED;
         }

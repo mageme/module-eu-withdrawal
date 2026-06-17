@@ -6,7 +6,9 @@
 @media (max-width: @mm-eu-w-mobile-bp) {
 
     // ---- Cards / typography scaling ----
-    .column.main .mm-eu-w-card { padding: 18px; border-radius: @mm-eu-w-radius; }
+    // Full-bleed on phones: drop the card frame + inner padding so content
+    // uses the width (the page already gives a 15px side gutter).
+    .column.main .mm-eu-w-card { padding: 0; border: 0; border-radius: 0; }
     .column.main .mm-eu-w-card-title { font-size: 19px; }
     .column.main .mm-eu-w-card-subtitle { font-size: 14px; margin-bottom: 16px; }
 
@@ -188,6 +190,19 @@
     .mm-eu-w-items-table .mm-eu-w-item-strip-body {
         border-radius: @mm-eu-w-radius;
         padding: 10px 14px;
+    }
+
+    // Seal-declaration row (`<tr>` colspan=7): it already carries its own
+    // framed card (`.mm-eu-w-item-seal-card`), so strip the generic table-card
+    // chrome here — otherwise the row nests a border + 14px padding around
+    // that card on mobile (frame within a frame).
+    .mm-eu-w-items-table .mm-eu-w-item-seal-row {
+        display: block;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
     }
 
     // Compact stepper: all three elements (− input +) share the same fixed

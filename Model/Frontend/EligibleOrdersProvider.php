@@ -62,8 +62,10 @@ class EligibleOrdersProvider
             self::WITHDRAWAL_WINDOW_DAYS,
             (int) $this->scopeConfig->getValue(self::XML_PERIOD_DAYS, ScopeInterface::SCOPE_STORE),
         );
+        // Start-of-day cut-off to match PeriodRule's end-of-day (23:59:59) deadline.
         $cutoff = (new \DateTimeImmutable('now', new \DateTimeZone('UTC')))
             ->modify('-' . $periodDays . ' days')
+            ->setTime(0, 0, 0)
             ->format('Y-m-d H:i:s');
 
         $eligible = [];

@@ -15,6 +15,9 @@
                    name="mageme_eu_withdrawal.form"
                    cacheable="false"
                    template="MageMe_EUWithdrawal::withdraw/form.phtml">
+                <arguments>
+                    <argument name="confirm_button_label_view_model" xsi:type="object">MageMe\EUWithdrawal\ViewModel\ConfirmButtonLabel</argument>
+                </arguments>
                 <block class="MageMe\EUWithdrawal\Block\Withdraw\OrderMeta"
                        name="mageme_eu_withdrawal.form.order_meta"
                        as="order_meta"
@@ -26,7 +29,11 @@
                 <block class="MageMe\EUWithdrawal\Block\Withdraw\ItemSelector"
                        name="mageme_eu_withdrawal.form.item_selector"
                        as="item_selector"
-                       template="MageMe_EUWithdrawal::withdraw/item_selector.phtml"/>
+                       template="MageMe_EUWithdrawal::withdraw/item_selector.phtml">
+                    <arguments>
+                        <argument name="selection_mode_view_model" xsi:type="object">MageMe\EUWithdrawal\ViewModel\SelectionMode</argument>
+                    </arguments>
+                </block>
                 <block class="MageMe\EUWithdrawal\Block\Withdraw\ReturnSummary"
                        name="mageme_eu_withdrawal.form.return_summary"
                        as="return_summary"

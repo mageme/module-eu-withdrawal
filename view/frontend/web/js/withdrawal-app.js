@@ -35,6 +35,15 @@
                 boot = {};
             }
         }
+        const itemSelectorBootScript = spa.querySelector('script[data-role="item-selector-boot"]');
+        if (itemSelectorBootScript) {
+            try {
+                const selectorBoot = JSON.parse(itemSelectorBootScript.textContent || '{}');
+                if (selectorBoot.selectionMode) boot.selectionMode = selectorBoot.selectionMode;
+            } catch {
+                // leave boot unchanged
+            }
+        }
         // Magento renders the session form_key inside the step2 form as
         // <input name="form_key">. Bootstrap's `formKey` is null on pages where
         // Template::getFormKey() isn't available, so read from DOM as a fallback.
@@ -110,6 +119,27 @@
                 });
             }
         });
+
+        // Full-order mode: seal radio changes dispatch qty-changed so both
+        // withdrawal-app and withdrawal-summary stay in sync. "broken" dispatches
+        // qty 0 (item excluded); "intact" dispatches the remaining qty from the
+        // row's data-remaining attribute.
+        if (boot.selectionMode === 'full_order') {
+            document.addEventListener('change', (evt) => {
+                const radio = evt.target;
+                if (!radio || !radio.matches || !radio.matches('input[data-role="seal-input"]')) return;
+                const sealRow = radio.closest('[data-role="seal-row"]');
+                if (!sealRow) return;
+                const itemId = Number(sealRow.dataset.itemId);
+                const itemRow = document.querySelector('.mm-eu-w-item-row[data-item-id="' + String(itemId) + '"]');
+                if (radio.value === '1' && radio.checked) {
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty: 0 } }));
+                } else if (radio.value === '0' && radio.checked) {
+                    const qty = itemRow ? Number(itemRow.dataset.remaining || 0) : 0;
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty } }));
+                }
+            });
+        }
 
         // ---- Panel routing ----
         const panels = {
@@ -218,6 +248,22 @@
         const shippingTax  = Number(boot.shippingTax || 0);
         const eligibleItems = boot.eligibleItems || {};
 
+        // Full-order mode: seed both stores by dispatching qty-changed for each
+        // eligible row. The data-remaining attribute on the <tr> carries the qty;
+        // both this file's listener and withdrawal-summary.js's listener receive
+        // the event (both registered earlier in this same ready() callback or in
+        // withdrawal-summary.js's onReady() which also runs synchronously since
+        // all three scripts are defer-loaded in document order).
+        if (boot.selectionMode === 'full_order') {
+            document.querySelectorAll('.mm-eu-w-item-row[data-remaining]').forEach((el) => {
+                const itemId = Number(el.dataset.itemId);
+                const qty = Number(el.dataset.remaining);
+                if (qty > 0) {
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty } }));
+                }
+            });
+        }
+
         const renderReview = () => {
             const tbody = panels['3'].querySelector('[data-role="review-items"]');
             const itemsTotalEl = panels['3'].querySelector('[data-role="review-items-total"]');
@@ -231,6 +277,7 @@
                 const line = data.qty * data.price;
                 total += line;
                 const tr = document.createElement('tr');
+                tr.dataset.itemId = String(itemId);
 
                 const thTd = document.createElement('td');
                 thTd.className = 'mm-eu-w-col-thumb';
@@ -320,6 +367,10 @@
             if (shippingEl) shippingEl.textContent = formatPrice(shippingRefund, currency);
             if (taxEl) taxEl.textContent = formatPrice(tax, currency);
             totalEl.textContent = formatPrice(grandRefund, currency);
+
+            // Let add-ons (Pro seal photos) decorate the freshly-built review
+            // rows, which carry data-item-id for lookup.
+            document.dispatchEvent(new CustomEvent('mm-eu-w:review-rendered'));
         };
 
         // ---- Step 4 render ----
@@ -393,15 +444,52 @@
             }
         };
 
+        // Continue gate: any selected (qty>0) item carrying a seal question
+        // must have its seal radio answered before review. Mirrors the Hyvä
+        // canContinue() model and the disabled state in withdrawal-summary.js.
+        const sealGateBlocks = () => {
+            for (const [itemId, data] of state.items.entries()) {
+                if (!data || data.qty <= 0) continue;
+                const sealRow = document.querySelector(
+                    '[data-role="seal-row"][data-item-id="' + String(itemId) + '"]',
+                );
+                if (!sealRow) continue;
+                const answered = sealRow.querySelector('input[data-role="seal-input"]:checked');
+                if (!answered) return true;
+            }
+            return false;
+        };
+
+        // Seal-photo gate (Pro): mirrors withdrawal-summary.js. Block review when
+        // a selected item's visible seal-photo control has neither a photo nor an
+        // explicit skip. Absent data-photo-satisfied = no requirement.
+        const photoGateBlocks = () => {
+            for (const [itemId, data] of state.items.entries()) {
+                if (!data || data.qty <= 0) continue;
+                const hook = document.querySelector(
+                    '[data-role="seal-extra"][data-item-id="' + String(itemId) + '"]',
+                );
+                if (!hook || hook.hidden) continue;
+                if (hook.dataset.photoSatisfied === '0') return true;
+            }
+            return false;
+        };
+
         // ---- Event wiring ----
         const step2Form = panels['2'].querySelector('[data-role="step2-form"]');
         if (step2Form) {
             step2Form.addEventListener('submit', (evt) => {
-                if (state.items.size === 0) {
-                    evt.preventDefault();
+                evt.preventDefault();
+                if (state.items.size === 0 || sealGateBlocks()) {
                     return;
                 }
-                evt.preventDefault();
+                // Seal-photo gate: Continue stays enabled. If an intact item still
+                // has neither a photo nor an explicit skip, ask the Pro control to
+                // highlight itself and stay on step 2 instead of advancing.
+                if (photoGateBlocks()) {
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:photo-enforce'));
+                    return;
+                }
                 renderReview();
                 showPanel('3');
             });
@@ -435,12 +523,21 @@
                         text: code === 'other' ? text : '',
                     };
                 }
+                // Per-item seal-broken declaration — sent so the server enforces
+                // the Art. 16(e)/(i) exclusion itself, not just via client qty-zeroing.
+                const itemSeal = {};
+                document.querySelectorAll('input[data-role="seal-input"][value="1"]').forEach((r) => {
+                    if (!r.checked) return;
+                    const row = r.closest('[data-role="seal-row"]');
+                    if (row && row.dataset.itemId) itemSeal[String(row.dataset.itemId)] = 1;
+                });
                 const body = {
                     orderId: boot.orderIncrementId || '',
                     items: Object.fromEntries(
                         Array.from(state.items.entries()).map(([id, d]) => [String(id), d.qty]),
                     ),
                     itemReasons,
+                    itemSeal,
                     formKey: boot.formKey || '',
                 };
                 // Propagate the magic-link token AND the verified-order id so
@@ -459,6 +556,14 @@
                 let finalizeUrl = boot.finalizeUrl;
                 if (extra.length) {
                     finalizeUrl += (finalizeUrl.indexOf('?') === -1 ? '?' : '&') + extra.join('&');
+                }
+                const beforeSubmit = new CustomEvent('mm-eu-w:before-submit', { cancelable: true, detail: { body } });
+                if (!document.dispatchEvent(beforeSubmit)) {
+                    if (beforeSubmit.detail.cancelMessage) {
+                        submitErr.textContent = beforeSubmit.detail.cancelMessage;
+                    }
+                    submitBtn.disabled = false;
+                    return;
                 }
                 try {
                     const resp = await fetch(finalizeUrl, {

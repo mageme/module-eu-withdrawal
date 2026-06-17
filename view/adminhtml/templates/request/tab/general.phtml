@@ -155,14 +155,13 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                         <th class="col-ordered-qty"><span><?= $escaper->escapeHtml(__('Qty')) ?></span></th>
                         <th class="col-subtotal"><span><?= $escaper->escapeHtml(__('Subtotal')) ?></span></th>
                         <th class="col-refund"><span><?= $escaper->escapeHtml(__('Refund')) ?></span></th>
-                        <th class="col-reason"><span><?= $escaper->escapeHtml(__('Reason')) ?></span></th>
-                        <th class="col-eligibility last"><span><?= $escaper->escapeHtml(__('Eligibility')) ?></span></th>
+                        <th class="col-reason last"><span><?= $escaper->escapeHtml(__('Reason')) ?></span></th>
                     </tr>
                 </thead>
                 <?php if (empty($items)): ?>
                     <tbody>
                         <tr>
-                            <td colspan="7"><?= $escaper->escapeHtml(__('No items associated with this request.')) ?></td>
+                            <td colspan="6"><?= $escaper->escapeHtml(__('No items associated with this request.')) ?></td>
                         </tr>
                     </tbody>
                 <?php else: ?>
@@ -170,7 +169,6 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                         <?php
                         $rowIndex++;
                         $orderItem = $block->getOrderItem((int) $item->getOrderItemId());
-                        $eligibility = (string) $item->getEligibility();
                         ?>
                         <tbody class="<?= /* @noEscape */ $rowIndex % 2 ? 'even' : 'odd' ?>">
                             <tr>
@@ -216,11 +214,8 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                                 <td class="col-refund">
                                     <?= $escaper->escapeHtml($block->formatPrice((float) $item->getRefundAmount())) ?>
                                 </td>
-                                <td class="col-reason">
+                                <td class="col-reason last">
                                     <?= $escaper->escapeHtml($block->getItemReasonDisplay($item)) ?>
-                                </td>
-                                <td class="col-eligibility last">
-                                    <?= $escaper->escapeHtml(__(ucwords(str_replace('_', ' ', $eligibility)))) ?>
                                 </td>
                             </tr>
                         </tbody>

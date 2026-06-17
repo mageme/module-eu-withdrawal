@@ -1,3 +1,15 @@
+## 1.0.5
+
++ New: Item Selection setting - the withdrawal form can run in "Full order" mode where the request always covers all returnable items
+- Fix: final confirmation button now renders the legally required "Confirm withdrawal" label in the customer's language instead of "Submit return request"
++ New: Extension points for the Pro photo evidence step on the withdrawal form
+- Fix: request creation no longer fails when a third-party extension dispatches the request-created event without eligibility data
++ New: Country Scope setting - optionally limit the self-service withdrawal flow to customers in selected countries
+- Fix: the "Withdraw from contract" link in order and shipment emails now renders when the email is resent from the admin or sent by a background job
+- Fix: an order now stays available for withdrawal through the whole of its final eligible day
+- Fix: a logged-in customer opening a withdrawal link for an order that is not their own is now turned away
+* Other: Removed the redundant Eligibility column from the items table on the admin withdrawal request page.
+
 ## 1.0.4
 
 - Fix: The digital-content waiver step no longer fails to save when the billing address is set during checkout.

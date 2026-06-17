@@ -9,6 +9,10 @@
                 <default_contract_type>physical_goods</default_contract_type>
                 <frontend_route>withdraw-contract</frontend_route>
             </general>
+            <scope>
+                <country_scope_enabled>0</country_scope_enabled>
+                <country_scope_countries>AT,BE,BG,HR,CY,CZ,DK,EE,FI,FR,DE,GR,HU,IE,IT,LV,LT,LU,MT,NL,PL,PT,RO,SK,SI,ES,SE,NO,IS,LI</country_scope_countries>
+            </scope>
             <precontract>
                 <enabled>1</enabled>
                 <return_address></return_address>
@@ -41,6 +45,7 @@
                 </email>
             </digital_waiver>
             <frontend>
+                <item_selection_mode>per_item</item_selection_mode>
                 <buttons>
                     <button_label_step1>Withdraw from contract here</button_label_step1>
                     <button_label_step2>Confirm withdrawal</button_label_step2>

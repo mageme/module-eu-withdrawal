@@ -43,6 +43,27 @@
                 </field>
             </group>
 
+            <group id="scope" translate="label comment" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Scope &amp; Applicability</label>
+                <comment><![CDATA[Controls in which markets the self-service withdrawal flow is offered. These are merchant business decisions, not legal exclusions — an EU consumer's statutory right of withdrawal does not depend on them, and declarations received by other means (email, letter) must still be honoured manually.]]></comment>
+
+                <field id="country_scope_enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Restrict by Country</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Offers the self-service withdrawal flow only for orders whose billing <strong>or</strong> shipping address is in the selected countries. <strong>Legal note:</strong> this restricts the storefront flow only — an EU consumer's statutory right of withdrawal does not depend on the address, and withdrawal declarations received by other means (email, letter) must still be honoured manually. Default: disabled.]]></comment>
+                </field>
+                <field id="country_scope_countries" translate="label comment" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Offer Withdrawal For Countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <can_be_empty>1</can_be_empty>
+                    <frontend_model>MageMe\Core\Block\Adminhtml\System\Config\Form\Field\Multiselect</frontend_model>
+                    <comment><![CDATA[Preselected: EU-27 plus EEA (Norway, Iceland, Liechtenstein). Add the United Kingdom manually if you target UK consumers (separate national regime with a comparable 14-day right). If you clear this list, the restriction has no effect and the flow stays available to every customer.]]></comment>
+                    <depends>
+                        <field id="country_scope_enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
             <group id="precontract" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Pre-Contract Information (Art. 6(1)(h))</label>
                 <comment><![CDATA[Mandatory pre-contractual disclosure of the right of withdrawal. Displayed on the checkout payment step. Each display is logged forensically (Art. 10 defence). Snapshot of the rendered text is stored immutably (Art. 6(5)). <strong>Counsel review recommended before customising any Annex I text.</strong>]]></comment>
@@ -268,6 +289,12 @@
             <group id="frontend" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Frontend</label>
                 <comment><![CDATA[Customer-facing UX for the withdrawal flow. Subgroups: <em>Buttons</em> (legal-critical labels), <em>Placements</em> (where to surface the link), <em>Return Reasons</em> (per-item dropdown), <em>Review Step</em> (content on step 3 of the flow).]]></comment>
+
+                <field id="item_selection_mode" translate="label comment" type="select" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Item Selection</label>
+                    <source_model>MageMe\EUWithdrawal\Model\Config\Source\ItemSelectionMode</source_model>
+                    <comment><![CDATA[<em>Per item</em>: the customer chooses lines and quantities. <em>Full order</em>: the request always covers all returnable items; items excluded by law (opened seal, expired period) are still removed automatically, and the form shows a note that partial returns can be requested via your contact page.<br/><strong>⚠ Legal warning.</strong> The explanatory materials to the German implementation law expect the withdrawal function to support selecting parts of the order. Consult your counsel before switching to Full order.]]></comment>
+                </field>
 
                 <group id="buttons" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Buttons</label>

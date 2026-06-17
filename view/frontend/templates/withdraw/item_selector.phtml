@@ -12,7 +12,15 @@ if ($states === null) {
 $pending   = (array) $block->getData('pending_requests');
 $cancelUrl = (string) $block->getData('cancel_url');
 $formKey   = (string) $block->getData('form_key_html');
-?>
+$selectionModeVm = $block->getData('selection_mode_view_model');
+$isFullOrder     = $selectionModeVm !== null && $selectionModeVm->isFullOrderMode();
+$selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
+
+?><script type="application/json" data-role="item-selector-boot">
+<?= /* @noEscape */ json_encode([
+    'selectionMode' => $selectionModeKey,
+], JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+</script>
 <table class="mm-eu-w-items-table">
     <thead>
         <tr>
@@ -50,7 +58,8 @@ $formKey   = (string) $block->getData('form_key_html');
             data-item-id="<?= /* @noEscape */ $orderItemId ?>"
             data-price="<?= $escaper->escapeHtmlAttr((string) $unitPrice) ?>"
             data-name="<?= $escaper->escapeHtmlAttr((string) $state->name) ?>"
-            data-thumb="<?= $escaper->escapeUrl($thumbnailUrl) ?>">
+            data-thumb="<?= $escaper->escapeUrl($thumbnailUrl) ?>"
+            <?php if ($isFullOrder && $isEligible): ?>data-remaining="<?= /* @noEscape */ $remaining ?>"<?php endif; ?>>
             <td class="mm-eu-w-col-thumb">
                 <?php if ($thumbnailUrl !== ''): ?>
                     <img src="<?= $escaper->escapeUrl($thumbnailUrl) ?>"
@@ -84,7 +93,15 @@ $formKey   = (string) $block->getData('form_key_html');
                 <?= (int) $returnedQty ?>
             </td>
             <td class="mm-eu-w-col-rqty">
-                <?php if ($isEligible): ?>
+                <?php if (!$isEligible): ?>
+                    <div class="mm-eu-w-qty-stepper mm-eu-w-qty-stepper--disabled" aria-disabled="true">
+                        <button type="button" class="mm-eu-w-qty-btn" disabled>−</button>
+                        <input type="number" class="mm-eu-w-qty-input" value="0" disabled tabindex="-1">
+                        <button type="button" class="mm-eu-w-qty-btn" disabled>+</button>
+                    </div>
+                <?php elseif ($isFullOrder): ?>
+                    <span class="mm-eu-w-qty-fixed"><?= /* @noEscape */ $remaining ?></span>
+                <?php else: ?>
                     <div class="mm-eu-w-qty-stepper"
                          data-item-id="<?= /* @noEscape */ $orderItemId ?>"
                          data-min="0"
@@ -101,12 +118,6 @@ $formKey   = (string) $block->getData('form_key_html');
                         <button type="button" class="mm-eu-w-qty-btn" data-action="inc"
                                 aria-label="<?= $escaper->escapeHtmlAttr(__('Increase quantity')) ?>">+</button>
                     </div>
-                <?php else: ?>
-                    <div class="mm-eu-w-qty-stepper mm-eu-w-qty-stepper--disabled" aria-disabled="true">
-                        <button type="button" class="mm-eu-w-qty-btn" disabled>−</button>
-                        <input type="number" class="mm-eu-w-qty-input" value="0" disabled tabindex="-1">
-                        <button type="button" class="mm-eu-w-qty-btn" disabled>+</button>
-                    </div>
                 <?php endif; ?>
             </td>
             <td class="mm-eu-w-col-total" data-role="line-total">
@@ -122,8 +133,8 @@ $formKey   = (string) $block->getData('form_key_html');
                             <span class="mm-eu-w-item-seal-q-icon" aria-hidden="true">?</span>
                             <span class="mm-eu-w-item-seal-q-text">
                                 <?= $escaper->escapeHtml($sealKind === 'hygiene'
-                                    ? __('Has the hygiene seal been broken after delivery?')
-                                    : __('Has the original software / media seal been broken after delivery?')) ?>
+                                    ? __('Is the hygiene seal still intact?')
+                                    : __('Is the original software / media seal still intact?')) ?>
                             </span>
                         </div>
 
@@ -132,14 +143,13 @@ $formKey   = (string) $block->getData('form_key_html');
                                    name="item_seal_opened[<?= /* @noEscape */ $orderItemId ?>]"
                                    value="0"
                                    data-role="seal-input"
-                                   class="mm-eu-w-item-seal-radio"
-                                   checked>
+                                   class="mm-eu-w-item-seal-radio">
                             <span class="mm-eu-w-item-seal-choice-icon" aria-hidden="true">
                                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
                             </span>
                             <span class="mm-eu-w-item-seal-choice-content">
                                 <span class="mm-eu-w-item-seal-choice-label">
-                                    <?= $escaper->escapeHtml(__('No, the seal is intact')) ?>
+                                    <?= $escaper->escapeHtml(__('Yes — it\'s still sealed')) ?>
                                 </span>
                                 <span class="mm-eu-w-item-seal-choice-hint">
                                     <?= $escaper->escapeHtml(__('Refund possible — return the unopened package.')) ?>
@@ -147,6 +157,11 @@ $formKey   = (string) $block->getData('form_key_html');
                             </span>
                             <span class="mm-eu-w-item-seal-choice-dot" aria-hidden="true"></span>
                         </label>
+
+                        <div class="mm-eu-w-item-seal-extra"
+                             data-role="seal-extra"
+                             data-item-id="<?= /* @noEscape */ $orderItemId ?>"
+                             data-product-name="<?= $escaper->escapeHtmlAttr((string) $state->name) ?>"></div>
 
                         <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--warn">
                             <input type="radio"
@@ -159,7 +174,7 @@ $formKey   = (string) $block->getData('form_key_html');
                             </span>
                             <span class="mm-eu-w-item-seal-choice-content">
                                 <span class="mm-eu-w-item-seal-choice-label">
-                                    <?= $escaper->escapeHtml(__('Yes, the seal is broken')) ?>
+                                    <?= $escaper->escapeHtml(__('No — I\'ve opened it')) ?>
                                 </span>
                                 <span class="mm-eu-w-item-seal-choice-sublabel">
                                     <?= $escaper->escapeHtml($sealKind === 'hygiene'
@@ -276,3 +291,9 @@ $formKey   = (string) $block->getData('form_key_html');
     <?php endforeach; ?>
     </tbody>
 </table>
+<?php if ($isFullOrder): ?>
+<p class="mm-eu-w-partial-note">
+    <?= $escaper->escapeHtml(__('This request covers all returnable items of the order.')) ?>
+    <a href="<?= $escaper->escapeUrl($block->getUrl('contact')) ?>"><?= $escaper->escapeHtml(__('Contact us for a partial return.')) ?></a>
+</p>
+<?php endif; ?>

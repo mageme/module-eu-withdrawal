@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Block\Withdraw;
 
+use MageMe\EUWithdrawal\Model\Frontend\SelectionModeConfig;
 use Magento\Framework\View\Element\Template;
 
 class ProgressStepper extends Template
@@ -17,6 +18,23 @@ class ProgressStepper extends Template
         3 => ['title' => 'Review & confirm',   'subtitle' => 'Review your return details and confirm'],
         4 => ['title' => 'Request submitted',  'subtitle' => "We'll confirm your request by email"],
     ];
+
+    private const STEP2_SUBTITLE_FULL_ORDER = 'Review the items to return';
+
+    /**
+     * Constructor.
+     *
+     * @param Template\Context $context
+     * @param SelectionModeConfig $selectionMode
+     * @param array $data
+     */
+    public function __construct(
+        Template\Context $context,
+        private readonly SelectionModeConfig $selectionMode,
+        array $data = [],
+    ) {
+        parent::__construct($context, $data);
+    }
 
     /**
      * Get active step.
@@ -38,6 +56,7 @@ class ProgressStepper extends Template
     public function getSteps(): array
     {
         $active = $this->getActiveStep();
+        $fullOrder = $this->selectionMode->isFullOrderMode();
         $out = [];
         foreach (self::STEPS as $n => $meta) {
             $status = match (true) {
@@ -45,7 +64,8 @@ class ProgressStepper extends Template
                 $n === $active => 'active',
                 default        => 'upcoming',
             };
-            $out[] = ['number' => $n, 'title' => $meta['title'], 'subtitle' => $meta['subtitle'], 'status' => $status];
+            $subtitle = $n === 2 && $fullOrder ? self::STEP2_SUBTITLE_FULL_ORDER : $meta['subtitle'];
+            $out[] = ['number' => $n, 'title' => $meta['title'], 'subtitle' => $subtitle, 'status' => $status];
         }
         return $out;
     }

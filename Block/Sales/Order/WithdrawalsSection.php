@@ -185,6 +185,7 @@ class WithdrawalsSection extends Template
             \MageMe\EUWithdrawal\Model\Frontend\Dto\PerOrderEligibility::REASON_ALREADY_IN_PROGRESS => 'submitted',
             \MageMe\EUWithdrawal\Model\Frontend\Dto\PerOrderEligibility::REASON_ART_16_EXCLUDED,
             \MageMe\EUWithdrawal\Model\Frontend\Dto\PerOrderEligibility::REASON_NO_ELIGIBLE_ITEMS => 'excluded',
+            \MageMe\EUWithdrawal\Model\Frontend\Dto\PerOrderEligibility::REASON_OUT_OF_REGION => null,
             default => null,
         };
     }

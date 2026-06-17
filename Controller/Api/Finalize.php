@@ -132,6 +132,16 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
         }
 
         $items = $this->normalizeItems($itemsRaw);
+
+        // Honour the per-item seal-broken declaration server-side, mirroring the
+        // form Submit controller: the JS zeroes the qty when "seal broken" is
+        // ticked, but a crafted/replayed JSON POST could still carry the item.
+        // This is the Art. 16(e)/(i) legal backstop for the SPA path.
+        $sealBroken = $this->parseSealBroken($payload);
+        if ($sealBroken !== []) {
+            $items = array_diff_key($items, $sealBroken);
+        }
+
         $itemReasons = $this->normalizeItemReasons($itemReasonsRaw, array_keys($items));
 
         try {
@@ -268,6 +278,31 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
             'ok' => false,
             'error' => (string) __('We could not find a matching order for that email.'),
         ]);
+    }
+
+    /**
+     * Parse the per-item seal-broken declaration from the JSON payload. Accepts
+     * `itemSeal` (the SPA key) and `item_seal_opened` (form-parity key); a value
+     * of 1 means the customer declared the seal broken. Returns a set of oids.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<int, true>
+     */
+    private function parseSealBroken(array $payload): array
+    {
+        $out = [];
+        foreach (['itemSeal', 'item_seal_opened'] as $key) {
+            $raw = $payload[$key] ?? null;
+            if (!is_array($raw)) {
+                continue;
+            }
+            foreach ($raw as $oid => $value) {
+                if (is_numeric($oid) && (int) $value === 1) {
+                    $out[(int) $oid] = true;
+                }
+            }
+        }
+        return $out;
     }
 
     /**

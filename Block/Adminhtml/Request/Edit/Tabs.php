@@ -66,6 +66,25 @@ class Tabs extends WidgetTabs
             ]);
         }
 
+        // Seal-photo gallery tab is provided by the Pro
+        // `MageMe_EUWithdrawalPhoto` add-on, whose adminhtml layout injects
+        // the block into referenceBlock mageme_eu_withdrawal_request_edit_tabs
+        // (this Tabs widget). Absent when Pro is not installed — the lookup
+        // returns null and the tab is silently skipped, same pattern as audit
+        // and precontract_proof.
+        $photosBlock = $this->getLayout()->getBlock('mageme_eu_withdrawal_request_photos');
+        if ($photosBlock) {
+            // The Pro block renders empty when no photos were provided — skip the
+            // tab entirely in that case rather than show an empty "Seal Photos".
+            $photosContent = $photosBlock->toHtml();
+            if (trim($photosContent) !== '') {
+                $this->addTab('seal_photos', [
+                    'label'   => __('Seal Photos'),
+                    'content' => $photosContent,
+                ]);
+            }
+        }
+
         return parent::_beforeToHtml();
     }
 }

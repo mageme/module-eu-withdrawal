@@ -17,6 +17,7 @@ use MageMe\EUWithdrawal\Model\EligibilityEngine;
 use MageMe\EUWithdrawal\Model\EligibilityRequestBuilder;
 use MageMe\EUWithdrawal\Model\EligibilitySnapshot;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
+use MageMe\EUWithdrawal\Model\Frontend\SelectionModeConfig;
 use MageMe\EUWithdrawal\Model\Lookup\OrderLookupByIncrementId;
 use MageMe\EUWithdrawal\Model\Receipt\ReceiptBuilder;
 use MageMe\EUWithdrawal\Model\Refund\RefundCalculator;
@@ -46,6 +47,7 @@ class RequestCreator
      * @param ScopeConfigInterface $scopeConfig
      * @param ReasonsConfigReader $reasonsConfig
      * @param ReceiptBuilder $receiptBuilder
+     * @param SelectionModeConfig $selectionModeConfig
      * @param ?ContentHasherInterface $contentHasher The base module ships with no binding;
      *        Pro `MageMe_EUWithdrawalReceiptVerify` registers a `<preference>`
      *        in its `etc/di.xml` to satisfy this argument.
@@ -62,6 +64,7 @@ class RequestCreator
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly ReasonsConfigReader $reasonsConfig,
         private readonly ReceiptBuilder $receiptBuilder,
+        private readonly SelectionModeConfig $selectionModeConfig,
         private readonly ?ContentHasherInterface $contentHasher = null,
     ) {
     }
@@ -97,7 +100,9 @@ class RequestCreator
         // Both paths drop Art.16-ineligible items (custom-made 16(c), perishable
         // 16(d)) so they are never recorded or refunded — the disabled item-selector
         // row omits them client-side; this is the server-side guarantee.
-        $items = $input->items !== []
+        // In full-order mode the client selection is ignored: the request always
+        // covers every returnable item, enforced server-side and not just in the UI.
+        $items = ($input->items !== [] && !$this->selectionModeConfig->isFullOrderMode($storeId))
             ? $this->filterEligibleItems($input->items, $result->getItemDecisions())
             : $this->defaultFullEligibleItems($order, $result->getItemDecisions());
 
@@ -185,6 +190,7 @@ class RequestCreator
             );
 
             $itemIds = [];
+            $requestItemMap = [];
             foreach ($breakdown->getItems() as $line) {
                 $decision = $result->getItemDecisions()[$line->orderItemId] ?? null;
                 $eligibility = EligibilitySnapshot::eligibilityFor($decision);
@@ -203,9 +209,11 @@ class RequestCreator
                     ItemInterface::REASON_CODE => $reason['code'] ?? null,
                     ItemInterface::REASON_TEXT => $reason['text'] ?? null,
                 ]);
-                $itemIds[] = (int) $connection->lastInsertId(
+                $requestItemId = (int) $connection->lastInsertId(
                     $this->resource->getTableName(self::TABLE_ITEM),
                 );
+                $itemIds[] = $requestItemId;
+                $requestItemMap[(int) $line->orderItemId] = $requestItemId;
             }
 
             // Freeze the canonical receipt: ReceiptBuilder reads the just-written
@@ -266,7 +274,9 @@ class RequestCreator
                 'request_id'         => $requestId,
                 'content_hash'       => $hash,
                 'order_id'           => (int) $order->getEntityId(),
+                'order_increment_id' => (string) $order->getIncrementId(),
                 'order_items'        => $order->getItems() ?? [],
+                'request_item_map'   => $requestItemMap,
                 'submitted_at'       => new \DateTimeImmutable('@' . $ts),
             ]);
 

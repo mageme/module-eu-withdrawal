@@ -1,11 +1,3 @@
-<!--
-/**
- * MageMe EU Withdrawal — module override of `Magento_Sales::email/shipment_new_guest.html`.
- * Identical to the upstream template plus a `<tr class="email-withdrawal">` row
- * that surfaces the withdrawal CTA injected by `Observer\Email\AppendWithdrawalCtaToOrderEmails`.
- * Activated by setting `sales_email/shipment/guest_template` in `etc/config.xml`.
- */
--->
 <!--@subject {{trans "Your %store_name order has shipped" store_name=$store.frontend_name}} @-->
 <!--@vars {
 "var formattedBillingAddress|raw":"Billing Address",

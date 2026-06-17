@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Plugin\Sales;
 
+use MageMe\EUWithdrawal\Model\Geo\CountryScope;
 use MageMe\EUWithdrawal\Model\ModuleConfig;
 use MageMe\EUWithdrawal\Model\Waiver\WaiverEventReader;
 use MageMe\EUWithdrawal\Model\Waiver\WaiverTextResolver;
@@ -39,6 +40,7 @@ class OrderPlacementGuard
      * @param ModuleConfig $moduleConfig
      * @param ScopeConfigInterface $scopeConfig
      * @param State $appState
+     * @param CountryScope $countryScope
      */
     public function __construct(
         private readonly WaiverEventReader $reader,
@@ -50,6 +52,7 @@ class OrderPlacementGuard
         private readonly ModuleConfig $moduleConfig,
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly State $appState,
+        private readonly CountryScope $countryScope,
     ) {
     }
 
@@ -74,6 +77,9 @@ class OrderPlacementGuard
         if ($this->isHeadless()
             && !$this->scopeConfig->isSetFlag(self::XML_ENFORCE_ON_API, ScopeInterface::SCOPE_STORE, $storeId)
         ) {
+            return [$cartId, $paymentMethod];
+        }
+        if (!$this->countryScope->quoteInScope($quote)) {
             return [$cartId, $paymentMethod];
         }
 

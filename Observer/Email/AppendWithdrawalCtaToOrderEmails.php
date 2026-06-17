@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Observer\Email;
 
 use MageMe\EUWithdrawal\Api\Email\WithdrawalLinkResolverInterface;
+use MageMe\EUWithdrawal\Model\Geo\CountryScope;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
@@ -28,10 +29,12 @@ class AppendWithdrawalCtaToOrderEmails implements ObserverInterface
      *
      * @param WithdrawalLinkResolverInterface $linkResolver
      * @param LoggerInterface $logger
+     * @param CountryScope $countryScope
      */
     public function __construct(
         private readonly WithdrawalLinkResolverInterface $linkResolver,
         private readonly LoggerInterface $logger,
+        private readonly CountryScope $countryScope,
     ) {
     }
 
@@ -55,6 +58,10 @@ class AppendWithdrawalCtaToOrderEmails implements ObserverInterface
 
         $orderEntityId = (int) $order->getEntityId();
         if ($orderEntityId <= 0) {
+            return;
+        }
+
+        if (!$this->countryScope->orderInScope($order)) {
             return;
         }
 
