@@ -245,7 +245,7 @@
         };
 
         const shippingPaid = Number(boot.shippingPaid || 0);
-        const shippingTax  = Number(boot.shippingTax || 0);
+        const shippingTax = Number(boot.shippingTax || 0);
         const eligibleItems = boot.eligibleItems || {};
 
         // Full-order mode: seed both stores by dispatching qty-changed for each
@@ -505,12 +505,16 @@
 
         const submitBtn = panels['3'].querySelector('[data-role="submit-request"]');
         const submitErr = panels['3'].querySelector('[data-role="submit-error"]');
+
         if (submitBtn) {
             submitBtn.addEventListener('click', async () => {
                 submitBtn.disabled = true;
                 submitErr.textContent = '';
-                // Collect per-item reasons. Only include items with a non-empty
-                // selection — backend further validates oid is in the items map.
+
+                const pageParams = new URLSearchParams(window.location.search);
+                const pageToken = pageParams.get('t');
+                const pageOrderId = pageParams.get('order_id');
+
                 const itemReasons = {};
                 for (const [id] of state.items.entries()) {
                     const r = state.itemReasons.get(id);
@@ -518,46 +522,49 @@
                     const code = r.code || '';
                     const text = (r.text || '').trim();
                     if (code === '' && text === '') continue;
+
                     itemReasons[String(id)] = {
                         code: code,
                         text: code === 'other' ? text : '',
                     };
                 }
-                // Per-item seal-broken declaration — sent so the server enforces
-                // the Art. 16(e)/(i) exclusion itself, not just via client qty-zeroing.
+
                 const itemSeal = {};
                 document.querySelectorAll('input[data-role="seal-input"][value="1"]').forEach((r) => {
                     if (!r.checked) return;
                     const row = r.closest('[data-role="seal-row"]');
-                    if (row && row.dataset.itemId) itemSeal[String(row.dataset.itemId)] = 1;
+                    if (row && row.dataset.itemId) {
+                        itemSeal[String(row.dataset.itemId)] = 1;
+                    }
                 });
+
                 const body = {
                     orderId: boot.orderIncrementId || '',
+                    orderEntityId: pageOrderId || '',           // ← sends entity ID when available
                     items: Object.fromEntries(
-                        Array.from(state.items.entries()).map(([id, d]) => [String(id), d.qty]),
+                        Array.from(state.items.entries()).map(([id, d]) => [String(id), d.qty])
                     ),
                     itemReasons,
                     itemSeal,
                     formKey: boot.formKey || '',
                 };
-                // Propagate the magic-link token AND the verified-order id so
-                // the server-side CustomerIdentityFactory can resolve the
-                // guest's bound order and pull the authoritative email/name
-                // from it. `?t=` is the Pro path; `?order_id=` is the Free
-                // session-verified fallback (set by Lookup on a successful
-                // email+order_id match) — without it, the JSON-POST URL has no
-                // query string and the factory cannot identify the guest.
-                const pageParams = new URLSearchParams(window.location.search);
-                const pageToken = pageParams.get('t');
-                const pageOrderId = pageParams.get('order_id');
+
                 const extra = [];
                 if (pageToken) extra.push('t=' + encodeURIComponent(pageToken));
                 if (pageOrderId) extra.push('order_id=' + encodeURIComponent(pageOrderId));
-                let finalizeUrl = boot.finalizeUrl;
+
+                let finalizeUrl = boot.finalizeUrl || (window.location.origin + '/withdraw-contract/api/finalize');
                 if (extra.length) {
-                    finalizeUrl += (finalizeUrl.indexOf('?') === -1 ? '?' : '&') + extra.join('&');
+                    if (finalizeUrl.indexOf('?') !== -1) {
+                        finalizeUrl = finalizeUrl.split('?')[0];
+                    }
+                    finalizeUrl += '?' + extra.join('&');
                 }
-                const beforeSubmit = new CustomEvent('mm-eu-w:before-submit', { cancelable: true, detail: { body } });
+
+                const beforeSubmit = new CustomEvent('mm-eu-w:before-submit', {
+                    cancelable: true,
+                    detail: { body }
+                });
                 if (!document.dispatchEvent(beforeSubmit)) {
                     if (beforeSubmit.detail.cancelMessage) {
                         submitErr.textContent = beforeSubmit.detail.cancelMessage;
@@ -565,6 +572,7 @@
                     submitBtn.disabled = false;
                     return;
                 }
+
                 try {
                     const resp = await fetch(finalizeUrl, {
                         method: 'POST',
@@ -577,16 +585,24 @@
                         },
                         body: JSON.stringify(body),
                     });
-                    const data = await resp.json().catch(() => ({ ok: false, error: (boot.i18n && boot.i18n.invalidServerReply) || 'Invalid server response.' }));
+
+                    const data = await resp.json().catch(() => ({
+                        ok: false,
+                        error: (boot.i18n && boot.i18n.invalidServerReply) || 'Invalid server response.'
+                    }));
+
                     if (resp.ok && data.ok) {
                         renderSubmitted(data);
                         showPanel('4');
                     } else {
-                        submitErr.textContent = data.error || (boot.i18n && boot.i18n.submissionFailed) || 'Submission failed. Please try again.';
+                        submitErr.textContent = data.error ||
+                            (boot.i18n && boot.i18n.submissionFailed) ||
+                            'Submission failed. Please try again.';
                         submitBtn.disabled = false;
                     }
                 } catch (e) {
-                    submitErr.textContent = (boot.i18n && boot.i18n.networkError) || 'Network error. Please try again.';
+                    submitErr.textContent = (boot.i18n && boot.i18n.networkError) ||
+                        'Network error. Please try again.';
                     submitBtn.disabled = false;
                 }
             });
