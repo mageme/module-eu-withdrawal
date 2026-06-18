@@ -31,6 +31,7 @@ use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\UrlInterface;
 use Magento\Framework\Locale\ResolverInterface as LocaleResolverInterface;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -84,6 +85,7 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
         private readonly RequestRepositoryInterface $requestRepository,
         private readonly ReasonsConfigReader $reasonsConfig,
         private readonly LocaleResolverInterface $localeResolver,
+        private readonly OrderRepositoryInterface $orderRepository,   // ← Added
     ) {
     }
 
@@ -98,36 +100,64 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
         $result = $this->jsonFactory->create();
         $payload = $this->readPayload();
 
-        $orderIncrementId = trim((string) ($payload['orderId'] ?? $payload['order_id'] ?? ''));
-        $email = trim((string) ($payload['email'] ?? ''));
-        $name = trim((string) ($payload['name'] ?? ''));
+        $orderIncrementId = trim((string)($payload['orderId'] ?? $payload['order_id'] ?? ''));
+        $orderEntityId = (int)($payload['orderEntityId'] ?? $payload['order_entity_id']
+            ?? $this->request->getParam('order_id')
+            ?? $this->request->getParam('orderId')
+            ?? 0);
+
+        // If we only have entity_id (common with direct ?order_id= links), resolve increment_id
+        if ($orderIncrementId === '' && $orderEntityId > 0)
+        {
+            try
+            {
+                $orderByEntity = $this->orderRepository->get($orderEntityId);
+                $orderIncrementId = trim((string)$orderByEntity->getIncrementId());
+            }
+            catch (\Throwable $e)
+            {
+                $this->logger->warning(
+                    sprintf('EUWithdrawal: Could not load order by entity_id=%d. Error: %s',
+                        $orderEntityId, $e->getMessage())
+                );
+            }
+        }
+        $email = trim((string)($payload['email'] ?? ''));
+        $name = trim((string)($payload['name'] ?? ''));
         $itemsRaw = $payload['items'] ?? [];
         $itemReasonsRaw = $payload['itemReasons'] ?? [];
 
-        if ($this->customerSession->isLoggedIn()) {
+        if ($this->customerSession->isLoggedIn())
+        {
             $customer = $this->customerSession->getCustomer();
-            $email = (string) $customer->getEmail();
+            $email = (string)$customer->getEmail();
             $name = trim(($customer->getFirstname() ?? '') . ' ' . ($customer->getLastname() ?? ''));
-        } else {
+        }
+        else
+        {
             // Guest flow: pull name/email from the bound order (verified via
             // magic-link token OR Lookup-session). Refuses to trust whatever
             // the JS payload contained — server is authoritative.
             $identity = $this->identityFactory->create();
             $guestOrder = null;
-            if ($identity->boundOrderEntityId !== null && $orderIncrementId !== '') {
+            if ($identity->boundOrderEntityId !== null && $orderIncrementId !== '')
+            {
                 $byId = $this->orderLookup->find($orderIncrementId);
-                if ($byId !== null && (int) $byId->getEntityId() === $identity->boundOrderEntityId) {
+                if ($byId !== null && (int)$byId->getEntityId() === $identity->boundOrderEntityId)
+                {
                     $guestOrder = $byId;
                 }
             }
-            if ($guestOrder !== null) {
-                $email = (string) $guestOrder->getCustomerEmail();
+            if ($guestOrder !== null)
+            {
+                $email = (string)$guestOrder->getCustomerEmail();
                 $name = trim(($guestOrder->getCustomerFirstname() ?? '')
                     . ' ' . ($guestOrder->getCustomerLastname() ?? ''));
             }
         }
 
-        if ($orderIncrementId === '' || $email === '' || $name === '') {
+        if ($orderIncrementId === '' || $email === '' || $name === '')
+        {
             return $this->uniformFail($result);
         }
 
@@ -138,49 +168,57 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
         // ticked, but a crafted/replayed JSON POST could still carry the item.
         // This is the Art. 16(e)/(i) legal backstop for the SPA path.
         $sealBroken = $this->parseSealBroken($payload);
-        if ($sealBroken !== []) {
+        if ($sealBroken !== [])
+        {
             $items = array_diff_key($items, $sealBroken);
         }
 
         $itemReasons = $this->normalizeItemReasons($itemReasonsRaw, array_keys($items));
 
-        try {
+        try
+        {
             $input = new CreateRequestInput(
                 orderIncrementId: $orderIncrementId,
                 customerName: $name,
                 customerEmail: $email,
                 reasonText: null,
                 jurisdiction: 'EU',
-                locale: (string) $this->localeResolver->getLocale(),
-                ip: (string) $this->request->getServer('REMOTE_ADDR', ''),
-                userAgent: (string) $this->request->getServer('HTTP_USER_AGENT', ''),
-                customerId: $this->customerSession->isLoggedIn() ? (int) $this->customerSession->getCustomerId() : null,
+                locale: (string)$this->localeResolver->getLocale(),
+                ip: (string)$this->request->getServer('REMOTE_ADDR', ''),
+                userAgent: (string)$this->request->getServer('HTTP_USER_AGENT', ''),
+                customerId: $this->customerSession->isLoggedIn() ? (int)$this->customerSession->getCustomerId() : null,
                 items: $items,
                 itemReasons: $itemReasons,
                 referrerHost: $this->resolveReferrerHost(),
             );
             $created = $this->antiEnumeration->process(
                 $input,
-                fn (CreateRequestInput $i) => $this->requestCreator->create($i),
+                fn(CreateRequestInput $i) => $this->requestCreator->create($i),
             );
-        } catch (NoEligibleItemsException | ItemCapacityExceededException) {
-            return $this->fail($result, (string) __('Some items are no longer eligible. Please reload and try again.'));
-        } catch (\Throwable $e) {
+        }
+        catch (NoEligibleItemsException | ItemCapacityExceededException)
+        {
+            return $this->fail($result, (string)__('Some items are no longer eligible. Please reload and try again.'));
+        }
+        catch (\Throwable $e)
+        {
             $this->logger->error('EUWithdrawal Finalize API failed: ' . $e->getMessage());
-            return $this->fail($result, (string) __('We could not process your request. Please try again.'));
+            return $this->fail($result, (string)__('We could not process your request. Please try again.'));
         }
 
-        if ($created === null || !$created->isSuccess()) {
+        if ($created === null || !$created->isSuccess())
+        {
             return $this->uniformFail($result);
         }
 
-        return $this->success($result, (int) $created->getRequestId(), $orderIncrementId, $email);
+        return $this->success($result, (int)$created->getRequestId(), $orderIncrementId, $email);
     }
 
     private function resolveReferrerHost(): ?string
     {
-        $referer = (string) $this->request->getServer('HTTP_REFERER', '');
-        if ($referer === '') {
+        $referer = (string)$this->request->getServer('HTTP_REFERER', '');
+        if ($referer === '')
+        {
             return null;
         }
         $host = parse_url($referer, PHP_URL_HOST);
@@ -199,23 +237,27 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
     private function success(JsonResult $result, int $requestId, string $orderIncrementId, string $customerEmail): JsonResult
     {
         $order = $this->orderLookup->find($orderIncrementId);
-        $currency = $order !== null ? (string) $order->getOrderCurrencyCode() : 'EUR';
+        $currency = $order !== null ? (string)$order->getOrderCurrencyCode() : 'EUR';
         $items = [];
         $itemsTotal = 0.0;
 
-        try {
+        try
+        {
             $withdrawalItems = $this->itemRepository->getByRequest($requestId);
-            foreach ($withdrawalItems as $wi) {
-                $refund = (float) $wi->getRefundAmount();
+            foreach ($withdrawalItems as $wi)
+            {
+                $refund = (float)$wi->getRefundAmount();
                 $itemsTotal += $refund;
-                $orderItem = $order?->getItemById((int) $wi->getOrderItemId());
+                $orderItem = $order?->getItemById((int)$wi->getOrderItemId());
                 $items[] = [
-                    'name' => $orderItem !== null ? (string) $orderItem->getName() : (string) __('Item'),
-                    'qty' => (int) $wi->getQty(),
+                    'name' => $orderItem !== null ? (string)$orderItem->getName() : (string)__('Item'),
+                    'qty' => (int)$wi->getQty(),
                     'priceFormatted' => $this->formatPrice($refund, $currency),
                 ];
             }
-        } catch (\Throwable $e) {
+        }
+        catch (\Throwable $e)
+        {
             $this->logger->warning('EUWithdrawal Finalize summary hydration failed: ' . $e->getMessage());
         }
 
@@ -224,18 +266,22 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
         // summary total matches RefundCalculator, the receipt and the order
         // view. RequestCreator already applies the merchant prefix at insert
         // time, so increment_id is authoritative; falls back to the numeric id.
-        $incrementId = (string) $requestId;
+        $incrementId = (string)$requestId;
         $shippingRefund = 0.0;
         $orderAdjustment = 0.0;
-        try {
+        try
+        {
             $request = $this->requestRepository->get($requestId);
-            $candidate = (string) $request->getIncrementId();
-            if ($candidate !== '') {
+            $candidate = (string)$request->getIncrementId();
+            if ($candidate !== '')
+            {
                 $incrementId = $candidate;
             }
-            $shippingRefund = (float) $request->getShippingRefund();
-            $orderAdjustment = (float) $request->getOrderAdjustmentRefund();
-        } catch (\Throwable) {
+            $shippingRefund = (float)$request->getShippingRefund();
+            $orderAdjustment = (float)$request->getOrderAdjustmentRefund();
+        }
+        catch (\Throwable)
+        {
             // keep numeric fallback + zero shipping/adjustment
         }
 
@@ -248,7 +294,7 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
             'totalRefundFormatted' => $this->formatPrice($itemsTotal + $shippingRefund + $orderAdjustment, $currency),
             'currency' => $currency,
             'items' => $items,
-            'viewReturnUrl' => $order !== null ? $this->getOrderViewUrl((int) $order->getEntityId()) : '',
+            'viewReturnUrl' => $order !== null ? $this->getOrderViewUrl((int)$order->getEntityId()) : '',
         ]);
     }
 
@@ -276,7 +322,7 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
         $this->responseTimer->pad(200);
         return $result->setData([
             'ok' => false,
-            'error' => (string) __('We could not find a matching order for that email.'),
+            'error' => (string)__('We could not find a matching order for that email.'),
         ]);
     }
 
@@ -291,14 +337,18 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
     private function parseSealBroken(array $payload): array
     {
         $out = [];
-        foreach (['itemSeal', 'item_seal_opened'] as $key) {
+        foreach (['itemSeal', 'item_seal_opened'] as $key)
+        {
             $raw = $payload[$key] ?? null;
-            if (!is_array($raw)) {
+            if (!is_array($raw))
+            {
                 continue;
             }
-            foreach ($raw as $oid => $value) {
-                if (is_numeric($oid) && (int) $value === 1) {
-                    $out[(int) $oid] = true;
+            foreach ($raw as $oid => $value)
+            {
+                if (is_numeric($oid) && (int)$value === 1)
+                {
+                    $out[(int)$oid] = true;
                 }
             }
         }
@@ -311,14 +361,17 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
      */
     private function normalizeItems($itemsRaw): array
     {
-        if (!is_array($itemsRaw)) {
+        if (!is_array($itemsRaw))
+        {
             return [];
         }
         $out = [];
-        foreach ($itemsRaw as $key => $value) {
-            $id = (int) $key;
-            $qty = (int) $value;
-            if ($id > 0 && $qty > 0) {
+        foreach ($itemsRaw as $key => $value)
+        {
+            $id = (int)$key;
+            $qty = (int)$value;
+            if ($id > 0 && $qty > 0)
+            {
                 $out[$id] = $qty;
             }
         }
@@ -332,26 +385,32 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
      */
     private function normalizeItemReasons($raw, array $allowedOids): array
     {
-        if (!is_array($raw)) {
+        if (!is_array($raw))
+        {
             return [];
         }
         $allowedCodes = $this->reasonsConfig->getAllowedCodes();
         $allowed = array_flip($allowedOids);
         $out = [];
-        foreach ($raw as $key => $value) {
-            $oid = (int) $key;
-            if ($oid <= 0 || !isset($allowed[$oid]) || !is_array($value)) {
+        foreach ($raw as $key => $value)
+        {
+            $oid = (int)$key;
+            if ($oid <= 0 || !isset($allowed[$oid]) || !is_array($value))
+            {
                 continue;
             }
             $code = isset($value['code']) && is_string($value['code']) ? trim($value['code']) : '';
             $text = isset($value['text']) && is_string($value['text']) ? trim($value['text']) : '';
-            if ($code !== '' && !isset($allowedCodes[$code])) {
+            if ($code !== '' && !isset($allowedCodes[$code]))
+            {
                 $code = '';
             }
-            if (strlen($text) > 500) {
+            if (strlen($text) > 500)
+            {
                 $text = substr($text, 0, 500);
             }
-            if ($code === '' && $text === '') {
+            if ($code === '' && $text === '')
+            {
                 continue;
             }
             $out[$oid] = [
@@ -367,21 +426,26 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
      */
     private function readPayload(): array
     {
-        $contentType = (string) $this->request->getHeader('Content-Type');
-        if (stripos($contentType, 'application/json') !== false) {
-            $raw = (string) $this->request->getContent();
-            if ($raw === '') {
+        $contentType = (string)$this->request->getHeader('Content-Type');
+        if (stripos($contentType, 'application/json') !== false)
+        {
+            $raw = (string)$this->request->getContent();
+            if ($raw === '')
+            {
                 return [];
             }
-            try {
+            try
+            {
                 $decoded = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
                 return is_array($decoded) ? $decoded : [];
-            } catch (\JsonException) {
+            }
+            catch (\JsonException)
+            {
                 return [];
             }
         }
         $post = $this->request->getPost();
-        return $post !== null ? (array) $post->toArray() : [];
+        return $post !== null ? (array)$post->toArray() : [];
     }
 
     /**
@@ -393,7 +457,7 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
      */
     private function formatPrice(float $amount, string $currency): string
     {
-        return (string) $this->priceCurrency->format(
+        return (string)$this->priceCurrency->format(
             $amount,
             false,
             PriceCurrencyInterface::DEFAULT_PRECISION,
@@ -432,12 +496,13 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
      */
     public function validateForCsrf(\Magento\Framework\App\RequestInterface $request): ?bool
     {
-        $headerKey = (string) $this->request->getHeader('X-Magento-Form-Key');
+        $headerKey = (string)$this->request->getHeader('X-Magento-Form-Key');
         $bodyKey = '';
         $payload = $this->readPayload();
-        $bodyKey = (string) ($payload['formKey'] ?? $payload['form_key'] ?? '');
+        $bodyKey = (string)($payload['formKey'] ?? $payload['form_key'] ?? '');
         $presented = $headerKey !== '' ? $headerKey : $bodyKey;
-        if ($presented === '') {
+        if ($presented === '')
+        {
             return false;
         }
         $request->setParam('form_key', $presented);
