@@ -63,7 +63,8 @@ $orderForMeta   = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\Orde
 // Hand the resolved order to the optional seal-photo step (Pro) so it can gate
 // on sealed items and write its session order-state; renders nothing on Free.
 $photoStepChild = $block->getChildBlock('photo_step');
-if ($photoStepChild !== null && $orderForMeta !== null) {
+if ($photoStepChild instanceof \Magento\Framework\View\Element\AbstractBlock && $orderForMeta !== null)
+{
     $photoStepChild->setData('order', $orderForMeta);
 }
 if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector) {
