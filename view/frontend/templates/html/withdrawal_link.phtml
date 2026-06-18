@@ -1,0 +1,34 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+
+/**
+ * Drop-in withdrawal link for custom themes. Wire it into any container with the
+ * WithdrawalLink view model — placement is yours, and it renders nothing while
+ * the module master switch is off:
+ *
+ *   <block name="my.withdrawal.link"
+ *          template="MageMe_EUWithdrawal::html/withdrawal_link.phtml">
+ *       <arguments>
+ *           <argument name="view_model" xsi:type="object">
+ *               MageMe\EUWithdrawal\ViewModel\Frontend\WithdrawalLink
+ *           </argument>
+ *       </arguments>
+ *   </block>
+ *
+ * On Hyvä themes resolve the same view model via $viewModels->require(...).
+ * Style .mageme-withdrawal-link in your theme; keep it no smaller or lower-contrast
+ * than your other legal footer links (see view/.../css/source/_withdrawal-a11y.less).
+ */
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \MageMe\EUWithdrawal\ViewModel\Frontend\WithdrawalLink $viewModel */
+$viewModel = $block->getViewModel();
+?>
+<?php if ($viewModel instanceof \MageMe\EUWithdrawal\ViewModel\Frontend\WithdrawalLink && $viewModel->isEnabled()): ?>
+<a class="mageme-withdrawal-link" href="<?= $escaper->escapeUrl($viewModel->getUrl()) ?>">
+    <?= $escaper->escapeHtml($viewModel->getLabel()) ?>
+</a>
+<?php endif; ?>

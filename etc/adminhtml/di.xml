@@ -8,4 +8,8 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Config\Model\Config\Source\Email\Template">
+        <plugin name="mageme_eu_withdrawal_add_withdrawal_template_option"
+                type="MageMe\EUWithdrawal\Plugin\Config\Source\Email\AddWithdrawalTemplateOption"/>
+    </type>
 </config>

@@ -30,6 +30,7 @@ use Magento\Store\Model\ScopeInterface;
 class ModuleConfig
 {
     public const XML_ENABLED = 'mageme_eu_withdrawal/general/enabled';
+    public const XML_FOOTER_LINK = 'mageme_eu_withdrawal/frontend/placements/footer_link';
 
     /**
      * Constructor.
@@ -51,6 +52,21 @@ class ModuleConfig
     {
         return $this->scopeConfig->isSetFlag(
             self::XML_ENABLED,
+            ScopeInterface::SCOPE_STORE,
+            $storeId,
+        );
+    }
+
+    /**
+     * Is the storefront footer link placement enabled.
+     *
+     * @param ?int $storeId
+     * @return bool
+     */
+    public function isFooterLinkEnabled(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_FOOTER_LINK,
             ScopeInterface::SCOPE_STORE,
             $storeId,
         );

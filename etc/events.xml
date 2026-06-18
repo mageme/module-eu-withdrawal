@@ -76,5 +76,7 @@
     <event name="mageme_eu_withdrawal_audit_admin_status_changed">
         <observer name="mageme_eu_withdrawal_status_change_notifier"
                   instance="MageMe\EUWithdrawal\Observer\StatusChangeNotifier"/>
+        <observer name="mageme_eu_withdrawal_add_order_comment_on_status_change"
+                  instance="MageMe\EUWithdrawal\Observer\AddOrderCommentOnStatusChange"/>
     </event>
 </config>

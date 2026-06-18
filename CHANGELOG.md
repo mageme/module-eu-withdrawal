@@ -1,10 +1,20 @@
+## 1.0.6
+
++ New: the withdrawal-CTA order and shipment emails can now be selected directly from the Sales Emails template dropdown - no need to clone a template first
++ New: approving, denying or cancelling a request now adds a short note to the related order's timeline (refund amount, denial reason, or who cancelled), so the outcome is visible on the order itself
++ New: a drop-in "Withdraw from contract" link block for custom themes, so the link can be placed anywhere in the storefront
+- Fix: status emails now send guests to the withdrawal page instead of a login page they cannot use
+- Fix: the "Show Footer Link" setting now hides the storefront footer link when it is turned off
+- Fix: the withdrawal form no longer errors on themes that do not include the optional photo-evidence step
+* Other: the submission notification email now lists all of its available variables in the admin template editor
+
 ## 1.0.5
 
 + New: Item Selection setting - the withdrawal form can run in "Full order" mode where the request always covers all returnable items
-- Fix: final confirmation button now renders the legally required "Confirm withdrawal" label in the customer's language instead of "Submit return request"
 + New: Extension points for the Pro photo evidence step on the withdrawal form
-- Fix: request creation no longer fails when a third-party extension dispatches the request-created event without eligibility data
 + New: Country Scope setting - optionally limit the self-service withdrawal flow to customers in selected countries
+- Fix: final confirmation button now renders the legally required "Confirm withdrawal" label in the customer's language instead of "Submit return request"
+- Fix: request creation no longer fails when a third-party extension dispatches the request-created event without eligibility data
 - Fix: the "Withdraw from contract" link in order and shipment emails now renders when the email is resent from the admin or sent by a background job
 - Fix: an order now stays available for withdrawal through the whole of its final eligible day
 - Fix: a logged-in customer opening a withdrawal link for an order that is not their own is now turned away

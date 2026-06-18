@@ -52,6 +52,7 @@ class StatusChangeNotifier
      * @param LocaleResolver $localeResolver
      * @param TranslateInterface $translate
      * @param RouteResolver $routeResolver
+     * @param CustomerViewUrlResolver $customerViewUrl
      */
     public function __construct(
         private readonly TransportBuilder $transportBuilder,
@@ -67,6 +68,7 @@ class StatusChangeNotifier
         private readonly LocaleResolver $localeResolver,
         private readonly TranslateInterface $translate,
         private readonly RouteResolver $routeResolver,
+        private readonly CustomerViewUrlResolver $customerViewUrl,
     ) {
     }
 
@@ -195,7 +197,7 @@ class StatusChangeNotifier
         }
 
         // CTA target depends on email type:
-        //  - approved          → order page (refund detail block lives there)
+        //  - approved          → order page (registered) / withdrawal entry (guest)
         //  - cancelled_admin   → /withdraw-contract/ ("Submit a new request")
         //  - cancelled_self    → /sales/order/history/ ("Back to my orders")
         //  - other             → order page (closest thing to "your request")
@@ -204,10 +206,20 @@ class StatusChangeNotifier
                 $baseUrl . '/' . RouteResolver::CANONICAL_FRONT_NAME . '/',
                 $storeId,
             ),
-            EmailConfig::TYPE_CANCELLED_SELF  => $baseUrl . '/sales/order/history/',
-            default => $orderId > 0
-                ? $baseUrl . '/sales/order/view/order_id/' . $orderId . '/'
-                : $baseUrl . '/customer/account/',
+            EmailConfig::TYPE_CANCELLED_SELF  => ((int) $request->getCustomerId()) > 0
+                ? $baseUrl . '/sales/order/history/'
+                : $this->customerViewUrl->resolveForCustomer(
+                    $orderId,
+                    $request->getCustomerId(),
+                    $storeId,
+                    $baseUrl,
+                ),
+            default => $this->customerViewUrl->resolveForCustomer(
+                $orderId,
+                $request->getCustomerId(),
+                $storeId,
+                $baseUrl,
+            ),
         };
 
         $refundTotal = $dto !== null ? (string) ($dto->refund['total'] ?? '0.00') : '0.00';

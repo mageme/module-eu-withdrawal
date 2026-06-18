@@ -52,13 +52,23 @@ class FooterLink extends Template
     }
 
     /**
+     * Whether the storefront footer link should render.
+     *
+     * @return bool
+     */
+    public function isVisible(): bool
+    {
+        return $this->moduleConfig->isEnabled() && $this->moduleConfig->isFooterLinkEnabled();
+    }
+
+    /**
      * To html.
      *
      * @return string
      */
     protected function _toHtml(): string
     {
-        if (!$this->moduleConfig->isEnabled()) {
+        if (!$this->isVisible()) {
             return '';
         }
         return parent::_toHtml();

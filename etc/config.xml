@@ -133,6 +133,9 @@
                 <mageme_eu_withdrawal_lookup/>
             </type_for>
         </recaptcha_frontend>
-        <!-- sales_email defaults moved to MageMe_EUWithdrawalMagicLink/etc/config.xml (phase-35). -->
+        <!-- No sales_email/*/template default is set: the order/shipment withdrawal-CTA
+             templates are opt-in. Enable by selecting the "MageMe EU Withdrawal — …"
+             template under Stores > Configuration > Sales > Sales Emails, or by adding
+             the withdrawal_link_url snippet to an existing template. -->
     </default>
 </config>

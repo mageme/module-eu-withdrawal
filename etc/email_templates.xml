@@ -69,7 +69,10 @@
     <!-- Sales / Shipment overrides — vanilla Magento `Magento_Sales::email/order_new.html`
          + one extra `<tr class="email-withdrawal">` row that surfaces the
          withdrawal CTA injected by `Observer\Email\AppendWithdrawalCtaToOrderEmails`.
-         Opt-in via Marketing → Email Templates → New Template → Template = "MageMe EU Withdrawal — …".
+         Opt-in by picking "MageMe EU Withdrawal — …" as the template at
+         Stores → Configuration → Sales → Sales Emails (listed there by
+         `Plugin\Config\Source\Email\AddWithdrawalTemplateOption`), or by basing a
+         custom template on it under Marketing → Email Templates.
          The CTA URL is resolved through `WithdrawalLinkResolverInterface`:
          Default → lookup-form URL; Pro `MageMe_EUWithdrawalMagicLink`
          override → tokenised one-click URL. -->

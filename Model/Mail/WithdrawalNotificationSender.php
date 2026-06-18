@@ -50,6 +50,7 @@ class WithdrawalNotificationSender
      * @param Emulation $emulation
      * @param LocaleResolver $localeResolver
      * @param TranslateInterface $translate
+     * @param CustomerViewUrlResolver $customerViewUrl
      */
     public function __construct(
         private readonly TransportBuilder $transportBuilder,
@@ -65,6 +66,7 @@ class WithdrawalNotificationSender
         private readonly Emulation $emulation,
         private readonly LocaleResolver $localeResolver,
         private readonly TranslateInterface $translate,
+        private readonly CustomerViewUrlResolver $customerViewUrl,
     ) {
     }
 
@@ -127,6 +129,7 @@ class WithdrawalNotificationSender
             $requestIncrementId = $withdrawalIncrementId;
             $refundTotalFormatted = '';
             $orderEntityId = 0;
+            $customerId = null;
             if ($requestId > 0) {
                 $itemsTable = $this->itemsTableFactory->create();
                 $itemsTable->setData('store_id', $resolvedStoreId);
@@ -137,6 +140,7 @@ class WithdrawalNotificationSender
                     $req = $this->requestRepository->get($requestId);
                     $submittedAt = $this->emailData->formatDate((string) $req->getCreatedAt(), $resolvedStoreId);
                     $orderEntityId = (int) $req->getOrderId();
+                    $customerId = $req->getCustomerId();
                     $refundMethod = $this->emailData->getRefundMethod($orderEntityId);
                     $requestIncrementId = (string) ($req->getIncrementId() ?? $withdrawalIncrementId);
                 } catch (\Throwable) {
@@ -166,9 +170,12 @@ class WithdrawalNotificationSender
                 'support_email'           => $layout->getSupportEmail(),
                 'store_name'              => $layout->getStoreName(),
                 'store_url'               => $store->getBaseUrl(),
-                'view_url'                => $orderEntityId > 0
-                    ? rtrim($store->getBaseUrl(), '/') . '/sales/order/view/order_id/' . $orderEntityId . '/'
-                    : rtrim($store->getBaseUrl(), '/') . '/customer/account/',
+                'view_url'                => $this->customerViewUrl->resolveForCustomer(
+                    $orderEntityId,
+                    $customerId,
+                    $resolvedStoreId,
+                    $store->getBaseUrl(),
+                ),
                 'submitted_at_formatted'  => $submittedAt,
                 'refund_method'           => $refundMethod,
                 'request_increment_id'    => $requestIncrementId,
