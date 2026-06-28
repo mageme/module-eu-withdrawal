@@ -11,19 +11,22 @@ class RetryScheduler
 {
     /** @var array<int,int> */
     private const DELAYS = [1 => 60, 2 => 300, 3 => 1800];
+    private const MAX_DELAY = 1800;
 
     /**
      * Next.
      *
      * @param int $attempts
      * @param \DateTimeImmutable $now
+     * @param int $maxAttempts
      * @return ?\DateTimeImmutable
      */
-    public function next(int $attempts, \DateTimeImmutable $now): ?\DateTimeImmutable
+    public function next(int $attempts, \DateTimeImmutable $now, int $maxAttempts = 3): ?\DateTimeImmutable
     {
-        if (!isset(self::DELAYS[$attempts])) {
+        if ($attempts < 1 || $attempts > $maxAttempts) {
             return null;
         }
-        return $now->modify('+' . self::DELAYS[$attempts] . ' seconds');
+        $delay = self::DELAYS[$attempts] ?? self::MAX_DELAY;
+        return $now->modify('+' . $delay . ' seconds');
     }
 }

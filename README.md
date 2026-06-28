@@ -1,7 +1,7 @@
 # MageMe EU Withdrawal for Magento 2
 
 > EU withdrawal button for Magento 2 — the consumer right-of-withdrawal flow
-> required by 19 June 2026 under Article 11a of the
+> required under Article 11a of the
 > [Consumer Rights Directive (2011/83/EU)](https://eur-lex.europa.eu/eli/dir/2011/83/oj) as amended
 > by [Directive (EU) 2023/2673](https://eur-lex.europa.eu/eli/dir/2023/2673/oj).
 
@@ -11,7 +11,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.1%20%7C%208.2%20%7C%208.3%20%7C%208.4%20%7C%208.5-777BB4.svg?style=flat-square)](https://php.net)
 [![License](https://img.shields.io/badge/license-MageMe%20EULA-blue.svg?style=flat-square)](https://mageme.com/license/)
 
-The Magento 2 withdrawal button your EU storefront needs before the 19 June 2026 deadline — a storefront-ready, guided flow (find order → select items → review & confirm) with durable-medium receipt emails and Annex I content in 22 EU locales, on Luma, Hyvä, and Breeze.
+The Magento 2 withdrawal button your EU storefront needs — a storefront-ready, guided flow (find order → select items → review & confirm) with durable-medium receipt emails and Annex I content in 22 EU locales. It runs on Luma and Breeze out of the box, with companion modules for Hyvä and Hyvä Checkout.
 
 It adds only the legal withdrawal step required under Art. 11a, and works alongside your existing RMA / refund process rather than replacing it.
 
@@ -23,11 +23,15 @@ It adds only the legal withdrawal step required under Art. 11a, and works alongs
 
 ## What it does
 
-- **Storefront withdrawal flow** — guided form (find order → select items → review & confirm) for guests and registered customers at `/withdraw-contract/`
-- **Annex I in 22 EU locales** — verbatim EUR-Lex translations where available, theme-overridable per locale
+- **Guided storefront flow** — find order → select items → review & confirm at `/withdraw-contract/`, for registered customers and guests (lookup by order number and the email on the order), with per-item or full-order selection
+- **Article 16 exclusions** — presets for custom-made, perishable, sealed-hygiene, sealed audio/video, and digital-content goods, configurable per category with merchant override
+- **Digital-content waiver at checkout (Art. 16(m))** — express-consent and right-loss acknowledgment step, with matching enforcement on REST/GraphQL and headless orders
+- **Eligibility controls** — configurable withdrawal window, handling for orders with no recorded delivery date, merchant-excluded order statuses, and automatic exclusion of canceled orders
+- **Scope controls** — limit the self-service flow by country and by customer group (for example, hide it from B2B / wholesale groups while guests and consumers keep it)
 - **Durable-medium receipt** — confirmation email with a frozen snapshot of the legal text shown to the consumer
-- **Admin grid and workflow** — filterable request list, mass actions, status state machine, CSV export
-- **Article 16 exclusions** — preset list configurable per category, with merchant override
+- **Annex I in 22 EU locales** — pre-contractual notice and model withdrawal form, verbatim EUR-Lex translations where available, theme-overridable per locale
+- **Pro-rata refund calculation** — Art. 13(2)/14(2) totals (with order-level adjustments) shown in the admin and added to the order timeline; calculation only — it does not replace Magento's credit-memo / refund processing
+- **Admin grid and workflow** — filterable request list, status changes (approve / deny / cancel), order-timeline notes, column controls, and CSV export
 
 ## Screenshots
 
@@ -52,6 +56,12 @@ It adds only the legal withdrawal step required under Art. 11a, and works alongs
 | Durable-medium receipt email                               | Yes  |                     Yes                     |
 | Admin grid + status workflow                               | Yes  |                     Yes                     |
 | Article 16 exclusion presets                               | Yes  |                     Yes                     |
+| Per-item or full-order selection                           | Yes  |                     Yes                     |
+| Country & customer-group scope                             | Yes  |                     Yes                     |
+| Digital-content waiver (Art. 16(m))                        | Yes  |                     Yes                     |
+| Eligibility controls (window, statuses, delivery)          | Yes  |                     Yes                     |
+| API / headless waiver enforcement                          | Yes  |                     Yes                     |
+| Pro-rata refund calculation                                | Yes  |                     Yes                     |
 | **Receipt verification** — SHA-256 cryptographic audit     |  —   |                     Yes                     |
 | **Annex I forensic snapshot** — immutable per-request copy |  —   |                     Yes                     |
 | **Hash-chain audit log** — DB-backed, tamper-evident       |  —   |                     Yes                     |

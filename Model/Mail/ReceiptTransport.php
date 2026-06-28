@@ -104,7 +104,7 @@ class ReceiptTransport
 
             try {
                 $req = $this->requestRepository->get($requestId);
-                $vars['submitted_at_formatted'] = $this->emailData->formatDateTimeUtc((string) $req->getConfirmedAt());
+                $vars['submitted_at_formatted'] = $this->emailData->formatDateTimeUtc((string) $req->getSubmittedAt());
                 $vars['refund_method']          = $this->emailData->getRefundMethod((int) $req->getOrderId());
                 $vars['refund_total_formatted'] = $this->emailData->formatPrice(
                     (string) ($vars['refund_total'] ?? '0.00'),

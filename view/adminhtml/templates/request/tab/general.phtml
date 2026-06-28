@@ -57,10 +57,6 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                         <td><?= $escaper->escapeHtml($block->formatIsoDate((string) $request->getCreatedAt())) ?></td>
                     </tr>
                     <tr>
-                        <th><?= $escaper->escapeHtml(__('Confirmed At')) ?></th>
-                        <td><?= $escaper->escapeHtml($block->formatIsoDate((string) $request->getConfirmedAt())) ?></td>
-                    </tr>
-                    <tr>
                         <th><?= $escaper->escapeHtml(__('Related Order')) ?></th>
                         <td>
                             <?php if ($orderIncrement !== ''): ?>

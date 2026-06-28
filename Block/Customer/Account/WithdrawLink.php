@@ -45,13 +45,23 @@ class WithdrawLink extends SortLink
     }
 
     /**
+     * Whether the My Account sidebar link should render.
+     *
+     * @return bool
+     */
+    public function isVisible(): bool
+    {
+        return $this->moduleConfig->isEnabled() && $this->moduleConfig->isMyAccountLinkEnabled();
+    }
+
+    /**
      * To html.
      *
      * @return string
      */
     protected function _toHtml(): string
     {
-        if (!$this->moduleConfig->isEnabled()) {
+        if (!$this->isVisible()) {
             return '';
         }
         return parent::_toHtml();

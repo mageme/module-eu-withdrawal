@@ -349,20 +349,6 @@ class Request extends AbstractModel implements RequestInterface
         return $this;
     }
 
-    /** Get confirmed at. */
-    public function getConfirmedAt(): ?string
-    {
-        $v = $this->getData(self::CONFIRMED_AT);
-        return $v === null ? null : (string) $v;
-    }
-
-    /** Set confirmed at. */
-    public function setConfirmedAt(?string $confirmedAt): self
-    {
-        $this->setData(self::CONFIRMED_AT, $confirmedAt);
-        return $this;
-    }
-
     /** Get acknowledged at. */
     public function getAcknowledgedAt(): ?string
     {

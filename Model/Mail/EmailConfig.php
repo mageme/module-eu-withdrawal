@@ -161,4 +161,22 @@ class EmailConfig
         }
         return $out;
     }
+
+    /**
+     * Sender identity (general/sales/support/custom1/custom2) for the given type.
+     * Falls back to `support` for types without an identity field.
+     *
+     * @param string $type
+     * @param ?int $storeId
+     * @return string
+     */
+    public function getIdentity(string $type, ?int $storeId = null): string
+    {
+        $identity = trim((string) $this->scopeConfig->getValue(
+            $this->path($type, 'identity'),
+            ScopeInterface::SCOPE_STORE,
+            $storeId,
+        ));
+        return $identity !== '' ? $identity : 'support';
+    }
 }

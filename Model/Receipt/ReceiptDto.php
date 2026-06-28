@@ -23,7 +23,7 @@ class ReceiptDto
      * @param array{increment_id:string,created_at:string,total:string} $order
      * @param array<int, array{order_item_id:int,sku:string,qty:int,refund_amount:string}> $items
      * @param array{items:string,shipping:string,tax:string,adjustment?:string,total:string} $refund
-     * @param array{created_at:string,confirmed_at:string,locale:string,ip_hash:string,user_agent:string} $receipt
+     * @param array{created_at:string,locale:string,ip_hash:string,user_agent:string} $receipt
      * @param array{name:string,vat_id:string,address:string} $merchant
      * @param array{withdrawal_period_days:int,article_ref:string} $legal
      */

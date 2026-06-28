@@ -31,6 +31,7 @@ class ModuleConfig
 {
     public const XML_ENABLED = 'mageme_eu_withdrawal/general/enabled';
     public const XML_FOOTER_LINK = 'mageme_eu_withdrawal/frontend/placements/footer_link';
+    public const XML_MY_ACCOUNT_LINK = 'mageme_eu_withdrawal/frontend/placements/my_account_link';
 
     /**
      * Constructor.
@@ -67,6 +68,21 @@ class ModuleConfig
     {
         return $this->scopeConfig->isSetFlag(
             self::XML_FOOTER_LINK,
+            ScopeInterface::SCOPE_STORE,
+            $storeId,
+        );
+    }
+
+    /**
+     * Is the My Account sidebar link placement enabled.
+     *
+     * @param ?int $storeId
+     * @return bool
+     */
+    public function isMyAccountLinkEnabled(?int $storeId = null): bool
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_MY_ACCOUNT_LINK,
             ScopeInterface::SCOPE_STORE,
             $storeId,
         );

@@ -132,7 +132,6 @@ class ReceiptBuilder
             ],
             receipt: [
                 'created_at'   => $this->toIsoZ((string) $row['created_at']),
-                'confirmed_at' => $row['confirmed_at'] !== null ? $this->toIsoZ((string) $row['confirmed_at']) : '',
                 'locale'       => (string) $row['locale'],
                 'ip_hash'      => $ipHash,
                 'user_agent'   => $ua,

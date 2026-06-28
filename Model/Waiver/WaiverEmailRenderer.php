@@ -166,7 +166,7 @@ class WaiverEmailRenderer
                 ->setTemplateIdentifier($template)
                 ->setTemplateOptions(['area' => Area::AREA_FRONTEND, 'store' => $storeId])
                 ->setTemplateVars($vars)
-                ->setFromByScope('support', $storeId)
+                ->setFromByScope($this->emailConfig->getIdentity(EmailConfig::TYPE_WAIVER_CONFIRMATION, $storeId), $storeId)
                 ->addTo($to);
             foreach ($bccList as $bcc) {
                 $this->transportBuilder->addBcc($bcc);

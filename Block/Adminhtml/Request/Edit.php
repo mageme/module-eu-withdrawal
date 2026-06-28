@@ -182,10 +182,10 @@ class Edit extends Container
             );
         }
 
-        // Resend receipt: available in any non-terminal state once a request
-        // has been confirmed (receipt queue fires on confirm, so before that
-        // there's nothing to resend).
-        if ($request->getConfirmedAt()) {
+        // Resend receipt: available in any non-terminal state once the request
+        // exists (the receipt queue fires at submission, so there's something
+        // to resend).
+        if ($request->getSubmittedAt()) {
             $this->buttonList->add(
                 'resend_receipt',
                 [

@@ -49,12 +49,30 @@ class RequestActions extends Column
                 continue;
             }
             $id = (int) $item['request_id'];
-            $item[$this->getData('name')] = [
+            $actions = [
                 'view' => [
                     'href'  => $this->url->getUrl('mageme_eu_withdrawal/request/edit', ['request_id' => $id]),
-                    'label' => __('View'),
+                    'label' => __('View Request'),
                 ],
             ];
+
+            $orderId = (int) ($item['order_id'] ?? 0);
+            if ($orderId > 0) {
+                $actions['view_order'] = [
+                    'href'  => $this->url->getUrl('sales/order/view', ['order_id' => $orderId]),
+                    'label' => __('View Order'),
+                ];
+            }
+
+            $shipmentId = (int) ($item['shipment_id'] ?? 0);
+            if ($shipmentId > 0) {
+                $actions['view_shipment'] = [
+                    'href'  => $this->url->getUrl('sales/shipment/view', ['shipment_id' => $shipmentId]),
+                    'label' => __('View Shipment'),
+                ];
+            }
+
+            $item[$this->getData('name')] = $actions;
         }
         return $dataSource;
     }

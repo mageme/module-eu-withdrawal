@@ -1,3 +1,12 @@
+## 1.0.8
+
++ New: Admin withdrawal-request grid rows link directly to the order and shipment.
+- Fix: Four admin settings that were defined but never applied now take effect.
+- Fix: Guest order lookup is now rate-limited to resist order-number enumeration.
+- Fix: Withdrawal is no longer offered for canceled orders.
+- Fix: Long free-text reasons are truncated safely on non-Latin-script storefronts.
+* Other: Localised the item-selection / full-order strings across all 22 locales and corrected the German confirm-label warning.
+
 ## 1.0.7
 
 + New: Restrict by Customer Group - optionally hide the self-service withdrawal flow from selected customer groups (e.g. your B2B / wholesale groups), while guests and consumers keep it

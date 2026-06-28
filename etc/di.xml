@@ -27,6 +27,7 @@
         <arguments>
             <argument name="rules" xsi:type="array">
                 <item name="status_exclusion_rule" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\StatusExclusionRule</item>
+                <item name="terminal_state_rule" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\TerminalStateRule</item>
                 <item name="geo_scope_rule" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\GeoScopeRule</item>
                 <item name="customer_group_scope_rule" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\CustomerGroupScopeRule</item>
                 <item name="period_rule" xsi:type="object">MageMe\EUWithdrawal\Model\Rule\PeriodRule</item>
@@ -53,6 +54,21 @@
             <argument name="cache" xsi:type="object">Magento\Framework\App\Cache</argument>
             <argument name="budget" xsi:type="number">10</argument>
             <argument name="windowSeconds" xsi:type="number">3600</argument>
+        </arguments>
+    </type>
+
+    <virtualType name="MageMe\EUWithdrawal\Model\Security\LookupRateLimiter"
+                 type="MageMe\EUWithdrawal\Model\Security\RateLimiter">
+        <arguments>
+            <argument name="cache" xsi:type="object">Magento\Framework\App\Cache</argument>
+            <argument name="budget" xsi:type="number">30</argument>
+            <argument name="windowSeconds" xsi:type="number">3600</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="MageMe\EUWithdrawal\Model\Security\LookupRateLimitGuard">
+        <arguments>
+            <argument name="rateLimiter" xsi:type="object">MageMe\EUWithdrawal\Model\Security\LookupRateLimiter</argument>
         </arguments>
     </type>
 

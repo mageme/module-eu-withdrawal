@@ -173,7 +173,6 @@ class RequestCreator
                 RequestInterface::TAX_REFUND => $combinedTaxRefund > 0 ? $combinedTaxRefund : null,
                 RequestInterface::TOTAL_REFUND => $breakdown->getTotal(),
                 RequestInterface::SUBMITTED_AT => $now,
-                RequestInterface::CONFIRMED_AT => $now,
             ]);
 
             $requestId = (int) $connection->lastInsertId(

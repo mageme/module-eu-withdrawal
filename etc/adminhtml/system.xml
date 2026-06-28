@@ -327,11 +327,11 @@
                     <label>Buttons</label>
                     <field id="button_label_step1" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                         <label>Step 1 Button Label</label>
-                        <comment><![CDATA[<strong>⚠ Legal warning.</strong> Art. 11a(2) CRD requires the literal text "withdraw from contract here" <em>or a corresponding unambiguous formulation</em>. The default value ("Withdraw from contract here") is the Directive's verbatim phrase; Per-locale translations are counsel-signed. <strong>Do not override unless you have received written advice from qualified consumer-law counsel in the target jurisdiction.</strong> Every override is recorded in the audit log.]]></comment>
+                        <comment><![CDATA[<strong>⚠ Legal warning.</strong> Art. 11a(2) CRD requires the literal text "withdraw from contract here" <em>or a corresponding unambiguous formulation</em>. <strong>Leave empty</strong> to use the built-in, per-locale counsel-signed label (recommended). A value entered here overrides that label for this store view. <strong>Do not override unless you have received written advice from qualified consumer-law counsel in the target jurisdiction.</strong>]]></comment>
                     </field>
                     <field id="button_label_step2" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                         <label>Step 2 Button Label (Confirmation)</label>
-                        <comment><![CDATA[<strong>⚠ Legal warning.</strong> This is the label on the final confirmation button. Default ("Confirm withdrawal") is counsel-signed; Per-locale translations are counsel-signed. Override only with written legal advice; overrides are audit-logged.]]></comment>
+                        <comment><![CDATA[<strong>⚠ Legal warning.</strong> This is the label on the final confirmation button. <strong>Leave empty</strong> to use the built-in, per-locale counsel-signed label (recommended). A value entered here overrides that label for this store view. Override only with written legal advice.]]></comment>
                     </field>
                 </group>
 

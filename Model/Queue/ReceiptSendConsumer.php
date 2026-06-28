@@ -28,6 +28,8 @@ class ReceiptSendConsumer
 {
     public const TABLE_REQUEST = 'mm_eu_withdrawal_request';
 
+    private const XML_RETRY_ATTEMPTS = 'mageme_eu_withdrawal/notifications/receipt/retry_attempts';
+
     private const TERMINAL_STATUSES = ['sent', 'failed_permanent'];
 
     /**
@@ -233,6 +235,17 @@ class ReceiptSendConsumer
     }
 
     /**
+     * Configured maximum delivery attempts (1-10, default 3).
+     *
+     * @return int
+     */
+    private function maxRetryAttempts(): int
+    {
+        $value = (int) $this->scopeConfig->getValue(self::XML_RETRY_ATTEMPTS);
+        return $value > 0 ? min(10, $value) : 3;
+    }
+
+    /**
      * Schedule retry or permanent.
      *
      * @param int $requestId
@@ -242,7 +255,11 @@ class ReceiptSendConsumer
      */
     private function scheduleRetryOrPermanent(int $requestId, int $attempts, \Throwable $e): void
     {
-        $next = $this->scheduler->next($attempts, new \DateTimeImmutable('now', new \DateTimeZone('UTC')));
+        $next = $this->scheduler->next(
+            $attempts,
+            new \DateTimeImmutable('now', new \DateTimeZone('UTC')),
+            $this->maxRetryAttempts(),
+        );
         if ($next === null) {
             $this->markPermanent($requestId, $attempts, $e);
             return;

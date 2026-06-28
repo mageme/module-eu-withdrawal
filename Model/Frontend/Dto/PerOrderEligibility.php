@@ -18,6 +18,7 @@ class PerOrderEligibility
     public const REASON_OUT_OF_GROUP        = 'out_of_group';
     public const REASON_DELIVERY_DATE_UNRECORDED = 'delivery_date_unrecorded';
     public const REASON_STATUS_EXCLUDED = 'status_excluded';
+    public const REASON_ORDER_CANCELED = 'order_canceled';
 
     /**
      * Constructor.

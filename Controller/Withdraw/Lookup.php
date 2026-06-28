@@ -10,6 +10,7 @@ namespace MageMe\EUWithdrawal\Controller\Withdraw;
 use MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface;
 use MageMe\EUWithdrawal\Model\Scope\WithdrawalScope;
 use MageMe\EUWithdrawal\Model\Lookup\OrderLookupByIncrementId;
+use MageMe\EUWithdrawal\Model\Security\LookupRateLimitGuard;
 use MageMe\EUWithdrawal\Model\Security\ResponseTimer;
 use MageMe\EUWithdrawal\Model\Session as WithdrawalSession;
 use Magento\Framework\App\Action\HttpPostActionInterface;
@@ -40,6 +41,7 @@ class Lookup implements HttpPostActionInterface
      * @param WithdrawalSession $withdrawalSession
      * @param WithdrawalScope $withdrawalScope
      * @param ManagerInterface $messageManager
+     * @param LookupRateLimitGuard $rateLimitGuard
      */
     public function __construct(
         private readonly RequestInterface $request,
@@ -50,6 +52,7 @@ class Lookup implements HttpPostActionInterface
         private readonly WithdrawalSession $withdrawalSession,
         private readonly WithdrawalScope $withdrawalScope,
         private readonly ManagerInterface $messageManager,
+        private readonly LookupRateLimitGuard $rateLimitGuard,
     ) {
     }
 
@@ -69,6 +72,17 @@ class Lookup implements HttpPostActionInterface
         if ($orderId === '' || $email === '') {
             $this->responseTimer->pad(200);
             return $redirect->setPath('withdraw-contract');
+        }
+
+        // Per-IP brute-force cap. A throttled attempt returns the exact same
+        // padded `?lookup=fail` response as a genuine mismatch, so the limit
+        // itself leaks nothing about whether the order/email pair exists.
+        if (!$this->rateLimitGuard->allow()) {
+            $this->responseTimer->pad(200);
+            return $redirect->setPath(
+                'withdraw-contract',
+                ['_query' => ['lookup' => 'fail']],
+            );
         }
 
         $order = $this->orderLookup->find($orderId);

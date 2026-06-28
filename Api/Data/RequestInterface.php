@@ -46,7 +46,6 @@ interface RequestInterface
     public const TAX_REFUND               = 'tax_refund';
     public const TOTAL_REFUND             = 'total_refund';
     public const SUBMITTED_AT             = 'submitted_at';
-    public const CONFIRMED_AT             = 'confirmed_at';
     public const ACKNOWLEDGED_AT          = 'acknowledged_at';
     public const RECEIPT_STATUS           = 'receipt_status';
     public const RECEIPT_SEND_ATTEMPTS    = 'receipt_send_attempts';
@@ -204,12 +203,6 @@ interface RequestInterface
 
     /** Set submitted at. */
     public function setSubmittedAt(string $submittedAt): self;
-
-    /** Get confirmed at. */
-    public function getConfirmedAt(): ?string;
-
-    /** Set confirmed at. */
-    public function setConfirmedAt(?string $confirmedAt): self;
 
     /** Get acknowledged at. */
     public function getAcknowledgedAt(): ?string;

@@ -24,6 +24,7 @@ class Collection extends SearchResult
 
         $itemTable = $this->getTable('mm_eu_withdrawal_item');
         $orderTable = $this->getTable('sales_order');
+        $shipmentTable = $this->getTable('sales_shipment');
 
         $this->getSelect()
             ->joinLeft(
@@ -43,6 +44,13 @@ class Collection extends SearchResult
                 // the request at consent time (items + shipping + order adjustment),
                 // matching the Refund Totals on the edit screen and the order comment.
                 'items_refund_total' => new \Zend_Db_Expr('COALESCE(main_table.total_refund, 0)'),
+                // Latest shipment for the order (NULL when none) — surfaced as a
+                // "View shipment" row action. MAX(entity_id) avoids row fan-out
+                // when an order has multiple shipments.
+                'shipment_id' => new \Zend_Db_Expr(
+                    '(SELECT MAX(s.entity_id) FROM ' . $shipmentTable . ' s
+                      WHERE s.order_id = main_table.order_id)'
+                ),
             ]);
 
         return $this;
@@ -73,7 +81,7 @@ class Collection extends SearchResult
     public function addFieldToFilter($field, $condition = null)
     {
         if (is_string($field) && !str_contains($field, '.')) {
-            $passThrough = ['order_increment_id', 'order_total', 'items_count', 'items_refund_total'];
+            $passThrough = ['order_increment_id', 'order_total', 'items_count', 'items_refund_total', 'shipment_id'];
             if (!in_array($field, $passThrough, true)) {
                 $field = 'main_table.' . $field;
             }

@@ -10,7 +10,7 @@
                   instance="MageMe\EUWithdrawal\Observer\AdminAlertOnRequestCreate"/>
         <observer name="mageme_eu_withdrawal_add_order_comment_on_request_create"
                   instance="MageMe\EUWithdrawal\Observer\AddOrderCommentOnRequestCreate"/>
-        <!-- audit observer (mageme_audit_on_request_confirmed) moved to
+        <!-- audit observer (mageme_audit_on_receipt_generated) moved to
              MageMe_EUWithdrawalAudit (phase-34). -->
     </event>
     <!--

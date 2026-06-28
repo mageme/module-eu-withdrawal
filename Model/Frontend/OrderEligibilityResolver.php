@@ -19,6 +19,7 @@ use MageMe\EUWithdrawal\Model\Rule\CustomerGroupScopeRule;
 use MageMe\EUWithdrawal\Model\Rule\GeoScopeRule;
 use MageMe\EUWithdrawal\Model\Rule\PeriodRule;
 use MageMe\EUWithdrawal\Model\Rule\StatusExclusionRule;
+use MageMe\EUWithdrawal\Model\Rule\TerminalStateRule;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
@@ -230,6 +231,9 @@ class OrderEligibilityResolver
         }
         if ($decision->getReason() === StatusExclusionRule::REASON_EXCLUDED) {
             return PerOrderEligibility::REASON_STATUS_EXCLUDED;
+        }
+        if ($decision->getReason() === TerminalStateRule::REASON_ORDER_CANCELED) {
+            return PerOrderEligibility::REASON_ORDER_CANCELED;
         }
         if ($decision->getExclusionBasis() !== null) {
             return PerOrderEligibility::REASON_ART_16_EXCLUDED;

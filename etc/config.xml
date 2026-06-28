@@ -43,17 +43,13 @@
                 <enforce_on_api>1</enforce_on_api>
                 <email>
                     <enabled>1</enabled>
-                    <identity>general</identity>
+                    <identity>support</identity>
                     <template>mageme_eu_withdrawal_digital_waiver_email_template</template>
                     <bcc_merchant></bcc_merchant>
                 </email>
             </digital_waiver>
             <frontend>
                 <item_selection_mode>per_item</item_selection_mode>
-                <buttons>
-                    <button_label_step1>Withdraw from contract here</button_label_step1>
-                    <button_label_step2>Confirm withdrawal</button_label_step2>
-                </buttons>
                 <placements>
                     <footer_link>1</footer_link>
                     <my_account_link>1</my_account_link>

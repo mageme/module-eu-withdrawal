@@ -348,8 +348,8 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
             if ($code !== '' && !isset($allowedCodes[$code])) {
                 $code = '';
             }
-            if (strlen($text) > 500) {
-                $text = substr($text, 0, 500);
+            if (mb_strlen($text) > 500) {
+                $text = mb_substr($text, 0, 500);
             }
             if ($code === '' && $text === '') {
                 continue;
