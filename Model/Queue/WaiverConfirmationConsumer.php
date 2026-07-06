@@ -26,6 +26,12 @@ class WaiverConfirmationConsumer
     public const XML_VIRTUAL_TIMER_ENABLED = 'mageme_eu_withdrawal/digital_waiver/virtual_timer_enabled';
 
     /**
+     * Lease pushed onto the state row when a send is claimed, so a worker that
+     * dies mid-send releases the row to the retry cron after this window.
+     */
+    private const CLAIM_LEASE_SECONDS = 300;
+
+    /**
      * Constructor.
      *
      * @param OrderRepositoryInterface $orderRepo
@@ -67,6 +73,15 @@ class WaiverConfirmationConsumer
         if ($state !== null && $state->status === WaiverConfirmationState::STATUS_SENT) {
             return;
         }
+
+        // Atomically claim the send before the email goes out. A concurrent
+        // worker or a redelivered MQ message finds the row already claimed (or
+        // terminal) and skips, so the Art. 11a(4) confirmation is not sent twice.
+        $attempts = ($state?->attempts ?? 0) + 1;
+        if (!$this->stateRepo->claimForSend($orderId, $attempts, self::CLAIM_LEASE_SECONDS)) {
+            return;
+        }
+
         try {
             $order = $this->orderRepo->get($orderId);
             $dto = $this->builder->build($order);

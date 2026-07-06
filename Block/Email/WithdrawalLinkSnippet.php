@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Block\Email;
 
 use MageMe\EUWithdrawal\Model\Frontend\FooterLinkLabelResolver;
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use Magento\Framework\Phrase;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -28,11 +29,13 @@ class WithdrawalLinkSnippet extends Template
      *
      * @param Context $context
      * @param FooterLinkLabelResolver $labelResolver
+     * @param PeriodDaysConfigReader $periodDays
      * @param array $data
      */
     public function __construct(
         Context $context,
         private readonly FooterLinkLabelResolver $labelResolver,
+        private readonly PeriodDaysConfigReader $periodDays,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -83,7 +86,8 @@ class WithdrawalLinkSnippet extends Template
     public function getReminderText(): Phrase
     {
         return __(
-            'You have 14 days from the day you receive your order to withdraw without giving any reason — full refund to your original payment method.',
+            'You have %1 days from the day you receive your order to withdraw without giving any reason — full refund to your original payment method.',
+            $this->periodDays->getDays(),
         );
     }
 

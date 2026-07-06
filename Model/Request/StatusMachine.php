@@ -9,7 +9,6 @@ namespace MageMe\EUWithdrawal\Model\Request;
 
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Api\Request\StatusMachineInterface;
-use MageMe\EUWithdrawal\Api\RequestRepositoryInterface;
 use MageMe\EUWithdrawal\Model\Request\Exception\DenialReasonRequiredException;
 use MageMe\EUWithdrawal\Model\Request\Exception\InvalidTransitionException;
 use Magento\Framework\App\ResourceConnection;
@@ -35,12 +34,10 @@ class StatusMachine implements StatusMachineInterface
     /**
      * Constructor.
      *
-     * @param RequestRepositoryInterface $repository
      * @param EventManagerInterface $eventManager
      * @param ResourceConnection $resource
      */
     public function __construct(
-        private readonly RequestRepositoryInterface $repository,
         private readonly EventManagerInterface $eventManager,
         private readonly ResourceConnection $resource,
     ) {
@@ -85,16 +82,32 @@ class StatusMachine implements StatusMachineInterface
                 throw new InvalidTransitionException($lockedStatus, $toStatus);
             }
 
+            $note = !empty($context['note']) ? (string) $context['note'] : null;
+            $legalBasis = !empty($context['denial_reason']) ? (string) $context['denial_reason'] : null;
+            $actor = (string) ($context['admin_id'] ?? 'system');
+
             $request->setStatus($toStatus);
             // First-class request state: the latest status-change reason shown to
             // the consumer (independent of the Pro audit log; the audit event below
             // still records the immutable forensic history).
-            $request->setStatusChangeNote(!empty($context['note']) ? (string) $context['note'] : null);
-            $request->setStatusChangeLegalBasis(
-                !empty($context['denial_reason']) ? (string) $context['denial_reason'] : null,
+            $request->setStatusChangeNote($note);
+            $request->setStatusChangeLegalBasis($legalBasis);
+            $request->setStatusChangeActor($actor);
+
+            // Persist ONLY the status columns via a targeted UPDATE keyed by
+            // request_id. A full ORM save would rewrite every column from a model
+            // that was loaded before the lock, reverting a concurrent direct-SQL
+            // write to receipt_status / acknowledged_at / refund_creditmemo_id.
+            $connection->update(
+                $this->resource->getTableName(self::TABLE),
+                [
+                    RequestInterface::STATUS => $toStatus,
+                    RequestInterface::STATUS_CHANGE_NOTE => $note,
+                    RequestInterface::STATUS_CHANGE_LEGAL_BASIS => $legalBasis,
+                    RequestInterface::STATUS_CHANGE_ACTOR => $actor,
+                ],
+                ['request_id = ?' => (int) $request->getRequestId()],
             );
-            $request->setStatusChangeActor((string) ($context['admin_id'] ?? 'system'));
-            $this->repository->save($request);
 
             $connection->commit();
         } catch (\Throwable $t) {

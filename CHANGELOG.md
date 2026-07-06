@@ -1,3 +1,17 @@
+## 1.0.9
+
++ New: Bundle Item Selection - return a bundle as a single unit (default) or by its individual components, so a device sold together with an accessory as a bundle can have each part withdrawn and refunded on its own, each with its own VAT.
++ New: The refund summary now presents VAT in line with your store's tax-display setting - gross prices with an "Of which VAT" note on tax-inclusive stores, or net prices with an added VAT line on tax-exclusive stores - across the item list, review step, success page and receipt.
+- Fix: The review button no longer stays disabled when the store is set to withdraw the whole order at once, which could previously block the request.
+- Fix: Storefront, email and notification texts now show your configured withdrawal period instead of a fixed 14 days.
+- Fix: On stores set to move JavaScript to the bottom of the page, the refund summary no longer shows zero shipping and tax and the request submits correctly.
+- Fix: A withdrawal can no longer refund units that were already cancelled or refunded through a Magento credit memo, so a partially-refunded order line is never refunded a second time.
+- Fix: The self-cancellation return link now rejects off-site (protocol-relative or backslash) URLs, closing a redirect gap.
+- Fix: The durable-medium receipt and waiver-confirmation email can no longer be sent twice when a queue message is redelivered or two workers overlap.
+- Fix: Saving a withdrawal status change no longer risks overwriting a concurrent update to the request's receipt or acknowledgement data.
+* Other: The new settings and refund-summary VAT wording are localised across all 22 locales.
+* Other: The Hyvä companion waiver and form strings are localised across all 22 locales, and a stale translation entry was removed.
+
 ## 1.0.8
 
 + New: Admin withdrawal-request grid rows link directly to the order and shipment.

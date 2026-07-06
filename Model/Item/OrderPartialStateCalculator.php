@@ -18,9 +18,11 @@ class OrderPartialStateCalculator
      * Constructor.
      *
      * @param ItemCollectionFactory $itemCollectionFactory
+     * @param ReturnableItemsResolver $returnableItems
      */
     public function __construct(
         private readonly ItemCollectionFactory $itemCollectionFactory,
+        private readonly ReturnableItemsResolver $returnableItems,
     ) {
     }
 
@@ -65,26 +67,27 @@ class OrderPartialStateCalculator
         $states = [];
         $decisions = $eligibility->getItemDecisions();
 
-        foreach (($order->getItems() ?? []) as $oi) {
-            // Configurable/bundle parents already carry the display name, price, and qty;
-            // their simple-variant children duplicate the row with price=0 and a mangled
-            // name ("Erika Running Short-28-Green"). Skip children so the UI shows one
-            // line per purchased unit and downstream oid references stay parent-scoped.
-            if ($oi->getParentItemId()) {
-                continue;
-            }
+        foreach ($this->returnableItems->resolve($order) as $oi) {
             $oid = (int) $oi->getItemId();
-            $purchased = (int) ((float) $oi->getQtyOrdered());
+            $ordered = (int) ((float) $oi->getQtyOrdered());
+            // Purchased-for-return excludes units cancelled before invoice or
+            // already refunded via a native Magento credit-memo — those are no
+            // longer in the consumer's hands and must not be offered again.
+            $purchased = max(0, $ordered
+                - (int) ((float) ($oi->getQtyCanceled() ?? 0.0))
+                - (int) ((float) ($oi->getQtyRefunded() ?? 0.0)));
             $approved = (int) ($approvedByOid[$oid] ?? 0);
             $pending = (int) ($pendingByOid[$oid] ?? 0);
             $remaining = max(0, $purchased - $approved - $pending);
 
             // Ex-tax per-unit price; tax is rendered on its own sidebar row
             // (matches the order-view layout: Subtotal / Shipping / Tax / Total).
+            // The divisor is the full ordered qty (row_total spans all units),
+            // not the reduced returnable qty.
             $rowTotal = (float) $oi->getRowTotal();
             $discount = (float) $oi->getDiscountAmount();
-            $unitDisplay = $purchased > 0
-                ? round(($rowTotal - $discount) / $purchased, 4, PHP_ROUND_HALF_EVEN)
+            $unitDisplay = $ordered > 0
+                ? round(($rowTotal - $discount) / $ordered, 4, PHP_ROUND_HALF_EVEN)
                 : 0.0;
 
             $basis = null;

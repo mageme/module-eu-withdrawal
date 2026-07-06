@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Block\Withdraw;
 
+use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -24,9 +25,31 @@ class ReturnSummary extends Template
     public function __construct(
         Context $context,
         private readonly PriceCurrencyInterface $priceCurrency,
+        private readonly TaxDisplayConfig $taxDisplay,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Whether the refund summary should display prices including tax.
+     *
+     * @return bool
+     */
+    public function isInclTaxDisplay(): bool
+    {
+        return $this->taxDisplay->isInclTax();
+    }
+
+    /**
+     * Whether the standalone tax line is suppressed (incl mode with tax folded
+     * into the grand total, mirroring the store's sales-display setting).
+     *
+     * @return bool
+     */
+    public function isTaxLineHidden(): bool
+    {
+        return $this->taxDisplay->isTaxLineHidden();
     }
 
     /**

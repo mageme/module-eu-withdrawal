@@ -10,6 +10,7 @@ namespace MageMe\EUWithdrawal\Model\Mail;
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Block\Email\ItemsTableFactory;
 use MageMe\EUWithdrawal\Block\Email\LayoutFactory;
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use MageMe\EUWithdrawal\Model\Frontend\RouteResolver;
 use MageMe\EUWithdrawal\Model\Receipt\ReceiptBuilder;
 use Magento\Framework\App\Area;
@@ -53,6 +54,7 @@ class StatusChangeNotifier
      * @param TranslateInterface $translate
      * @param RouteResolver $routeResolver
      * @param CustomerViewUrlResolver $customerViewUrl
+     * @param PeriodDaysConfigReader $periodDays
      */
     public function __construct(
         private readonly TransportBuilder $transportBuilder,
@@ -69,6 +71,7 @@ class StatusChangeNotifier
         private readonly TranslateInterface $translate,
         private readonly RouteResolver $routeResolver,
         private readonly CustomerViewUrlResolver $customerViewUrl,
+        private readonly PeriodDaysConfigReader $periodDays,
     ) {
     }
 
@@ -252,6 +255,7 @@ class StatusChangeNotifier
             // `legal_basis` when building the audit event payload — accept both.
             'denial_reason'            => (string) ($context['denial_reason'] ?? $context['legal_basis'] ?? ''),
             'admin_note'               => (string) ($context['note'] ?? ''),
+            'period_days'              => $this->periodDays->getDays($storeId),
             'view_url'                 => $viewUrl,
             'support_email'            => $layout->getSupportEmail(),
             'store_name'               => $layout->getStoreName(),

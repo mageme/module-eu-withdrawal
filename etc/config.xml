@@ -50,6 +50,7 @@
             </digital_waiver>
             <frontend>
                 <item_selection_mode>per_item</item_selection_mode>
+                <bundle_return_per_component>0</bundle_return_per_component>
                 <placements>
                     <footer_link>1</footer_link>
                     <my_account_link>1</my_account_link>

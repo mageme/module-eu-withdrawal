@@ -137,6 +137,8 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             'eligibleItems'    => $eligibleItems,
             'orderItemsBase'   => round($orderLevel['base'], 4),
             'orderLevelGap'    => round($orderLevel['gap'], 4),
+            'inclTax'          => $block->isInclTaxDisplay(),
+            'hideTax'          => $block->isTaxLineHidden(),
             'i18n'             => [
                 'orderPrefix'        => (string) __('Order #'),
                 'qtyPrefix'          => (string) __('Qty: '),
@@ -183,7 +185,7 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                         <?= /* @noEscape */ $icon('info', 'mm-eu-w-banner-icon-svg', 20) ?>
                     </span>
                     <span class="mm-eu-w-banner-text">
-                        <?= $escaper->escapeHtml(__('You have 14 days from the day you received your order to withdraw from the contract without giving a reason.')) ?>
+                        <?= $escaper->escapeHtml(__('You have %1 days from the day you received your order to withdraw from the contract without giving a reason.', $block->getWithdrawalPeriodDays())) ?>
                     </span>
                 </div>
             </div>
@@ -287,8 +289,15 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                         <dd data-role="review-items-total">—</dd>
                         <dt><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt>
                         <dd data-role="review-shipping-paid">—</dd>
-                        <dt><?= $escaper->escapeHtml(__('Tax')) ?></dt>
-                        <dd data-role="review-tax">—</dd>
+                        <?php if (!$block->isTaxLineHidden()): ?>
+                            <dt class="mm-eu-w-totals-tax<?= $block->isInclTaxDisplay() ? ' mm-eu-w-totals-tax--info' : '' ?>">
+                                <?= $escaper->escapeHtml($block->isInclTaxDisplay() ? __('Of which VAT') : __('VAT')) ?>
+                            </dt>
+                            <dd class="mm-eu-w-totals-tax<?= $block->isInclTaxDisplay() ? ' mm-eu-w-totals-tax--info' : '' ?>"
+                                data-role="review-tax">—</dd>
+                        <?php endif; ?>
+                        <dt data-role="review-adjustment-row" hidden><?= $escaper->escapeHtml(__('Order Adjustment')) ?></dt>
+                        <dd data-role="review-adjustment" hidden>—</dd>
                         <dt class="mm-eu-w-total-row"><?= $escaper->escapeHtml(__('Total refund')) ?></dt>
                         <dd class="mm-eu-w-total-row" data-role="review-total-refund">—</dd>
                     </dl>

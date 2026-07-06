@@ -7,11 +7,38 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Block\Withdraw;
 
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
 use Magento\ReCaptchaUi\Block\ReCaptcha;
 
 class FindOrderForm extends Template
 {
+    /**
+     * Constructor.
+     *
+     * @param Context $context
+     * @param PeriodDaysConfigReader $periodDays
+     * @param array $data
+     */
+    public function __construct(
+        Context $context,
+        private readonly PeriodDaysConfigReader $periodDays,
+        array $data = [],
+    ) {
+        parent::__construct($context, $data);
+    }
+
+    /**
+     * Configured withdrawal-period length in days, shown in customer-facing copy.
+     *
+     * @return int
+     */
+    public function getWithdrawalPeriodDays(): int
+    {
+        return $this->periodDays->getDays();
+    }
+
     /**
      * Render the storefront reCAPTCHA widget for the guest lookup form.
      *

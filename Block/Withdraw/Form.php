@@ -20,6 +20,8 @@ use MageMe\EUWithdrawal\Model\Order\ShipmentExistenceChecker;
 use MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface;
 use MageMe\EUWithdrawal\Model\Refund\RefundCalculator;
 use MageMe\EUWithdrawal\Model\Frontend\OrderEligibilityResolver;
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
+use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
 
 class Form extends Template
 {
@@ -33,6 +35,9 @@ class Form extends Template
      * @param OrderRepositoryInterface $orderRepository
      * @param ShipmentExistenceChecker $shipmentChecker
      * @param RefundCalculator $refundCalculator
+     * @param OrderEligibilityResolver $eligibilityResolver
+     * @param TaxDisplayConfig $taxDisplay
+     * @param PeriodDaysConfigReader $periodDays
      * @param array $data
      */
     public function __construct(
@@ -44,9 +49,42 @@ class Form extends Template
         private readonly ShipmentExistenceChecker $shipmentChecker,
         private readonly RefundCalculator $refundCalculator,
         private readonly OrderEligibilityResolver $eligibilityResolver,
+        private readonly TaxDisplayConfig $taxDisplay,
+        private readonly PeriodDaysConfigReader $periodDays,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Configured withdrawal-period length in days, shown in customer-facing copy.
+     *
+     * @return int
+     */
+    public function getWithdrawalPeriodDays(): int
+    {
+        return $this->periodDays->getDays();
+    }
+
+    /**
+     * Whether the refund summary should display prices including tax.
+     *
+     * @return bool
+     */
+    public function isInclTaxDisplay(): bool
+    {
+        return $this->taxDisplay->isInclTax();
+    }
+
+    /**
+     * Whether the standalone tax line is suppressed (incl mode with tax folded
+     * into the grand total, mirroring the store's sales-display setting).
+     *
+     * @return bool
+     */
+    public function isTaxLineHidden(): bool
+    {
+        return $this->taxDisplay->isTaxLineHidden();
     }
 
     /**

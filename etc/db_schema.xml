@@ -29,7 +29,7 @@
         <column xsi:type="decimal" name="total_refund" scale="4" precision="12" nullable="true" comment="Frozen canonical refund total computed by RefundCalculator at consent time: net items + all refunded VAT + delivery cost + order-level adjustments. Read by the admin grid, edit screen, order comment and receipt; not a plain sum of the split columns, since shipping VAT is counted in both tax_refund and shipping_refund. Null on legacy rows until backfilled."/>
         <column xsi:type="timestamp" name="submitted_at" nullable="false" default="CURRENT_TIMESTAMP" comment="Art. 11a(4) timestamp (UTC)"/>
         <column xsi:type="timestamp" name="acknowledged_at" nullable="true" comment="Durable medium sent"/>
-        <column xsi:type="varchar" name="receipt_status" length="32" nullable="false" default="pending" comment="pending|sent|failed_retry|failed_permanent"/>
+        <column xsi:type="varchar" name="receipt_status" length="32" nullable="false" default="pending" comment="pending|sending|sent|failed_retry|failed_permanent"/>
         <column xsi:type="smallint" name="receipt_send_attempts" unsigned="true" nullable="false" default="0" comment="Number of delivery attempts (incl. failures)"/>
         <column xsi:type="timestamp" name="receipt_next_send_at" nullable="true" comment="When RetryRunner should re-publish (UTC)"/>
         <column xsi:type="varchar" name="receipt_last_error" length="500" nullable="true" comment="First 500 chars of last exception message"/>
@@ -168,7 +168,7 @@
     <table name="mm_eu_withdrawal_waiver_confirmation_state" resource="default" engine="innodb" comment="Per-order retry state for waiver confirmation email pipeline">
         <column xsi:type="int" name="state_id" unsigned="true" nullable="false" identity="true" comment="PK"/>
         <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="FK sales_order.entity_id"/>
-        <column xsi:type="varchar" name="status" length="32" nullable="false" default="pending" comment="pending|sent|failed_retry|failed_permanent"/>
+        <column xsi:type="varchar" name="status" length="32" nullable="false" default="pending" comment="pending|sending|sent|failed_retry|failed_permanent"/>
         <column xsi:type="smallint" name="attempts" unsigned="true" nullable="false" default="0" comment="Delivery attempt count"/>
         <column xsi:type="timestamp" name="next_send_at" nullable="true" comment="When consumer should re-attempt (UTC)"/>
         <column xsi:type="varchar" name="last_error" length="500" nullable="true" comment="First 500 chars of last exception"/>

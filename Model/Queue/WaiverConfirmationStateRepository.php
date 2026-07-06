@@ -128,14 +128,25 @@ class WaiverConfirmationStateRepository
             $orderIds = array_map('intval', (array) $conn->fetchCol(
                 $conn->select()
                     ->from($table, ['order_id'])
-                    ->where('status = ?', WaiverConfirmationState::STATUS_RETRY)
+                    // `sending` rows past their lease belong to a worker that died
+                    // mid-send; reclaim them alongside due `failed_retry` rows.
+                    ->where('status IN (?)', [
+                        WaiverConfirmationState::STATUS_RETRY,
+                        WaiverConfirmationState::STATUS_SENDING,
+                    ])
                     ->where('next_send_at IS NOT NULL')
                     ->where('next_send_at <= ?', $now)
                     ->limit($limit)
                     ->forUpdate(true)
             ));
             if ($orderIds !== []) {
-                $conn->update($table, ['next_send_at' => $leaseUntil], ['order_id IN (?)' => $orderIds]);
+                // Reset reclaimed `sending` rows to `failed_retry` so the consumer
+                // can claim them again, and push next_send_at forward (lease).
+                $conn->update(
+                    $table,
+                    ['status' => WaiverConfirmationState::STATUS_RETRY, 'next_send_at' => $leaseUntil],
+                    ['order_id IN (?)' => $orderIds],
+                );
             }
             $conn->commit();
         } catch (\Throwable $t) {
@@ -143,6 +154,61 @@ class WaiverConfirmationStateRepository
             throw $t;
         }
         return $orderIds;
+    }
+
+    /**
+     * Atomically claim the order's confirmation send into a leased `sending`
+     * state. Returns true only for the single worker that wins the claim; a
+     * concurrent or redelivered attempt gets false and must not send. Handles
+     * the first-send case (no row yet) via an insert guarded by the unique
+     * order_id constraint, falling back to the conditional update when a racer
+     * inserted first.
+     *
+     * @param int $orderId
+     * @param int $attempts
+     * @param int $leaseSeconds
+     * @return bool
+     */
+    public function claimForSend(int $orderId, int $attempts, int $leaseSeconds): bool
+    {
+        $conn = $this->resource->getConnection();
+        $table = $this->resource->getTableName(self::TABLE);
+        $leaseUntil = gmdate('Y-m-d H:i:s', time() + $leaseSeconds);
+
+        $existingId = $conn->fetchOne(
+            $conn->select()->from($table, ['state_id'])->where('order_id = ?', $orderId)->limit(1)
+        );
+        if ($existingId === false) {
+            try {
+                $conn->insert($table, [
+                    'order_id'     => $orderId,
+                    'status'       => WaiverConfirmationState::STATUS_SENDING,
+                    'attempts'     => $attempts,
+                    'next_send_at' => $leaseUntil,
+                ]);
+                return true;
+            } catch (\Magento\Framework\DB\Adapter\DuplicateException) {
+                // A concurrent worker inserted first; fall through to the
+                // conditional claim so at most one worker proceeds.
+            }
+        }
+
+        $affected = $conn->update(
+            $table,
+            [
+                'status'       => WaiverConfirmationState::STATUS_SENDING,
+                'attempts'     => $attempts,
+                'next_send_at' => $leaseUntil,
+            ],
+            [
+                'order_id = ?'  => $orderId,
+                'status IN (?)' => [
+                    WaiverConfirmationState::STATUS_PENDING,
+                    WaiverConfirmationState::STATUS_RETRY,
+                ],
+            ],
+        );
+        return (int) $affected === 1;
     }
 
     /** @param array<string,mixed> $data */

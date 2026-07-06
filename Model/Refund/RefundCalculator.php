@@ -8,11 +8,16 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Model\Refund;
 
 use MageMe\EUWithdrawal\Api\Data\EligibilityResultInterface;
+use MageMe\EUWithdrawal\Model\Item\ReturnableItemsResolver;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 
 class RefundCalculator
 {
+    public function __construct(private readonly ReturnableItemsResolver $returnableItems)
+    {
+    }
+
     /**
      * @param array<int,int> $items order_item_id => qty
      */
@@ -45,9 +50,17 @@ class RefundCalculator
             }
             $oi = $orderItems[$oid];
             $ordered = (float) $oi->getQtyOrdered();
-            if ($qty > $ordered) {
+            // Only the quantity still in the consumer's hands is returnable:
+            // units already cancelled before invoice or already refunded via a
+            // native Magento credit-memo were never paid for (or were paid back)
+            // and must not be refunded again. The per-unit price divisor stays
+            // `ordered` so the unit amount (row_total / ordered) is unchanged.
+            $returnable = $ordered
+                - (float) ($oi->getQtyCanceled() ?? 0.0)
+                - (float) ($oi->getQtyRefunded() ?? 0.0);
+            if ($qty > $returnable) {
                 throw new \InvalidArgumentException(
-                    sprintf('qty %d exceeds ordered %f for oid %d', $qty, $ordered, $oid),
+                    sprintf('qty %d exceeds returnable %f for oid %d', $qty, $returnable, $oid),
                 );
             }
 
@@ -142,12 +155,11 @@ class RefundCalculator
     {
         $base = 0.0;
         $tax = 0.0;
-        foreach (($order->getItems() ?? []) as $oi) {
-            // Bundle/configurable children carry a zero row total; the parent
-            // line holds the price, so the base sums parents only.
-            if ($oi->getParentItemId()) {
-                continue;
-            }
+        // Sum the same returnable line set that calculate() sums, so the
+        // reconciliation base stays net/gross-consistent with itemsSubtotal.
+        // For an expanded dynamic bundle the discount and tax live on the
+        // children, so summing parents only would double-count them.
+        foreach ($this->returnableItems->resolve($order) as $oi) {
             $base += (float) $oi->getRowTotal() - (float) $oi->getDiscountAmount();
             $tax += (float) $oi->getTaxAmount();
         }

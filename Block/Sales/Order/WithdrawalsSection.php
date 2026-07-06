@@ -14,6 +14,7 @@ use MageMe\EUWithdrawal\Model\Customer\WithdrawalRequestView;
 use MageMe\EUWithdrawal\Model\Frontend\Dto\PerOrderEligibility;
 use MageMe\EUWithdrawal\Model\Frontend\FooterLinkLabelResolver;
 use MageMe\EUWithdrawal\Model\Frontend\OrderEligibilityResolver;
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
 use MageMe\EUWithdrawal\Model\ModuleConfig;
 use Magento\Catalog\Api\ProductRepositoryInterface;
@@ -73,6 +74,7 @@ class WithdrawalsSection extends Template
         private readonly ProductRepositoryInterface $productRepository,
         private readonly ImageHelper $imageHelper,
         private readonly ModuleConfig $moduleConfig,
+        private readonly PeriodDaysConfigReader $periodDays,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -250,9 +252,9 @@ class WithdrawalsSection extends Template
     public function getCardMessage(): string
     {
         return match ($this->getCardState()) {
-            'eligible_pending' => (string) __('You can withdraw from this contract any time — the 14-day deadline begins counting once the order is delivered.'),
-            'pending'          => (string) __('Your 14-day withdrawal window will begin once this order is delivered.'),
-            'expired'          => (string) __('The 14-day window for withdrawing from this contract has ended.'),
+            'eligible_pending' => (string) __('You can withdraw from this contract any time — the %1-day deadline begins counting once the order is delivered.', $this->periodDays->getDays()),
+            'pending'          => (string) __('Your %1-day withdrawal window will begin once this order is delivered.', $this->periodDays->getDays()),
+            'expired'          => (string) __('The %1-day window for withdrawing from this contract has ended.', $this->periodDays->getDays()),
             'submitted'        => (string) __('A withdrawal request for this order has been submitted. See the request details below.'),
             'excluded'         => (string) __('This order is not eligible for withdrawal under EU consumer law (Art. 16 Directive 2011/83/EU).'),
             default            => '',

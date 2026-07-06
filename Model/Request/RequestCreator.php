@@ -17,6 +17,7 @@ use MageMe\EUWithdrawal\Model\EligibilityEngine;
 use MageMe\EUWithdrawal\Model\EligibilityRequestBuilder;
 use MageMe\EUWithdrawal\Model\EligibilitySnapshot;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
+use MageMe\EUWithdrawal\Model\Item\ReturnableItemsResolver;
 use MageMe\EUWithdrawal\Model\Frontend\SelectionModeConfig;
 use MageMe\EUWithdrawal\Model\Lookup\OrderLookupByIncrementId;
 use MageMe\EUWithdrawal\Model\Receipt\ReceiptBuilder;
@@ -65,6 +66,7 @@ class RequestCreator
         private readonly ReasonsConfigReader $reasonsConfig,
         private readonly ReceiptBuilder $receiptBuilder,
         private readonly SelectionModeConfig $selectionModeConfig,
+        private readonly ReturnableItemsResolver $returnableItems,
         private readonly ?ContentHasherInterface $contentHasher = null,
     ) {
     }
@@ -103,7 +105,7 @@ class RequestCreator
         // In full-order mode the client selection is ignored: the request always
         // covers every returnable item, enforced server-side and not just in the UI.
         $items = ($input->items !== [] && !$this->selectionModeConfig->isFullOrderMode($storeId))
-            ? $this->filterEligibleItems($input->items, $result->getItemDecisions())
+            ? $this->filterEligibleItems($input->items, $result->getItemDecisions(), $order)
             : $this->defaultFullEligibleItems($order, $result->getItemDecisions());
 
         if ($items === []) {
@@ -359,17 +361,28 @@ class RequestCreator
     }
 
     /**
-     * Keep only explicitly-selected items whose Art.16 eligibility decision
-     * permits withdrawal; deny-decisions are dropped.
+     * Keep only explicitly-selected items that are (a) a current returnable unit
+     * for this order and (b) not Art.16-denied. Intersecting the submitted oids
+     * with the resolver's returnable set rejects any oid the form never offered
+     * — a bundle parent in per-component mode, a bundle child in whole-bundle
+     * mode, or an injected oid — which would otherwise double-refund the goods.
      *
      * @param array<int, int> $items order_item_id => qty
      * @param array<int, \MageMe\EUWithdrawal\Api\Data\EligibilityDecisionInterface> $decisions
      * @return array<int, int>
      */
-    private function filterEligibleItems(array $items, array $decisions): array
+    private function filterEligibleItems(array $items, array $decisions, OrderInterface $order): array
     {
+        $allowed = [];
+        foreach ($this->returnableItems->resolve($order) as $oi) {
+            $allowed[(int) $oi->getItemId()] = true;
+        }
+
         $out = [];
         foreach ($items as $oid => $qty) {
+            if (!isset($allowed[(int) $oid])) {
+                continue;
+            }
             $decision = $decisions[(int) $oid] ?? null;
             if ($decision !== null && !$decision->isEligible()) {
                 continue;
@@ -386,10 +399,7 @@ class RequestCreator
     private function defaultFullEligibleItems(OrderInterface $order, array $decisions): array
     {
         $items = [];
-        foreach (($order->getItems() ?? []) as $oi) {
-            if ($oi->getParentItemId()) {
-                continue;
-            }
+        foreach ($this->returnableItems->resolve($order) as $oi) {
             $oid = (int) $oi->getItemId();
             $d = $decisions[$oid] ?? null;
             if ($d !== null && !$d->isEligible()) {
@@ -436,10 +446,7 @@ class RequestCreator
      */
     private function detectIsPartial(OrderInterface $order, array $items): bool
     {
-        foreach (($order->getItems() ?? []) as $oi) {
-            if ($oi->getParentItemId()) {
-                continue;
-            }
+        foreach ($this->returnableItems->resolve($order) as $oi) {
             $oid = (int) $oi->getItemId();
             if (!isset($items[$oid])) {
                 return true;

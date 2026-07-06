@@ -123,6 +123,16 @@ $adjustment = $block->getOrderAdjustmentRefund();
                             </td>
                         </tr>
                     <?php endif; ?>
+                    <?php if ($block->getRefundTaxLine() > 0 && !$block->isTaxLineHidden()): ?>
+                        <tr class="tax mm-eu-w-totals-tax--info">
+                            <th scope="row" colspan="2">
+                                <?= $escaper->escapeHtml(__('Of which VAT')) ?>
+                            </th>
+                            <td class="col subtotal">
+                                <?= $escaper->escapeHtml($block->formatPrice($block->getRefundTaxLine())) ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                     <?php if (abs($adjustment) >= 0.005): ?>
                         <tr class="adjustment">
                             <th scope="row" colspan="2">
@@ -155,7 +165,7 @@ $adjustment = $block->getOrderAdjustmentRefund();
                 <?= $escaper->escapeHtml(__('You will receive a receipt email with the full withdrawal statement and integrity hash within a few minutes.')) ?>
             </li>
             <li>
-                <?= $escaper->escapeHtml(__('The 14-day window under Art. 9 CRD is locked to the moment you confirmed the withdrawal — nothing further is required from you to preserve the right.')) ?>
+                <?= $escaper->escapeHtml(__('The %1-day window under Art. 9 CRD is locked to the moment you confirmed the withdrawal — nothing further is required from you to preserve the right.', $block->getWithdrawalPeriodDays())) ?>
             </li>
             <li>
                 <?= $escaper->escapeHtml(__('The final refund is determined after we receive the returned items (Art. 14(2)) and is issued to the original payment method. Expect the funds within 14 days of receipt.')) ?>

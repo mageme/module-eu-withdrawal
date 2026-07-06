@@ -48,7 +48,14 @@ class MultiplePartialGuard
     {
         $purchasedQty = [];
         foreach (($order->getItems() ?? []) as $oi) {
-            $purchasedQty[(int) $oi->getItemId()] = (int) ((float) $oi->getQtyOrdered());
+            // Capacity is the still-returnable quantity: ordered minus units
+            // cancelled before invoice or already refunded via a native
+            // Magento credit-memo. Mirrors RefundCalculator so a partially
+            // refunded line cannot be re-withdrawn.
+            $returnable = (float) $oi->getQtyOrdered()
+                - (float) ($oi->getQtyCanceled() ?? 0.0)
+                - (float) ($oi->getQtyRefunded() ?? 0.0);
+            $purchasedQty[(int) $oi->getItemId()] = max(0, (int) $returnable);
         }
 
         foreach ($items as $oid => $qty) {

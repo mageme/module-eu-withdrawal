@@ -56,7 +56,11 @@
         const totalRefundEl = sidebar.querySelector('[data-role="total-refund"]');
         const continueBtn = document.querySelector('[data-role="continue"]');
         const selectionSummary = sidebar.querySelector('[data-role="selection-summary"]');
-        const bootstrapScript = document.querySelector('.mm-eu-w-spa script[data-role="bootstrap"]');
+        // Query document-wide: the native "Move JS code to the bottom of the
+        // page" setting (dev/js/move_script_to_bottom) relocates this JSON
+        // <script> out of .mm-eu-w-spa to just before </body>, so a scoped
+        // lookup would miss it and every boot value would fall back to 0.
+        const bootstrapScript = document.querySelector('script[data-role="bootstrap"]');
         let boot = {};
         try {
             boot = bootstrapScript ? JSON.parse(bootstrapScript.textContent || '{}') : {};
@@ -74,6 +78,23 @@
         // standard orders.
         const orderItemsBase = Number(boot.orderItemsBase || 0);
         const orderLevelGap = Number(boot.orderLevelGap || 0);
+        // Display mode: incl => gross line prices + informational VAT;
+        // excl => net line prices + an added VAT line. Single boot source.
+        const incl = !!boot.inclTax;
+
+        const lineTaxFor = (id, qty) => {
+            const meta = eligibleItems[String(id)];
+            if (!meta) return 0;
+            if (typeof meta.taxAmount !== 'undefined' && typeof meta.qtyOrdered !== 'undefined') {
+                const ordered = Number(meta.qtyOrdered) || 1;
+                return roundHalfEven(qty * Number(meta.taxAmount || 0) / ordered, 4);
+            }
+            return qty * Number(meta.unitTax || 0);
+        };
+        const lineDisplay = (id, data) => {
+            const net = roundHalfEven(data.qty * data.price, 2);
+            return incl ? roundHalfEven(net + lineTaxFor(id, data.qty), 4) : net;
+        };
 
         // Continue gate: block while any selected (qty>0) item that carries a
         // seal question still has no seal radio answered. Mirrors the Hyvä
@@ -96,7 +117,7 @@
             let itemsTotal = 0;
             let visibleCount = 0;
             if (itemsContainer) itemsContainer.innerHTML = '';
-            for (const [, data] of state.entries()) {
+            for (const [id, data] of state.entries()) {
                 if (data.qty <= 0) continue;
                 itemsTotal += data.qty * data.price;
                 visibleCount += 1;
@@ -151,7 +172,7 @@
 
                     const priceEl = document.createElement('div');
                     priceEl.className = 'mm-eu-w-items-to-return-price';
-                    priceEl.textContent = formatPrice(data.qty * data.price, currency);
+                    priceEl.textContent = formatPrice(lineDisplay(id, data), currency);
                     li.appendChild(priceEl);
 
                     itemsContainer.appendChild(li);
@@ -183,41 +204,40 @@
                 }
             }
 
-            // Tax: replicate RefundCalculator::calculate() exactly.
-            // For each selected item: lineTax = round(qty * tax / ordered, 4).
-            // Sum, re-round, then add shippingTax when full-return triggers
-            // shipping refund. Falls back to the legacy unitTax schema if the
-            // bootstrap was emitted by a pre-0.12.2 release.
-            let tax = 0;
+            // Per-item VAT (mirrors RefundCalculator::calculate()) plus shipping
+            // VAT on a full return. The displayed VAT line is the full refund VAT
+            // (item + shipping). In incl mode the Subtotal and Shipping lines are
+            // gross and the VAT line is informational (not added to the total); in
+            // excl mode the lines are net and the VAT line is added. The total is
+            // identical either way: S + Ti + Sh + Tsh + Adj.
+            let itemTax = 0;
             for (const [id, data] of state.entries()) {
                 if (data.qty <= 0) continue;
-                const meta = eligibleItems[String(id)];
-                if (!meta) continue;
-                if (typeof meta.taxAmount !== 'undefined' && typeof meta.qtyOrdered !== 'undefined') {
-                    const ordered = Number(meta.qtyOrdered) || 1;
-                    tax += roundHalfEven(data.qty * Number(meta.taxAmount || 0) / ordered, 4);
-                } else {
-                    tax += data.qty * Number(meta.unitTax || 0);
-                }
+                itemTax += lineTaxFor(id, data.qty);
             }
-            tax = roundHalfEven(tax, 4);
-            // EU Art. 14(2): full withdrawal refunds shipping AND its VAT.
-            // Bake shippingTax into the displayed shipping refund (matches
-            // RefundCalculator since 0.12.2: shipping_refund column stores
-            // shipping_amount + shipping_tax_amount). Tax row stays as the
-            // pure sum of per-item line tax.
-            const shippingRefundEx = fullReturn ? roundHalfEven(shippingPaid + shippingTax, 4) : 0;
-            // Distribute the order-level gap by the returned share, mirroring
-            // RefundCalculator::calculate() on the server.
+            itemTax = roundHalfEven(itemTax, 4);
+
+            const shipNet = fullReturn ? roundHalfEven(shippingPaid, 4) : 0;
+            const shipTax = fullReturn ? roundHalfEven(shippingTax, 4) : 0;
+            const vatLine = roundHalfEven(itemTax + shipTax, 4);
+
             let orderLevelAdj = 0;
             if (Math.abs(orderLevelGap) > 0.005 && orderItemsBase > 0) {
                 orderLevelAdj = roundHalfEven(orderLevelGap * (itemsTotal / orderItemsBase), 4);
             }
-            const totalRefund = roundHalfEven(itemsTotal + tax + shippingRefundEx + orderLevelAdj, 4);
 
-            if (itemsTotalEl) itemsTotalEl.textContent = formatPrice(itemsTotal, currency);
-            if (shippingPaidEl) shippingPaidEl.textContent = formatPrice(shippingRefundEx, currency);
-            if (taxEl) taxEl.textContent = formatPrice(tax, currency);
+            const subtotalDisplay = incl ? roundHalfEven(itemsTotal + itemTax, 4) : itemsTotal;
+            const shippingDisplay = incl ? roundHalfEven(shipNet + shipTax, 4) : shipNet;
+            const totalRefund = roundHalfEven(
+                incl
+                    ? subtotalDisplay + shippingDisplay + orderLevelAdj
+                    : subtotalDisplay + shippingDisplay + vatLine + orderLevelAdj,
+                4,
+            );
+
+            if (itemsTotalEl) itemsTotalEl.textContent = formatPrice(subtotalDisplay, currency);
+            if (shippingPaidEl) shippingPaidEl.textContent = formatPrice(shippingDisplay, currency);
+            if (taxEl) taxEl.textContent = formatPrice(vatLine, currency);
             const hideAdj = Math.abs(orderLevelAdj) < 0.005;
             if (adjustmentEl) {
                 adjustmentEl.textContent = formatPrice(orderLevelAdj, currency);
@@ -232,8 +252,7 @@
                 const data = state.get(id);
                 const lineCell = row.querySelector('[data-role="line-total"]');
                 if (!lineCell) return;
-                const line = data ? data.qty * data.price : 0;
-                lineCell.textContent = formatPrice(line, currency);
+                lineCell.textContent = formatPrice(data ? lineDisplay(id, data) : 0, currency);
             });
         };
 
@@ -320,6 +339,11 @@
                 if (qtyInput) {
                     qtyInput.value = 0;
                     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    // Full-order mode has no qty input (static qty span). Exclude
+                    // the item from our own selection directly, so a broken seal
+                    // still removes it even if withdrawal-app.js is not present.
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId: Number(itemId), qty: 0 } }));
                 }
             } else if (radio.value === '0' && radio.checked) {
                 if (warning) warning.setAttribute('hidden', '');
@@ -327,6 +351,12 @@
                     qtyInput.value = qtyInput.dataset.preSealQty;
                     delete qtyInput.dataset.preSealQty;
                     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                } else if (!qtyInput) {
+                    const itemRow = document.querySelector(`.mm-eu-w-item-row[data-item-id="${itemId}"]`);
+                    const remaining = itemRow ? Number(itemRow.dataset.remaining || 0) : 0;
+                    if (remaining > 0) {
+                        document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId: Number(itemId), qty: remaining } }));
+                    }
                 }
             }
             // Answering the seal question may unblock (or re-block) the
@@ -348,6 +378,19 @@
             } else {
                 textarea.setAttribute('hidden', '');
                 textarea.value = '';
+            }
+        });
+
+        // Full-order rows are pre-selected: data-remaining is set only on
+        // eligible full-order lines. Seed the selection state from them on load
+        // so the sidebar total and the Continue gate reflect the pre-filled
+        // quantities. The listener above is already registered, so this stays
+        // self-contained regardless of the other scripts' load order.
+        document.querySelectorAll('.mm-eu-w-item-row[data-remaining]').forEach((row) => {
+            const itemId = Number(row.dataset.itemId);
+            const qty = Number(row.dataset.remaining);
+            if (itemId && qty > 0 && !state.has(itemId)) {
+                document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty } }));
             }
         });
 

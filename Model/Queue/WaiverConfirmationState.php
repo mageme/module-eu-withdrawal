@@ -10,6 +10,7 @@ namespace MageMe\EUWithdrawal\Model\Queue;
 class WaiverConfirmationState
 {
     public const STATUS_PENDING   = 'pending';
+    public const STATUS_SENDING   = 'sending';
     public const STATUS_SENT      = 'sent';
     public const STATUS_RETRY     = 'failed_retry';
     public const STATUS_PERMANENT = 'failed_permanent';

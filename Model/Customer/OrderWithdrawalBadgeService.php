@@ -72,8 +72,16 @@ class OrderWithdrawalBadgeService
                 )
                 ->join(
                     ['oi' => $collection->getTable(self::TABLE_ORDER_ITEM)],
-                    'oi.item_id = main_table.order_item_id AND oi.parent_item_id IS NULL',
-                    ['item_id' => 'oi.item_id', 'ordered' => new \Zend_Db_Expr('MAX(oi.qty_ordered)')],
+                    // Match on item_id only — the withdrawal table already scopes
+                    // which oids count. Gating on parent_item_id IS NULL would drop
+                    // dynamic-bundle CHILD oids persisted under per-component bundle
+                    // returns, so the whole order would silently lose its badge.
+                    'oi.item_id = main_table.order_item_id',
+                    [
+                        'item_id' => 'oi.item_id',
+                        'ordered' => new \Zend_Db_Expr('MAX(oi.qty_ordered)'),
+                        'is_child' => new \Zend_Db_Expr('MAX(CASE WHEN oi.parent_item_id IS NOT NULL THEN 1 ELSE 0 END)'),
+                    ],
                 )
                 ->where('r.status IN (?)', self::COUNTED_STATUSES)
                 ->where('r.order_id IN (?)', $ids)
@@ -86,15 +94,33 @@ class OrderWithdrawalBadgeService
             // billable item was withdrawn" (full) from "all items WITH
             // requests are withdrawn but other items have none yet" (still
             // partial), pull the total billable item count per order.
-            $totalsSelect = $connection->select()
-                ->from(
-                    ['oi' => $collection->getTable(self::TABLE_ORDER_ITEM)],
-                    ['order_id' => 'oi.order_id', 'total' => new \Zend_Db_Expr('COUNT(*)')],
-                )
-                ->where('oi.parent_item_id IS NULL')
-                ->where('oi.order_id IN (?)', $ids)
-                ->group('oi.order_id');
-            $totals = $connection->fetchPairs($totalsSelect);
+            // Per-order billable-unit counts at two granularities, used only to
+            // keep an order PARTIAL when some unit has no withdrawal record yet.
+            // Whole-bundle withdrawals record the top-level line, so their
+            // universe is the top-level count; per-component bundle withdrawals
+            // record the child lines, so their universe is the billable "leaf"
+            // count (bundle children + non-bundle top-level lines). The bundle
+            // mode is pinned per order, so each order is measured against the
+            // granularity its own records use.
+            $soi = $collection->getTable(self::TABLE_ORDER_ITEM);
+            $totalsTop = $connection->fetchPairs(
+                $connection->select()
+                    ->from(['oi' => $soi], ['oi.order_id', new \Zend_Db_Expr('COUNT(*)')])
+                    ->where('oi.parent_item_id IS NULL')
+                    ->where('oi.order_id IN (?)', $ids)
+                    ->group('oi.order_id'),
+            );
+            $totalsLeaves = $connection->fetchPairs(
+                $connection->select()
+                    ->from(['oi' => $soi], ['oi.order_id', new \Zend_Db_Expr('COUNT(*)')])
+                    ->where('oi.row_total > 0')
+                    ->where(
+                        'oi.item_id NOT IN (SELECT c.parent_item_id FROM ' . $soi
+                        . ' c WHERE c.parent_item_id IS NOT NULL AND c.row_total > 0 AND c.order_id = oi.order_id)',
+                    )
+                    ->where('oi.order_id IN (?)', $ids)
+                    ->group('oi.order_id'),
+            );
         } catch (\Throwable $e) {
             $this->logger->warning(
                 'EUWithdrawal badge query failed: ' . $e->getMessage(),
@@ -109,13 +135,16 @@ class OrderWithdrawalBadgeService
         $perOrder = [];
         foreach ($rows as $row) {
             $orderId = (int) $row['order_id'];
-            $perOrder[$orderId] ??= ['items' => [], 'anyWithdrawn' => false];
+            $perOrder[$orderId] ??= ['items' => [], 'anyWithdrawn' => false, 'childScoped' => false];
             $perOrder[$orderId]['items'][] = [
                 'withdrawn' => (float) $row['withdrawn'],
                 'ordered'   => (float) $row['ordered'],
             ];
             if ((float) $row['withdrawn'] > 0) {
                 $perOrder[$orderId]['anyWithdrawn'] = true;
+            }
+            if ((int) ($row['is_child'] ?? 0) === 1) {
+                $perOrder[$orderId]['childScoped'] = true;
             }
         }
 
@@ -133,7 +162,9 @@ class OrderWithdrawalBadgeService
             // covered by a withdrawal record. Items the customer never
             // requested keep the order PARTIAL.
             if ($full) {
-                $totalItems = (int) ($totals[$orderId] ?? 0);
+                $totalItems = $data['childScoped']
+                    ? (int) ($totalsLeaves[$orderId] ?? 0)
+                    : (int) ($totalsTop[$orderId] ?? 0);
                 if ($totalItems === 0 || count($data['items']) < $totalItems) {
                     $full = false;
                 }

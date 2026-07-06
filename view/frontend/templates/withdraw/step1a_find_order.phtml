@@ -46,7 +46,7 @@ $svgInfo = '<svg class="mm-eu-w-banner-icon-svg" viewBox="0 0 24 24" width="20" 
     <div class="mm-eu-w-banner mm-eu-w-banner--info">
         <span class="mm-eu-w-banner-icon" aria-hidden="true"><?= /* @noEscape */ $svgInfo ?></span>
         <span class="mm-eu-w-banner-text">
-            <?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?>
+            <?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within %1 days of receiving your order, without giving any reason.', $block->getWithdrawalPeriodDays())) ?>
         </span>
     </div>
     <div class="mm-eu-w-help-footer">

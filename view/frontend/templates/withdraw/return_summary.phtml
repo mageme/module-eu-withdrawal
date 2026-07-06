@@ -29,9 +29,14 @@ $t = $block->getInitialTotals();
                 <dd data-role="items-total"><?= $escaper->escapeHtml($block->formatPrice($t['items_total'])) ?></dd>
                 <dt><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt>
                 <dd data-role="shipping-paid"><?= $escaper->escapeHtml($block->formatPrice($t['shipping_paid'])) ?></dd>
-                <dt><?= $escaper->escapeHtml(__('Tax')) ?></dt>
-                <dd data-role="tax"><?= $escaper->escapeHtml($block->formatPrice($t['tax'])) ?></dd>
-                <dt data-role="adjustment-row" hidden><?= $escaper->escapeHtml(__('Order adjustment')) ?></dt>
+                <?php if (!$block->isTaxLineHidden()): ?>
+                    <dt class="mm-eu-w-totals-tax<?= $block->isInclTaxDisplay() ? ' mm-eu-w-totals-tax--info' : '' ?>">
+                        <?= $escaper->escapeHtml($block->isInclTaxDisplay() ? __('Of which VAT') : __('VAT')) ?>
+                    </dt>
+                    <dd class="mm-eu-w-totals-tax<?= $block->isInclTaxDisplay() ? ' mm-eu-w-totals-tax--info' : '' ?>"
+                        data-role="tax"><?= $escaper->escapeHtml($block->formatPrice($t['tax'])) ?></dd>
+                <?php endif; ?>
+                <dt data-role="adjustment-row" hidden><?= $escaper->escapeHtml(__('Order Adjustment')) ?></dt>
                 <dd data-role="adjustment" hidden><?= $escaper->escapeHtml($block->formatPrice(0.0)) ?></dd>
                 <dt class="mm-eu-w-total-row"><?= $escaper->escapeHtml(__('Total refund')) ?></dt>
                 <dd class="mm-eu-w-total-row" data-role="total-refund">

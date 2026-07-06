@@ -45,16 +45,23 @@ class ReceiptRetryRunner
             $ids = array_map('intval', (array) $conn->fetchCol(
                 $conn->select()
                     ->from($table, ['request_id'])
-                    ->where('receipt_status = ?', 'failed_retry')
+                    // `sending` rows past their lease belong to a worker that died
+                    // mid-send; reclaim them alongside due `failed_retry` rows.
+                    ->where('receipt_status IN (?)', ['failed_retry', 'sending'])
                     ->where('receipt_next_send_at <= ?', $now)
                     ->limit(self::LIMIT)
                     ->forUpdate(true)
             ));
             if ($ids !== []) {
-                // Lease: push next_send_at forward so the every-minute cron can't
-                // re-select (and double-send) these rows before the consumer
-                // processes them. The consumer resets next_send_at on success/failure.
-                $conn->update($table, ['receipt_next_send_at' => $leaseUntil], ['request_id IN (?)' => $ids]);
+                // Reset any reclaimed `sending` row to `failed_retry` so the
+                // consumer can claim it again, and push next_send_at forward
+                // (lease) so the every-minute cron can't re-select and double-send
+                // before the consumer processes it.
+                $conn->update(
+                    $table,
+                    ['receipt_status' => 'failed_retry', 'receipt_next_send_at' => $leaseUntil],
+                    ['request_id IN (?)' => $ids],
+                );
             }
             $conn->commit();
         } catch (\Throwable $t) {

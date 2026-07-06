@@ -11,6 +11,8 @@ use MageMe\EUWithdrawal\Api\Data\ItemInterface;
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Api\ItemRepositoryInterface;
 use MageMe\EUWithdrawal\Api\RequestRepositoryInterface;
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
+use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
 use MageMe\EUWithdrawal\Model\Session as WithdrawalSession;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
@@ -40,6 +42,8 @@ class Success extends Template
      * @param OrderRepositoryInterface $orderRepository
      * @param PriceCurrencyInterface $priceCurrency
      * @param TimezoneInterface $timezone
+     * @param PeriodDaysConfigReader $periodDays
+     * @param TaxDisplayConfig $taxDisplay
      * @param array $data
      */
     public function __construct(
@@ -50,9 +54,33 @@ class Success extends Template
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly PriceCurrencyInterface $priceCurrency,
         private readonly TimezoneInterface $timezone,
+        private readonly PeriodDaysConfigReader $periodDays,
+        private readonly TaxDisplayConfig $taxDisplay,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Whether the informational VAT line is suppressed. The confirmation page
+     * always shows gross figures, so the line is dropped only when the store
+     * folds tax into the grand total (sales-display "grandtotal" setting).
+     *
+     * @return bool
+     */
+    public function isTaxLineHidden(): bool
+    {
+        return $this->taxDisplay->isTaxFoldedIntoTotal();
+    }
+
+    /**
+     * Configured withdrawal-period length in days, shown in customer-facing copy.
+     *
+     * @return int
+     */
+    public function getWithdrawalPeriodDays(): int
+    {
+        return $this->periodDays->getDays();
     }
 
     /**
@@ -279,6 +307,16 @@ class Success extends Template
             return 0.0;
         }
         return (float) $r->getOrderAdjustmentRefund();
+    }
+
+    /**
+     * Informational VAT contained in the refund (item VAT + shipping VAT).
+     *
+     * @return float
+     */
+    public function getRefundTaxLine(): float
+    {
+        return (float) ($this->getWithdrawalRequest()?->getTaxRefund() ?? 0.0);
     }
 
     /**

@@ -33,6 +33,19 @@ class ReceiptSendConsumer
     private const TERMINAL_STATUSES = ['sent', 'failed_permanent'];
 
     /**
+     * Receipt statuses a worker may claim for sending. `sending` is deliberately
+     * excluded: a row already in flight (or stuck under a live lease) must not be
+     * re-claimed, which is what makes the send idempotent under MQ redelivery.
+     */
+    private const CLAIMABLE_STATUSES = ['pending', 'failed_retry'];
+
+    /**
+     * Lease pushed onto `receipt_next_send_at` when a row is claimed, so a worker
+     * that dies mid-send releases the row to the retry cron after this window.
+     */
+    private const CLAIM_LEASE_SECONDS = 300;
+
+    /**
      * Consumer only sends for live requests; a message for any other state was
      * enqueued in error — skip quietly so we don't trip the hash-mismatch →
      * markPermanent → DLQ cascade.
@@ -94,6 +107,15 @@ class ReceiptSendConsumer
         }
 
         $attempts = (int) $row['receipt_send_attempts'] + 1;
+
+        // Atomically claim the row into a leased `sending` state before the
+        // actual email goes out. A concurrent worker or a redelivered MQ message
+        // finds 0 affected rows and skips, so the Art. 11a(4) durable-medium
+        // email is not sent twice.
+        if (!$this->claim($requestId, $attempts)) {
+            return;
+        }
+
         $storeId  = (int) $row['store_id'];
 
         // The email transport resolves a frontend-area template. Consumers run
@@ -175,6 +197,35 @@ class ReceiptSendConsumer
             ->where('request_id = ?', $requestId);
         $row = $conn->fetchRow($select);
         return $row ?: null;
+    }
+
+    /**
+     * Claim.
+     *
+     * Atomically move a claimable row into the leased `sending` state. Returns
+     * true only for the single worker whose conditional UPDATE matched; every
+     * other concurrent or redelivered attempt gets 0 affected rows and false.
+     *
+     * @param int $requestId
+     * @param int $attempts
+     * @return bool
+     */
+    private function claim(int $requestId, int $attempts): bool
+    {
+        $leaseUntil = gmdate('Y-m-d H:i:s', time() + self::CLAIM_LEASE_SECONDS);
+        $affected = $this->resource->getConnection()->update(
+            $this->resource->getTableName(self::TABLE_REQUEST),
+            [
+                'receipt_status'        => 'sending',
+                'receipt_send_attempts' => $attempts,
+                'receipt_next_send_at'  => $leaseUntil,
+            ],
+            [
+                'request_id = ?'        => $requestId,
+                'receipt_status IN (?)' => self::CLAIMABLE_STATUSES,
+            ],
+        );
+        return (int) $affected === 1;
     }
 
     /**

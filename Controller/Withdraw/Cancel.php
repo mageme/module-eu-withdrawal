@@ -150,6 +150,13 @@ class Cancel implements HttpPostActionInterface, CsrfAwareActionInterface
         if ($rawReturnUrl === '') {
             return null;
         }
+        // A leading `//` (or a backslash, which browsers normalise to `/`)
+        // makes the URL protocol-relative — an off-site target that parse_url
+        // reports as host-less and would otherwise slip through as "relative".
+        // Reject it before the host check.
+        if (str_contains($rawReturnUrl, '\\') || preg_match('#^\s*/{2,}#', $rawReturnUrl) === 1) {
+            return null;
+        }
         $parts = parse_url($rawReturnUrl);
         if ($parts === false || empty($parts['host'])) {
             // Relative URL (no host) — internal by definition, accept.

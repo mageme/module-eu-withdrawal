@@ -94,19 +94,27 @@ class ReceiptBuilder
             $ua = substr($ua, 0, 100);
         }
 
-        // Frozen Art. 6(1)(d) component split read from the request row:
-        //   - items      = net subtotal of withdrawn lines
-        //   - tax        = combined VAT (item VAT + shipping VAT)
+        // Gross Art. 6(1)(d) presentation: the refund is shown as the amount
+        // actually returned (items gross + shipping gross) with the VAT it
+        // contains as an informational line. Item gross subtotal is the sum of
+        // the per-line gross refund_amount; shipping gross is the residual so
+        // items + shipping always reconcile to the canonical total.
+        //   - items      = gross subtotal of withdrawn lines (net + line VAT)
+        //   - tax        = combined VAT (item VAT + shipping VAT), informational
         //   - adjustment = order-level refund component (signed)
         //   - total      = canonical refund
-        //   - shipping   = net residual so the parts always reconcile to total
-        $itemsNetSubtotal = (float) ($row['items_subtotal'] ?? 0.0);
+        //   - shipping   = gross residual so the parts always reconcile to total
+        $itemsGross = 0.0;
+        foreach ($itemRows as $i) {
+            $itemsGross += (float) $i['refund_amount'];
+        }
+        $itemsGross       = round($itemsGross, 2, PHP_ROUND_HALF_EVEN);
         $taxRefundTotal   = (float) ($row['tax_refund'] ?? 0.0);
         $orderAdjustment  = (float) ($row['order_adjustment_refund'] ?? 0.0);
         $refundTotal      = (float) ($row['total_refund'] ?? 0.0);
-        $shippingNet      = round(
-            $refundTotal - $itemsNetSubtotal - $taxRefundTotal - $orderAdjustment,
-            4,
+        $shippingGross    = round(
+            $refundTotal - $itemsGross - $orderAdjustment,
+            2,
             PHP_ROUND_HALF_EVEN,
         );
 
@@ -124,8 +132,8 @@ class ReceiptBuilder
             ],
             items: $items,
             refund: [
-                'items'      => number_format($itemsNetSubtotal, 2, '.', ''),
-                'shipping'   => number_format($shippingNet, 2, '.', ''),
+                'items'      => number_format($itemsGross, 2, '.', ''),
+                'shipping'   => number_format($shippingGross, 2, '.', ''),
                 'tax'        => number_format($taxRefundTotal, 2, '.', ''),
                 'adjustment' => number_format($orderAdjustment, 2, '.', ''),
                 'total'      => number_format($refundTotal, 2, '.', ''),

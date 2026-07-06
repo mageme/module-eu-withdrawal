@@ -322,6 +322,11 @@
                     <source_model>MageMe\EUWithdrawal\Model\Config\Source\ItemSelectionMode</source_model>
                     <comment><![CDATA[<em>Per item</em>: the customer chooses lines and quantities. <em>Full order</em>: the request always covers all returnable items; items excluded by law (opened seal, expired period) are still removed automatically, and the form shows a note that partial returns can be requested via your contact page.<br/><strong>⚠ Legal warning.</strong> The explanatory materials to the German implementation law expect the withdrawal function to support selecting parts of the order. Consult your counsel before switching to Full order.]]></comment>
                 </field>
+                <field id="bundle_return_per_component" translate="label comment" type="select" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Bundle Item Selection</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[<em>No</em> (default): the bundle is shown as one returnable unit — the customer returns the whole bundle. <em>Yes</em>: the bundle's priced components are shown as separate returnable lines when they can be returned independently (e.g. a device and an accessory sold together). Enable this only for bundles that group independently returnable products; a bundle sold as a single set should remain returnable only as a whole.<br/><strong>Legal note.</strong> Configure this according to how each bundle is offered and contracted; consult your counsel if components should be withdrawable separately.]]></comment>
+                </field>
 
                 <group id="buttons" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Buttons</label>

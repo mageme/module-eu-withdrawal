@@ -26,7 +26,11 @@
         const spa = document.querySelector('.mm-eu-w-spa');
         if (!spa) return;
 
-        const bootstrapScript = spa.querySelector('script[data-role="bootstrap"]');
+        // Fall back to a document-wide lookup: the native "Move JS code to the
+        // bottom of the page" setting (dev/js/move_script_to_bottom) relocates
+        // these JSON <script> blobs out of .mm-eu-w-spa to just before </body>.
+        const bootstrapScript = spa.querySelector('script[data-role="bootstrap"]')
+            || document.querySelector('script[data-role="bootstrap"]');
         let boot = {};
         if (bootstrapScript) {
             try {
@@ -35,7 +39,8 @@
                 boot = {};
             }
         }
-        const itemSelectorBootScript = spa.querySelector('script[data-role="item-selector-boot"]');
+        const itemSelectorBootScript = spa.querySelector('script[data-role="item-selector-boot"]')
+            || document.querySelector('script[data-role="item-selector-boot"]');
         if (itemSelectorBootScript) {
             try {
                 const selectorBoot = JSON.parse(itemSelectorBootScript.textContent || '{}');
@@ -248,18 +253,22 @@
         const shippingTax  = Number(boot.shippingTax || 0);
         const eligibleItems = boot.eligibleItems || {};
 
-        // Full-order mode: seed both stores by dispatching qty-changed for each
-        // eligible row. The data-remaining attribute on the <tr> carries the qty;
-        // both this file's listener and withdrawal-summary.js's listener receive
-        // the event (both registered earlier in this same ready() callback or in
-        // withdrawal-summary.js's onReady() which also runs synchronously since
-        // all three scripts are defer-loaded in document order).
+        // Full-order mode: seed this file's own selection store directly from the
+        // pre-filled rows (data-remaining carries the qty). withdrawal-summary.js
+        // seeds its own store independently, so neither depends on the other's
+        // load order and no qty-changed event is re-dispatched here (which would
+        // otherwise make the sidebar re-render twice per row on load).
         if (boot.selectionMode === 'full_order') {
             document.querySelectorAll('.mm-eu-w-item-row[data-remaining]').forEach((el) => {
                 const itemId = Number(el.dataset.itemId);
                 const qty = Number(el.dataset.remaining);
                 if (qty > 0) {
-                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty } }));
+                    state.items.set(itemId, {
+                        qty,
+                        price: Number(el.dataset.price || 0),
+                        name: el.dataset.name || '',
+                        thumb: el.dataset.thumb || '',
+                    });
                 }
             });
         }
@@ -273,9 +282,10 @@
 
             while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
             let total = 0;
+            const incl = !!boot.inclTax;
             for (const [itemId, data] of state.items.entries()) {
-                const line = data.qty * data.price;
-                total += line;
+                const net = data.qty * data.price;
+                total += net;
                 const tr = document.createElement('tr');
                 tr.dataset.itemId = String(itemId);
 
@@ -332,7 +342,10 @@
 
                 const totalTd = document.createElement('td');
                 totalTd.className = 'mm-eu-w-col-total';
-                totalTd.textContent = formatPrice(line, currency);
+                totalTd.textContent = formatPrice(
+                    incl ? roundHalfEven(net + lineTaxFor(itemId, data.qty), 4) : net,
+                    currency,
+                );
                 tr.appendChild(totalTd);
 
                 tbody.appendChild(tr);
@@ -352,21 +365,43 @@
                     }
                 }
             }
-            let tax = 0;
+            // Mode-aware totals — mirrors the step-2 sidebar (withdrawal-summary.js).
+            // incl: gross Subtotal/Shipping + informational VAT (not added);
+            // excl: net Subtotal/Shipping + added VAT. Total identical either way.
+            // (incl is declared once at the top of renderReview.)
+            let itemTax = 0;
             for (const [id, data] of state.items.entries()) {
                 if (data.qty <= 0) continue;
-                tax += lineTaxFor(id, data.qty);
+                itemTax += lineTaxFor(id, data.qty);
             }
-            tax = roundHalfEven(tax, 4);
-            // Shipping refund includes shipping VAT under EU Art. 14(2);
-            // matches RefundCalculator since 0.12.2.
-            const shippingRefund = fullReturn ? roundHalfEven(shippingPaid + shippingTax, 4) : 0;
-            const grandRefund = roundHalfEven(total + tax + shippingRefund, 4);
+            itemTax = roundHalfEven(itemTax, 4);
+            const shipNet = fullReturn ? roundHalfEven(shippingPaid, 4) : 0;
+            const shipTax = fullReturn ? roundHalfEven(shippingTax, 4) : 0;
+            const vatLine = roundHalfEven(itemTax + shipTax, 4);
+            let orderLevelAdj = 0;
+            const orderItemsBase = Number(boot.orderItemsBase || 0);
+            const orderLevelGap = Number(boot.orderLevelGap || 0);
+            if (Math.abs(orderLevelGap) > 0.005 && orderItemsBase > 0) {
+                orderLevelAdj = roundHalfEven(orderLevelGap * (total / orderItemsBase), 4);
+            }
+            const subtotalDisplay = incl ? roundHalfEven(total + itemTax, 4) : total;
+            const shippingDisplay = incl ? roundHalfEven(shipNet + shipTax, 4) : shipNet;
+            const grandRefund = roundHalfEven(
+                incl
+                    ? subtotalDisplay + shippingDisplay + orderLevelAdj
+                    : subtotalDisplay + shippingDisplay + vatLine + orderLevelAdj,
+                4,
+            );
 
-            itemsTotalEl.textContent = formatPrice(total, currency);
-            if (shippingEl) shippingEl.textContent = formatPrice(shippingRefund, currency);
-            if (taxEl) taxEl.textContent = formatPrice(tax, currency);
+            itemsTotalEl.textContent = formatPrice(subtotalDisplay, currency);
+            if (shippingEl) shippingEl.textContent = formatPrice(shippingDisplay, currency);
+            if (taxEl) taxEl.textContent = formatPrice(vatLine, currency);
             totalEl.textContent = formatPrice(grandRefund, currency);
+            const adjRow = panels['3'].querySelector('[data-role="review-adjustment-row"]');
+            const adjEl = panels['3'].querySelector('[data-role="review-adjustment"]');
+            const hideAdj = Math.abs(orderLevelAdj) < 0.005;
+            if (adjEl) { adjEl.textContent = formatPrice(orderLevelAdj, currency); adjEl.hidden = hideAdj; }
+            if (adjRow) adjRow.hidden = hideAdj;
 
             // Let add-ons (Pro seal photos) decorate the freshly-built review
             // rows, which carry data-item-id for lookup.

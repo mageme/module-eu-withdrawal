@@ -19,7 +19,8 @@ $svgInfo = '<svg class="mm-eu-w-banner-icon-svg" viewBox="0 0 24 24" width="20" 
             <div class="mm-eu-w-empty">
                 <p>
                     <?= $escaper->escapeHtml(__(
-                        "You don't have any orders eligible for withdrawal. The 14-day withdrawal window runs from the day you received your order."
+                        "You don't have any orders eligible for withdrawal. The %1-day withdrawal window runs from the day you received your order.",
+                        $block->getWithdrawalPeriodDays()
                     )) ?>
                 </p>
                 <a class="mm-eu-w-link" href="<?= $escaper->escapeUrl($block->getOrderHistoryUrl()) ?>">
@@ -50,7 +51,7 @@ $svgInfo = '<svg class="mm-eu-w-banner-icon-svg" viewBox="0 0 24 24" width="20" 
     <div class="mm-eu-w-banner mm-eu-w-banner--info">
         <span class="mm-eu-w-banner-icon" aria-hidden="true"><?= /* @noEscape */ $svgInfo ?></span>
         <span class="mm-eu-w-banner-text">
-            <?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?>
+            <?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within %1 days of receiving your order, without giving any reason.', $block->getWithdrawalPeriodDays())) ?>
         </span>
     </div>
 </section>

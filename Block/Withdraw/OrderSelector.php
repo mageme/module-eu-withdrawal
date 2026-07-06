@@ -10,6 +10,7 @@ namespace MageMe\EUWithdrawal\Block\Withdraw;
 use MageMe\EUWithdrawal\Model\Customer\OrderWithdrawalBadgeService;
 use MageMe\EUWithdrawal\Model\Frontend\Dto\EligibleOrdersPage;
 use MageMe\EUWithdrawal\Model\Frontend\EligibleOrdersProvider;
+use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use MageMe\EUWithdrawal\Model\Period\DeliveryDateResolver;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
@@ -34,6 +35,7 @@ class OrderSelector extends Template
      * @param TimezoneInterface $timezone
      * @param PriceCurrencyInterface $priceCurrency
      * @param OrderWithdrawalBadgeService $badgeService
+     * @param PeriodDaysConfigReader $periodDays
      * @param array $data
      */
     public function __construct(
@@ -45,9 +47,20 @@ class OrderSelector extends Template
         private readonly TimezoneInterface $timezone,
         private readonly PriceCurrencyInterface $priceCurrency,
         private readonly OrderWithdrawalBadgeService $badgeService,
+        private readonly PeriodDaysConfigReader $periodDays,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Configured withdrawal-period length in days, shown in customer-facing copy.
+     *
+     * @return int
+     */
+    public function getWithdrawalPeriodDays(): int
+    {
+        return $this->periodDays->getDays();
     }
 
     /**

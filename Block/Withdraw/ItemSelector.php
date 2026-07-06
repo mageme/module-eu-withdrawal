@@ -12,6 +12,7 @@ use MageMe\EUWithdrawal\Exception\NoDeliveryInfoException;
 use MageMe\EUWithdrawal\Model\EligibilityRequestBuilder;
 use MageMe\EUWithdrawal\Model\Item\ExclusionReason;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
+use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
 use MageMe\EUWithdrawal\Model\Item\OrderPartialStateCalculator;
 use MageMe\EUWithdrawal\Model\Item\RemainingItemState;
 use MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface;
@@ -61,9 +62,45 @@ class ItemSelector extends Template
         private readonly PriceCurrencyInterface $priceCurrency,
         private readonly ProductThumbnail $thumbnail,
         private readonly ReasonsConfigReader $reasonsConfig,
+        private readonly TaxDisplayConfig $taxDisplay,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * Whether item prices in the table should render including tax.
+     *
+     * @return bool
+     */
+    public function isInclTaxDisplay(): bool
+    {
+        return $this->taxDisplay->isInclTax();
+    }
+
+    /**
+     * Per-unit price for the items table: gross (incl tax) when the store
+     * displays sales prices including tax, otherwise the net unit price.
+     *
+     * @param RemainingItemState $state
+     * @return float
+     */
+    public function getUnitDisplayPrice(RemainingItemState $state): float
+    {
+        $net = (float) $state->unitDisplayPrice;
+        if (!$this->isInclTaxDisplay()) {
+            return $net;
+        }
+        $oi = $this->getOrderItem((int) $state->orderItemId);
+        if ($oi === null) {
+            return $net;
+        }
+        $ordered = (float) $oi->getQtyOrdered();
+        if ($ordered <= 0.0) {
+            return $net;
+        }
+        $unitTax = round((float) $oi->getTaxAmount() / $ordered, 4, PHP_ROUND_HALF_EVEN);
+        return round($net + $unitTax, 4, PHP_ROUND_HALF_EVEN);
     }
 
     /**

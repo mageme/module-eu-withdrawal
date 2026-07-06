@@ -12,6 +12,7 @@ use MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface;
 use MageMe\EUWithdrawal\Api\Data\EligibilityResultInterface;
 use MageMe\EUWithdrawal\Api\EligibilityEngineInterface;
 use MageMe\EUWithdrawal\Api\RuleInterface;
+use MageMe\EUWithdrawal\Model\Item\ReturnableItemsResolver;
 use MageMe\EUWithdrawal\Model\Rule\Chain\RuleChainProcessor;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -23,10 +24,12 @@ class EligibilityEngine implements EligibilityEngineInterface
      *
      * @param RuleChainProcessor $chain
      * @param ProductRepositoryInterface $productRepository
+     * @param ReturnableItemsResolver $returnableItems
      */
     public function __construct(
         private readonly RuleChainProcessor $chain,
         private readonly ProductRepositoryInterface $productRepository,
+        private readonly ReturnableItemsResolver $returnableItems,
     ) {
     }
 
@@ -46,14 +49,7 @@ class EligibilityEngine implements EligibilityEngineInterface
 
         $itemDecisions = [];
         if (!$orderDecision->isFinal()) {
-            foreach ($request->getOrder()->getItems() as $item) {
-                // Configurable/bundle parents carry the catalog product identity; their
-                // simple-variant children duplicate the row. Evaluating both doubles the
-                // item-scope rule work and pollutes the result map with child oids that
-                // the UI/refund layer never references.
-                if ($item->getParentItemId()) {
-                    continue;
-                }
+            foreach ($this->returnableItems->resolve($request->getOrder()) as $item) {
                 try {
                     $product = $this->productRepository->getById((int) $item->getProductId());
                 } catch (NoSuchEntityException) {

@@ -96,7 +96,7 @@ class PrecontractLayoutPlugin
                     'annexIaSections'     => $iaSections,
                     'isExpanded'          => false,
                     'heading'             => (string) __('Right of Withdrawal — Required Information'),
-                    'subhead'             => (string) __('Before placing your order, please review the conditions, time limit, and procedures for exercising your 14-day right of withdrawal. This information forms part of your contract.'),
+                    'subhead'             => (string) __('Before placing your order, please review the conditions, time limit, and procedures for exercising your %1-day right of withdrawal. This information forms part of your contract.', $snapshot->getPeriodDays()),
                     'accordionTitle'      => (string) __('Conditions, Time Limit and Procedures for Withdrawal'),
                     'downloadLabel'       => (string) __('Download Model Withdrawal Form (Annex I(B))'),
                     'downloadHint'        => (string) __('Optional legal template — not required to use; you can also exercise the right of withdrawal by any unequivocal statement.'),
