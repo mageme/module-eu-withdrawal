@@ -33,6 +33,19 @@
 .column.main .mm-eu-w-card-title,
 .column.main .mm-eu-w-hero-title { letter-spacing: -0.01em; }
 
+// ---- Centered content column with comfortable gutters (flat, editorial) ----
+// Every withdrawal surface shares one centred max-width so the flow reads as a
+// deliberately-set page instead of a full-bleed slab against the theme edges.
+.column.main .mm-eu-w-page-title,
+.column.main .mm-eu-w-stepper,
+.column.main .mm-eu-w-spa,
+.column.main .mm-eu-w-step1a,
+.column.main .mm-eu-w-step1b {
+    max-width: @mm-eu-w-content-max;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 // ---- Typography base — defensive against Luma/theme inherits.
 // Applied only to non-interactive containers so button/link colors survive. ----
 .column.main .mm-eu-w-card,
@@ -76,7 +89,8 @@
 .mm-eu-w-copy-btn { color: @mm-eu-w-text-muted; }
 .mm-eu-w-copy-btn:hover { color: @mm-eu-w-primary; }
 
-// ---- Card chrome ----
+// ---- Card chrome (framed surface) ----
+// White rounded panel with a light border + inner padding wraps each step surface.
 .mm-eu-w-card {
     background: @mm-eu-w-bg;
     border: 1px solid @mm-eu-w-border;
@@ -95,7 +109,7 @@
     margin-right: auto;
 }
 .mm-eu-w-card-title { font-size: 22px; font-weight: 600; margin: 0 0 8px; color: @mm-eu-w-text; line-height: 1.25; }
-.mm-eu-w-card-subtitle { color: @mm-eu-w-text-muted; margin: 0 0 22px; font-size: 15px; line-height: 1.5; }
+.mm-eu-w-card-subtitle { color: @mm-eu-w-text-muted; margin: 0 0 22px; font-size: 14px; line-height: 1.5; }
 .mm-eu-w-sidebar-title { font-size: 20px; font-weight: 600; margin: 0 0 14px; color: @mm-eu-w-text; }
 .mm-eu-w-sidebar-subtitle {
     font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
@@ -106,13 +120,13 @@
 
 // ---- Page title ----
 .column.main .mm-eu-w-page-title {
-    margin: 32px 0;
+    margin: 32px auto;
     text-align: center;
     font-family: @mm-eu-w-font-stack;
-    font-size: 28px;
-    font-weight: 600;
+    font-size: 30px;
+    font-weight: 400;
     line-height: 1.2;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
     color: @mm-eu-w-text;
 }
 
@@ -144,6 +158,7 @@
 .column.main .mm-eu-w-step--active .mm-eu-w-step-number {
     background: @mm-eu-w-primary; border-color: @mm-eu-w-primary; color: #fff;
 }
+.mm-eu-w-step-number svg { width: 18px; height: 18px; }
 .mm-eu-w-step-body { display: flex; flex-direction: column; gap: 3px; }
 .mm-eu-w-step-title { font-weight: 600; font-size: 15px; line-height: 1.3; color: @mm-eu-w-text-muted; }
 .column.main .mm-eu-w-step--active .mm-eu-w-step-title { color: @mm-eu-w-primary; }
@@ -152,7 +167,7 @@
 // ---- Grid / 2-column ----
 .mm-eu-w-grid {
     display: grid; gap: @mm-eu-w-gap;
-    grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+    grid-template-columns: minmax(0, 2.6fr) minmax(280px, 1fr);
     grid-template-areas: 'main sidebar' 'actions actions';
 }
 .mm-eu-w-grid--hero { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
@@ -255,7 +270,7 @@
 .mm-eu-w-banner--info { background: @mm-eu-w-info-bg; border: 1px solid @mm-eu-w-info-border; }
 .mm-eu-w-banner--error { background: @mm-eu-w-error-bg; border: 1px solid @mm-eu-w-danger; color: @mm-eu-w-danger; }
 .mm-eu-w-banner-icon { color: @mm-eu-w-primary; font-weight: 700; font-size: 16px; }
-.mm-eu-w-banner-text { flex: 1; }
+.mm-eu-w-banner-text { flex: 1; font-size: 14px; }
 
 .mm-eu-w-help-footer {
     text-align: center; padding: 20px; border-top: 1px solid @mm-eu-w-border;
@@ -301,7 +316,7 @@
     text-align: center; padding: 32px 16px; color: @mm-eu-w-text-muted; font-size: 16px;
 }
 
-// ---- Order meta bar ----
+// ---- Order meta bar (tinted box with package/truck/receipt icons) ----
 .mm-eu-w-order-bar {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;
     padding: 16px 18px; background: @mm-eu-w-bg-subtle; border-radius: @mm-eu-w-radius;
@@ -336,34 +351,95 @@
 }
 .mm-eu-w-items-table col { background: transparent; }
 .mm-eu-w-items-table th {
-    text-align: left; padding: 12px 8px; font-size: 14px;
+    text-align: left; padding: 4px 8px 12px; font-size: 13px; font-weight: 400;
+    line-height: 1.3; vertical-align: bottom;
     color: @mm-eu-w-text-muted; border-bottom: 1px solid @mm-eu-w-border;
 }
-.mm-eu-w-items-table td { padding: 16px 8px; border-bottom: 1px solid @mm-eu-w-border; vertical-align: middle; }
-.mm-eu-w-col-thumb { width: 90px; }
+.mm-eu-w-items-table td { padding: 18px 8px; border-bottom: 1px solid @mm-eu-w-border; vertical-align: middle; }
+// Some base themes (e.g. Breeze) add a border-bottom to every <tr>; neutralise it
+// so this table's separators are driven only by the <td> rules above/below,
+// keeping Luma, Breeze and any other Luma-compatible theme identical.
+.mm-eu-w-items-table tr { border-bottom: none; }
+.mm-eu-w-col-thumb { width: 68px; }
 .mm-eu-w-col-item { width: auto; }
 .mm-eu-w-items-table th.mm-eu-w-col-price,
 .mm-eu-w-items-table td.mm-eu-w-col-price,
-.mm-eu-w-col-price { width: 70px; text-align: right; }
+.mm-eu-w-col-price { width: 60px; text-align: right; }
 .mm-eu-w-items-table th.mm-eu-w-col-qty,
 .mm-eu-w-items-table td.mm-eu-w-col-qty,
-.mm-eu-w-col-qty { width: 65px; text-align: center; }
+.mm-eu-w-col-qty { width: 78px; text-align: center; }
 .mm-eu-w-items-table th.mm-eu-w-col-rqty,
 .mm-eu-w-items-table td.mm-eu-w-col-rqty,
-.mm-eu-w-col-rqty { width: 122px; text-align: center; }
+.mm-eu-w-col-rqty { width: 104px; text-align: center; }
 .mm-eu-w-items-table th.mm-eu-w-col-total,
 .mm-eu-w-items-table td.mm-eu-w-col-total,
-.mm-eu-w-col-total { width: 80px; text-align: right; }
+.mm-eu-w-col-total { width: 64px; text-align: right; }
 .mm-eu-w-col-thumb img {
-    width: 80px; height: 80px; object-fit: cover;
+    width: 60px; height: 60px; object-fit: cover;
     border-radius: @mm-eu-w-radius; border: 1px solid @mm-eu-w-border;
     background: @mm-eu-w-bg-subtle; display: block;
 }
 .mm-eu-w-col-thumb .mm-eu-w-thumb-fallback-svg { width: 40px; height: 40px; color: @mm-eu-w-text-muted; }
 .mm-eu-w-item-name-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .mm-eu-w-item-name { font-weight: 600; font-size: 15px; color: @mm-eu-w-text; line-height: 1.3; }
-.mm-eu-w-item-sku { color: @mm-eu-w-text-muted; font-size: 12px; margin-top: 2px; line-height: 1.4; }
-.mm-eu-w-item-reason { color: @mm-eu-w-text-muted; font-size: 12px; line-height: 1.4; }
+.mm-eu-w-item-sku {
+    color: @mm-eu-w-text-muted; font-size: 12px; margin-top: 2px; line-height: 1.4;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+}
+
+// Bundle grouping: per-component header (bundle image + name), whole-bundle read-only
+// contents, standalone divider.
+// The bundle header sits above its components, capped by a bottom hairline; the
+// components are listed below it, their names slightly indented to read as
+// nested, with no dividers between them.
+.mm-eu-w-items-table .mm-eu-w-bundle-header td {
+    padding: 12px 8px; vertical-align: middle;
+    border-bottom: 1px solid @mm-eu-w-border;
+}
+.mm-eu-w-bundle-header-label { font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: @mm-eu-w-text; }
+.mm-eu-w-bundle-header-count { color: @mm-eu-w-text-muted; font-size: 12px; margin-left: 8px; }
+// Per-component: component names slightly indented under the header, no dividers between them.
+.mm-eu-w-items-table .mm-eu-w-item-row--bundled td { border-bottom: none; }
+.mm-eu-w-items-table .mm-eu-w-item-row--bundled td.mm-eu-w-col-item { padding-left: 16px; }
+// Whole-bundle: read-only contents breakdown — clean unlined list, indented,
+// with an "Included value" column header and one closing note (no per-row rules).
+.mm-eu-w-items-table .mm-eu-w-bundle-contents-label td { padding: 14px 8px 6px; border-bottom: none; line-height: 1.3; }
+.mm-eu-w-bundle-contents-head { display: flex; justify-content: space-between; align-items: baseline; }
+.mm-eu-w-bundle-contents-title { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: @mm-eu-w-text-muted; }
+.mm-eu-w-bundle-contents-value-label { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: @mm-eu-w-text-muted; }
+.mm-eu-w-items-table .mm-eu-w-bundle-content td { padding-top: 6px; padding-bottom: 6px; border-bottom: none; }
+.mm-eu-w-items-table .mm-eu-w-bundle-content td.mm-eu-w-col-thumb { padding-top: 6px; padding-bottom: 6px; }
+// Breathing room below the final bundle component before the next section.
+.mm-eu-w-items-table .mm-eu-w-bundle-content:not(:has(~ .mm-eu-w-bundle-content)) td { padding-bottom: 18px; }
+.mm-eu-w-items-table .mm-eu-w-bundle-content td.mm-eu-w-col-thumb img {
+    width: 40px; height: 40px; object-fit: cover;
+    border-radius: @mm-eu-w-radius; border: 1px solid @mm-eu-w-border;
+    background: @mm-eu-w-bg-subtle;
+}
+.mm-eu-w-bundle-content-cell { padding-left: 16px; display: flex; align-items: center; gap: 10px; }
+.mm-eu-w-bundle-content-name { font-size: 14px; color: @mm-eu-w-text; }
+.mm-eu-w-bundle-content-seal-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 1px 8px; border-radius: 10px;
+    background: #ffedd5; border: 1px solid #fdba74;
+    color: #9a3412; font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.mm-eu-w-bundle-content-opt { color: @mm-eu-w-text-muted; font-size: 12px; }
+.mm-eu-w-bundle-content-price { margin-left: auto; color: @mm-eu-w-text-muted; font-style: normal; font-size: 14px; white-space: nowrap; }
+.mm-eu-w-items-table .mm-eu-w-standalone-header td { padding: 20px 8px 8px; border-bottom: none; border-top: 1px solid @mm-eu-w-hairline; font-weight: 400; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: @mm-eu-w-text-muted; }
+// No hard line between a bundle parent and its own read-only contents.
+.mm-eu-w-items-table .mm-eu-w-item-row:has(+ .mm-eu-w-bundle-contents-label) td { border-bottom: none; }
+// No trailing hairline at the very bottom of the table: the last visible row —
+// the final row, or (with its reason row collapsed) the row just above the
+// hidden last child — carries no bottom border.
+.mm-eu-w-items-table:not(.mm-eu-w-items-table--review) tr:last-child td,
+.mm-eu-w-items-table:not(.mm-eu-w-items-table--review) tr:has(+ .mm-eu-w-item-reason-row[hidden]:last-child) td,
+.mm-eu-w-items-table:not(.mm-eu-w-items-table--review) tr:has(+ .mm-eu-w-item-reason-row:not([hidden])) td { border-bottom: none; }
+.mm-eu-w-items-table .mm-eu-w-item-reason-row td { border-bottom: none; padding: 4px 0 0; }
+// A regular (non-bundle) item's reason keeps a hairline below it so items stay
+// separated; bundle components stay borderless so they read as one group.
+.mm-eu-w-items-table:not(.mm-eu-w-items-table--review) .mm-eu-w-item-reason-row:not(.mm-eu-w-item-reason-row--bundled):not(:last-child) td { border-bottom: 1px solid @mm-eu-w-border; padding-bottom: 16px; }
+.mm-eu-w-item-reason { color: @mm-eu-w-text-muted; font-size: 12px; line-height: 1.4; background: @mm-eu-w-bg-subtle; border-radius: @mm-eu-w-radius; padding: 12px 16px; margin: 0 8px; }
 
 .mm-eu-w-item-options {
     margin: 4px 0 0; padding: 0;
@@ -515,7 +591,7 @@ button.mm-eu-w-link--danger:active,
 .mm-eu-w-empty-hint { color: @mm-eu-w-text-muted; font-size: 13px; margin: 8px 0 16px; line-height: 1.5; }
 .mm-eu-w-sidebar-notice {
     padding: 12px 14px; border-radius: @mm-eu-w-radius;
-    margin-bottom: 16px; font-size: 15px; line-height: 1.5;
+    margin-bottom: 16px; font-size: 14px; line-height: 1.5;
 }
 .mm-eu-w-sidebar-notice--muted {
     background: @mm-eu-w-bg-subtle;
@@ -544,7 +620,10 @@ button.mm-eu-w-link--danger:active,
 }
 .mm-eu-w-totals dt { color: @mm-eu-w-text-muted; font-weight: 400; margin: 0; }
 .mm-eu-w-totals dd { margin: 0; text-align: right; font-weight: 400; color: @mm-eu-w-text; }
-.mm-eu-w-totals-tax--info { color: @mm-eu-w-text-muted; font-size: 12px; font-style: italic; }
+// Not an addend: it breaks the VAT out of the rows above. Indented and pulled
+// tight against them so it reads as their sub-line, not a third charge.
+.mm-eu-w-totals-tax--info { color: @mm-eu-w-text-muted; font-size: 12px; margin-top: -6px; }
+.mm-eu-w-totals dt.mm-eu-w-totals-tax--info { padding-left: 14px; }
 .mm-eu-w-total--negative { color: @mm-eu-w-success; }
 .mm-eu-w-totals dt.mm-eu-w-total-row,
 .mm-eu-w-totals dd.mm-eu-w-total-row {
@@ -557,10 +636,10 @@ button.mm-eu-w-link--danger:active,
     display: flex; align-items: center; gap: 12px; padding: 12px 14px;
     background: @mm-eu-w-success-bg; border: 1px solid @mm-eu-w-success-border;
     border-radius: @mm-eu-w-radius; margin-bottom: 16px;
-    font-size: 15px; line-height: 1.5;
+    color: @mm-eu-w-text; font-size: 14px; line-height: 1.5;
 }
 .mm-eu-w-refund-policy p { margin: 0; }
-.mm-eu-w-check { color: @mm-eu-w-success; font-weight: 700; font-size: 18px; display: inline-flex; align-items: center; flex-shrink: 0; }
+.mm-eu-w-check { color: @mm-eu-w-success; display: inline-flex; align-items: center; flex-shrink: 0; }
 
 .mm-eu-w-readonly-label { color: @mm-eu-w-text-muted; font-size: 14px; margin-bottom: 4px; }
 .mm-eu-w-readonly-value { font-weight: 500; font-size: 16px; }
@@ -744,7 +823,10 @@ button.mm-eu-w-link--danger:active,
 @import 'source/_withdrawal-mobile';
 
 // ---- Seal-broken declaration (Art. 16(e)/(i)) ----
-.mm-eu-w-item-seal-row td { background: transparent; padding: 4px 0 16px !important; }
+.mm-eu-w-item-seal-row td { background: transparent; padding: 4px 0 16px !important; border-bottom: none; }
+// The bundle sub-item seal question sits inside the bundle breakdown; no hairline
+// below it so it stays visually part of the group.
+.mm-eu-w-items-table .mm-eu-w-item-seal-row--bundle td { border-bottom: none; }
 .mm-eu-w-item-seal-card {
     background: #fffaf0;
     border: 1px solid #fde7b0;
@@ -807,3 +889,4 @@ button.mm-eu-w-link--danger:active,
     color: #92400e; font-size: 12px; font-style: italic; line-height: 1.5;
 }
 .mm-eu-w-item-seal-warn-icon { flex: 0 0 14px; width: 14px; height: 14px; color: #f59e0b; margin-top: 2px; }
+

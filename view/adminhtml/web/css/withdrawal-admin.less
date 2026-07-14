@@ -38,6 +38,15 @@
     width: 100%;
 }
 
+// A totals summary, not a data grid: drop admin__table-secondary's row zebra so
+// the rows read as one calm list (like the order view's Order Totals) and the VAT
+// sub-line never lands on a random grey stripe. Both table classes are chained to
+// outweigh the theme's nth-child(odd) rule.
+.mm-eu-w-totals-table.admin__table-secondary tbody tr th,
+.mm-eu-w-totals-table.admin__table-secondary tbody tr td {
+    background-color: transparent;
+}
+
 .mm-eu-w-totals-table th {
     font-weight: 400;
     text-align: left;

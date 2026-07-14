@@ -11,7 +11,7 @@ $steps = $block->getSteps();
     <ol class="mm-eu-w-stepper-list">
         <?php foreach ($steps as $s): ?>
             <li class="mm-eu-w-step mm-eu-w-step--<?= $escaper->escapeHtmlAttr($s['status']) ?>">
-                <span class="mm-eu-w-step-number" aria-hidden="true"><?= (int) $s['number'] ?></span>
+                <span class="mm-eu-w-step-number" aria-hidden="true"><?php if ($s['status'] === 'done'): ?><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg><?php else: ?><?= (int) $s['number'] ?><?php endif; ?></span>
                 <span class="mm-eu-w-step-body">
                     <span class="mm-eu-w-step-title"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
                     <span class="mm-eu-w-step-subtitle"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>

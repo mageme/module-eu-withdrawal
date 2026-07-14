@@ -5,6 +5,9 @@
     <preference for="MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface"
                 type="MageMe\EUWithdrawal\Model\EligibilityRequest"/>
 
+    <preference for="MageMe\EUWithdrawal\Api\Seal\SealKindResolverInterface"
+                type="MageMe\EUWithdrawal\Model\Seal\SealKindResolver"/>
+
     <preference for="MageMe\EUWithdrawal\Model\Waiver\WaiverTextLoaderInterface"
                 type="MageMe\EUWithdrawal\Model\Waiver\XmlWaiverTextLoader"/>
 

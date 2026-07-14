@@ -41,19 +41,20 @@ $confirmLabel = $confirmLabelVm !== null ? $confirmLabelVm->getLabel() : 'Confir
 // Collect per-item tax + shipping amounts for the JS sidebar so it can render
 // the "Tax" row alongside Items/Shipping like the order-view totals block.
 //
-// Bootstrap emits the *raw* `taxAmount` (= order_item.tax_amount) and
-// `qtyOrdered` rather than a pre-divided `unitTax` so that JS can replicate
+// Bootstrap emits the row-level `netAmount` and `taxAmount` (both attributed to
+// the returnable unit, children folded in) plus `qtyOrdered`, rather than
+// pre-divided per-unit values, so that JS can replicate
 // `RefundCalculator::calculate()` arithmetic exactly:
 //
+//     lineNet = roundHalfEven(qty * netAmount / qtyOrdered, 4)
 //     lineTax = roundHalfEven(qty * taxAmount / qtyOrdered, 4)
 //
-// Pre-dividing on the server (`unitTax = round(tax/ordered, 4)`) and then
-// multiplying on the client (`qty * unitTax`) introduced 0.01-cent rounding
-// drift between the displayed total and the value that RefundCalculator wrote
-// to mm_eu_withdrawal_request. Emitting the un-divided pair lets the client
-// run the same single-round formula the server does.
+// Pre-dividing on the server and then multiplying on the client drifts by up to
+// `qty * 0.00005` from the value RefundCalculator writes to
+// mm_eu_withdrawal_request. Emitting the un-divided triple lets the client run
+// the same single-round formula the server does.
 //
-// eligibleItems[itemId] = { qty, taxAmount, qtyOrdered }
+// eligibleItems[itemId] = { qty, netAmount, taxAmount, qtyOrdered }
 $shippingPaid   = 0.0;
 $shippingTax    = 0.0;
 $eligibleItems  = [];
@@ -73,20 +74,29 @@ if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelect
             continue;
         }
         $oi = $orderForMeta?->getItemById($s->orderItemId);
-        $rowTax = $oi !== null ? (float) $oi->getTaxAmount() : 0.0;
+        $rowTax = (float) $s->rowTaxAmount;
         $qtyOrdered = $oi !== null ? (float) $oi->getQtyOrdered() : 0.0;
         if ($qtyOrdered <= 0) {
             $qtyOrdered = $s->purchasedQty > 0 ? (float) $s->purchasedQty : 1.0;
         }
-        $eligibleItems[(int) $s->orderItemId] = [
+        $meta = [
             'qty'        => (int) $s->remainingQty,
             'taxAmount'  => round($rowTax, 4, PHP_ROUND_HALF_EVEN),
             'qtyOrdered' => $qtyOrdered,
         ];
+        // Omit rather than zero: the client falls back on absence, and a zero
+        // would read as a free row.
+        if ($s->rowNetAmount !== null) {
+            $meta['netAmount'] = round((float) $s->rowNetAmount, 4, PHP_ROUND_HALF_EVEN);
+        }
+        $eligibleItems[(int) $s->orderItemId] = $meta;
     }
     if ($orderForMeta !== null) {
-        $shippingPaid = (float) $orderForMeta->getShippingAmount();
-        $shippingTax  = (float) $orderForMeta->getShippingTaxAmount();
+        // Discounted carriage, less anything a native credit memo already
+        // refunded: shipping_amount stays at the carrier's quote either way.
+        $shippingAmounts = $block->getShippingRefundable($orderForMeta);
+        $shippingPaid = $shippingAmounts['net'];
+        $shippingTax  = $shippingAmounts['tax'];
     }
 }
 
@@ -137,8 +147,11 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             'eligibleItems'    => $eligibleItems,
             'orderItemsBase'   => round($orderLevel['base'], 4),
             'orderLevelGap'    => round($orderLevel['gap'], 4),
+            // `inclTax` reports the store's sales-price display setting. The
+            // summary no longer branches on it — every figure is gross — but the
+            // key stays for themes that read the payload.
             'inclTax'          => $block->isInclTaxDisplay(),
-            'hideTax'          => $block->isTaxLineHidden(),
+            'hideTax'          => $block->isVatLineHidden(),
             'i18n'             => [
                 'orderPrefix'        => (string) __('Order #'),
                 'qtyPrefix'          => (string) __('Qty: '),
@@ -289,11 +302,11 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                         <dd data-role="review-items-total">—</dd>
                         <dt><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt>
                         <dd data-role="review-shipping-paid">—</dd>
-                        <?php if (!$block->isTaxLineHidden()): ?>
-                            <dt class="mm-eu-w-totals-tax<?= $block->isInclTaxDisplay() ? ' mm-eu-w-totals-tax--info' : '' ?>">
-                                <?= $escaper->escapeHtml($block->isInclTaxDisplay() ? __('Of which VAT') : __('VAT')) ?>
+                        <?php if (!$block->isVatLineHidden()): ?>
+                            <dt class="mm-eu-w-totals-tax mm-eu-w-totals-tax--info">
+                                <?= $escaper->escapeHtml(__('Of which VAT')) ?>
                             </dt>
-                            <dd class="mm-eu-w-totals-tax<?= $block->isInclTaxDisplay() ? ' mm-eu-w-totals-tax--info' : '' ?>"
+                            <dd class="mm-eu-w-totals-tax mm-eu-w-totals-tax--info"
                                 data-role="review-tax">—</dd>
                         <?php endif; ?>
                         <dt data-role="review-adjustment-row" hidden><?= $escaper->escapeHtml(__('Order Adjustment')) ?></dt>
@@ -302,7 +315,7 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                         <dd class="mm-eu-w-total-row" data-role="review-total-refund">—</dd>
                     </dl>
                     <div class="mm-eu-w-refund-policy">
-                        <span class="mm-eu-w-check" aria-hidden="true">✓</span>
+                        <span class="mm-eu-w-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg></span>
                         <p><?= $escaper->escapeHtml(__('The refund will be issued using your original payment method within 5-7 business days after we receive your return.')) ?></p>
                     </div>
                 </div>

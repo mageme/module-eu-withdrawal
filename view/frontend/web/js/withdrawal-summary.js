@@ -78,10 +78,6 @@
         // standard orders.
         const orderItemsBase = Number(boot.orderItemsBase || 0);
         const orderLevelGap = Number(boot.orderLevelGap || 0);
-        // Display mode: incl => gross line prices + informational VAT;
-        // excl => net line prices + an added VAT line. Single boot source.
-        const incl = !!boot.inclTax;
-
         const lineTaxFor = (id, qty) => {
             const meta = eligibleItems[String(id)];
             if (!meta) return 0;
@@ -91,10 +87,24 @@
             }
             return qty * Number(meta.unitTax || 0);
         };
-        const lineDisplay = (id, data) => {
-            const net = roundHalfEven(data.qty * data.price, 2);
-            return incl ? roundHalfEven(net + lineTaxFor(id, data.qty), 4) : net;
+        // Prorate the row, exactly as RefundCalculator does. Multiplying the
+        // already-rounded per-unit `data.price` drifts by up to qty * 0.00005.
+        // The fallback serves pages cached before `netAmount` was emitted.
+        const lineNetFor = (id, qty, data) => {
+            const meta = eligibleItems[String(id)];
+            if (meta && typeof meta.netAmount !== 'undefined' && typeof meta.qtyOrdered !== 'undefined') {
+                const ordered = Number(meta.qtyOrdered) || 1;
+                return roundHalfEven(qty * Number(meta.netAmount || 0) / ordered, 4);
+            }
+            return qty * Number(data ? data.price : 0);
         };
+        // The gross line refund, rounding net and VAT separately the way
+        // RefundCalculator does, so the figure matches the stored refund_amount
+        // to the cent on non-divisible quantities.
+        const lineDisplay = (id, data) => roundHalfEven(
+            lineNetFor(id, data.qty, data) + lineTaxFor(id, data.qty),
+            4,
+        );
 
         // Continue gate: block while any selected (qty>0) item that carries a
         // seal question still has no seal radio answered. Mirrors the Hyvä
@@ -103,14 +113,40 @@
         const sealGateBlocks = () => {
             for (const [itemId, data] of state.entries()) {
                 if (!data || data.qty <= 0) continue;
+                // The line's own seal question (if the line product is itself sealed).
                 const sealRow = document.querySelector(
-                    `[data-role="seal-row"][data-item-id="${itemId}"]`,
+                    `[data-role="seal-row"][data-item-id="${itemId}"]:not([data-bundle-parent-id])`,
                 );
-                if (!sealRow) continue;
-                const answered = sealRow.querySelector('input[data-role="seal-input"]:checked');
-                if (!answered) return true;
+                if (sealRow) {
+                    if (!sealRow.querySelector('input[data-role="seal-input"]:checked')) return true;
+                    // Seal-broken must never reach review: it is legally excluded, so its
+                    // qty should be 0 — this is the defence-in-depth backstop.
+                    const broken = sealRow.querySelector('input[data-role="seal-input"][value="1"]');
+                    if (broken && broken.checked) return true;
+                }
+                // Every sealed component of a selected bundle must be answered and intact.
+                const childSeals = document.querySelectorAll(`[data-role="seal-row"][data-bundle-parent-id="${itemId}"]`);
+                for (const cs of childSeals) {
+                    if (!cs.querySelector('input[data-role="seal-input"]:checked')) return true;
+                    const b = cs.querySelector('input[data-role="seal-input"][value="1"]');
+                    if (b && b.checked) return true;
+                }
             }
             return false;
+        };
+
+        // Lock/unlock a per-item qty stepper (Art. 16(e)/(i) broken-seal path):
+        // once the seal is broken the qty is pinned to 0 and the stepper is
+        // disabled so it cannot be re-raised. Mirrors the Hyvä canEditQty() gate.
+        const setStepperLock = (itemId, locked) => {
+            const stepper = document.querySelector(
+                `.mm-eu-w-qty-stepper[data-item-id="${itemId}"]`,
+            );
+            if (!stepper) return;
+            stepper.classList.toggle('mm-eu-w-qty-stepper--disabled', locked);
+            stepper.querySelectorAll('.mm-eu-w-qty-btn').forEach((b) => { b.disabled = locked; });
+            const inp = stepper.querySelector('.mm-eu-w-qty-input');
+            if (inp) inp.disabled = locked;
         };
 
         const render = () => {
@@ -119,7 +155,7 @@
             if (itemsContainer) itemsContainer.innerHTML = '';
             for (const [id, data] of state.entries()) {
                 if (data.qty <= 0) continue;
-                itemsTotal += data.qty * data.price;
+                itemsTotal += lineNetFor(id, data.qty, data);
                 visibleCount += 1;
                 if (itemsContainer) {
                     const li = document.createElement('li');
@@ -205,11 +241,9 @@
             }
 
             // Per-item VAT (mirrors RefundCalculator::calculate()) plus shipping
-            // VAT on a full return. The displayed VAT line is the full refund VAT
-            // (item + shipping). In incl mode the Subtotal and Shipping lines are
-            // gross and the VAT line is informational (not added to the total); in
-            // excl mode the lines are net and the VAT line is added. The total is
-            // identical either way: S + Ti + Sh + Tsh + Adj.
+            // VAT on a full return. Subtotal and Shipping are gross, so the VAT
+            // line breaks the tax out of them and is not added again. The total
+            // stays S + Ti + Sh + Tsh + Adj.
             let itemTax = 0;
             for (const [id, data] of state.entries()) {
                 if (data.qty <= 0) continue;
@@ -221,19 +255,16 @@
             const shipTax = fullReturn ? roundHalfEven(shippingTax, 4) : 0;
             const vatLine = roundHalfEven(itemTax + shipTax, 4);
 
+            // `itemsTotal` stays net here: the order-level gap was computed
+            // against a net item base, so the ratio must use the same basis.
             let orderLevelAdj = 0;
             if (Math.abs(orderLevelGap) > 0.005 && orderItemsBase > 0) {
                 orderLevelAdj = roundHalfEven(orderLevelGap * (itemsTotal / orderItemsBase), 4);
             }
 
-            const subtotalDisplay = incl ? roundHalfEven(itemsTotal + itemTax, 4) : itemsTotal;
-            const shippingDisplay = incl ? roundHalfEven(shipNet + shipTax, 4) : shipNet;
-            const totalRefund = roundHalfEven(
-                incl
-                    ? subtotalDisplay + shippingDisplay + orderLevelAdj
-                    : subtotalDisplay + shippingDisplay + vatLine + orderLevelAdj,
-                4,
-            );
+            const subtotalDisplay = roundHalfEven(itemsTotal + itemTax, 4);
+            const shippingDisplay = roundHalfEven(shipNet + shipTax, 4);
+            const totalRefund = roundHalfEven(subtotalDisplay + shippingDisplay + orderLevelAdj, 4);
 
             if (itemsTotalEl) itemsTotalEl.textContent = formatPrice(subtotalDisplay, currency);
             if (shippingPaidEl) shippingPaidEl.textContent = formatPrice(shippingDisplay, currency);
@@ -300,6 +331,18 @@
                     if (warning) warning.setAttribute('hidden', '');
                 }
             }
+            // Reveal/hide the seal question for each sealed component of this bundle
+            // line (whole-bundle contents). Keep a broken component's row visible.
+            document.querySelectorAll(`[data-role="seal-row"][data-bundle-parent-id="${itemId}"]`).forEach((childSeal) => {
+                const brokenChecked = childSeal.querySelector('input[value="1"]')?.checked === true;
+                if (qty > 0 || brokenChecked) {
+                    childSeal.removeAttribute('hidden');
+                } else {
+                    childSeal.setAttribute('hidden', '');
+                    const w = childSeal.querySelector('[data-role="seal-warning"]');
+                    if (w) w.setAttribute('hidden', '');
+                }
+            });
             render();
         });
 
@@ -315,6 +358,15 @@
                 else label.classList.remove('is-selected');
             });
         };
+        // Any gate broken for a line = its own seal broken, or any component seal
+        // (data-bundle-parent-id) of that line broken. Used so restoring qty on one
+        // "intact" answer never re-adds a line another broken seal still excludes.
+        const anyGateBrokenFor = (lineId) => {
+            const own = document.querySelector(`[data-role="seal-row"][data-item-id="${lineId}"]:not([data-bundle-parent-id])`);
+            if (own && own.querySelector('input[data-role="seal-input"][value="1"]')?.checked === true) return true;
+            return [...document.querySelectorAll(`[data-role="seal-row"][data-bundle-parent-id="${lineId}"]`)]
+                .some((r) => r.querySelector('input[data-role="seal-input"][value="1"]')?.checked === true);
+        };
         // Initialise highlight on every seal-row at load time
         document.querySelectorAll('[data-role="seal-row"]').forEach(refreshSealHighlight);
 
@@ -324,7 +376,8 @@
             const sealRow = radio.closest('[data-role="seal-row"]');
             if (!sealRow) return;
             refreshSealHighlight(sealRow);
-            const itemId = sealRow.dataset.itemId;
+            // The gated line is the parent for a component seal, else the item itself.
+            const itemId = sealRow.dataset.bundleParentId || sealRow.dataset.itemId;
             const warning = sealRow.querySelector('[data-role="seal-warning"]');
             const qtyInput = document.querySelector(
                 `.mm-eu-w-qty-input[name="items[${itemId}]"]`,
@@ -339,6 +392,7 @@
                 if (qtyInput) {
                     qtyInput.value = 0;
                     qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    setStepperLock(itemId, true);
                 } else {
                     // Full-order mode has no qty input (static qty span). Exclude
                     // the item from our own selection directly, so a broken seal
@@ -347,6 +401,10 @@
                 }
             } else if (radio.value === '0' && radio.checked) {
                 if (warning) warning.setAttribute('hidden', '');
+                // Another gate (the line's own seal or a sibling component seal) may
+                // still be broken — keep the line excluded until every gate is intact.
+                if (anyGateBrokenFor(itemId)) return;
+                setStepperLock(itemId, false);
                 if (qtyInput && Number(qtyInput.value) === 0 && qtyInput.dataset.preSealQty) {
                     qtyInput.value = qtyInput.dataset.preSealQty;
                     delete qtyInput.dataset.preSealQty;

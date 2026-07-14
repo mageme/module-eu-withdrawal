@@ -21,6 +21,7 @@ use MageMe\EUWithdrawal\Model\Item\ReturnableItemsResolver;
 use MageMe\EUWithdrawal\Model\Frontend\SelectionModeConfig;
 use MageMe\EUWithdrawal\Model\Lookup\OrderLookupByIncrementId;
 use MageMe\EUWithdrawal\Model\Receipt\ReceiptBuilder;
+use MageMe\EUWithdrawal\Model\Refund\BundleRefundedQtyResolver;
 use MageMe\EUWithdrawal\Model\Refund\RefundCalculator;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResourceConnection;
@@ -49,6 +50,7 @@ class RequestCreator
      * @param ReasonsConfigReader $reasonsConfig
      * @param ReceiptBuilder $receiptBuilder
      * @param SelectionModeConfig $selectionModeConfig
+     * @param BundleRefundedQtyResolver $refundedQty
      * @param ?ContentHasherInterface $contentHasher The base module ships with no binding;
      *        Pro `MageMe_EUWithdrawalReceiptVerify` registers a `<preference>`
      *        in its `etc/di.xml` to satisfy this argument.
@@ -67,6 +69,9 @@ class RequestCreator
         private readonly ReceiptBuilder $receiptBuilder,
         private readonly SelectionModeConfig $selectionModeConfig,
         private readonly ReturnableItemsResolver $returnableItems,
+        private readonly \MageMe\EUWithdrawal\Model\Seal\BundleSealSubjectResolver $sealSubjects,
+        private readonly \MageMe\EUWithdrawal\Model\Seal\BundleSealReducer $sealReducer,
+        private readonly BundleRefundedQtyResolver $refundedQty,
         private readonly ?ContentHasherInterface $contentHasher = null,
     ) {
     }
@@ -112,6 +117,24 @@ class RequestCreator
             throw new NoEligibleItemsException();
         }
 
+        // Seal exclusion (exclude-only): drop any selected line whose sealed subject
+        // was declared opened. The client removes broken-seal items from its own
+        // selection, so the server enforces the exclusion for any broken-declared
+        // line that still reaches it, without demanding an answer for every sealed
+        // line. The sealed-item->line mapping is selection-based, matching the
+        // storefront's data-bundle-parent-id wiring.
+        $selectedLineIds = [];
+        foreach (array_keys($items) as $oid) {
+            $selectedLineIds[(int) $oid] = true;
+        }
+        $sealSubjects = $this->sealSubjects->resolve($order, $selectedLineIds);
+        foreach ($this->sealReducer->excludedLineItemIds($sealSubjects, $input->sealAnswers, $selectedLineIds, false) as $lineId) {
+            unset($items[$lineId]);
+        }
+        if ($items === []) {
+            throw new NoEligibleItemsException();
+        }
+
         $ts = time();
         $now = $this->dateTime->gmtDate(null, $ts);
 
@@ -120,7 +143,13 @@ class RequestCreator
         try {
             $this->guard->assertCapacity($order, $items, null);
 
-            $breakdown = $this->calculator->calculate($order, $items, $result);
+            // Units already spoken for by other active requests, read under the
+            // same lock assertCapacity took. The refund calculator needs them to
+            // judge a full contract withdrawal — this request taking every unit
+            // not already held — the way the storefront form does.
+            $heldByOid = $this->guard->getActiveHolds($order, null);
+
+            $breakdown = $this->calculator->calculate($order, $items, $result, $heldByOid);
 
             $packedIp = null;
             if ($input->ip !== null) {
@@ -130,7 +159,10 @@ class RequestCreator
                 }
             }
 
-            $isPartial = $this->detectIsPartial($order, $items) ? 1 : 0;
+            // The calculator already decided this, with cancellations, prior
+            // credit memos and other active requests all accounted for — reuse it
+            // rather than re-derive fullness from qty_ordered a second time.
+            $isPartial = $breakdown->isFullReturn() ? 0 : 1;
 
             // Aggregate per-item reasons into a single request-level summary so receipt
             // (PDF/email) keeps working without per-item awareness. Falls back to the
@@ -393,11 +425,18 @@ class RequestCreator
     }
 
     /**
+     * Full-order mode: every unit the consumer still holds, per eligible line.
+     * "Still holds" excludes units cancelled before invoice, refunded by a native
+     * credit memo, or already claimed by another active request — requesting the
+     * raw ordered qty would exceed capacity and dead-lock full-order mode on any
+     * order that has ever had one unit cancelled or refunded.
+     *
      * @param array<int, \MageMe\EUWithdrawal\Api\Data\EligibilityDecisionInterface> $decisions
      * @return array<int, int>
      */
     private function defaultFullEligibleItems(OrderInterface $order, array $decisions): array
     {
+        $held = $this->guard->getActiveHolds($order, null);
         $items = [];
         foreach ($this->returnableItems->resolve($order) as $oi) {
             $oid = (int) $oi->getItemId();
@@ -405,7 +444,13 @@ class RequestCreator
             if ($d !== null && !$d->isEligible()) {
                 continue;
             }
-            $items[$oid] = (int) ((float) $oi->getQtyOrdered());
+            $returnable = (int) ((float) $oi->getQtyOrdered()
+                - (float) ($oi->getQtyCanceled() ?? 0.0)
+                - $this->refundedQty->refundedQty($order, $oi))
+                - (int) ($held[$oid] ?? 0);
+            if ($returnable > 0) {
+                $items[$oid] = $returnable;
+            }
         }
         return $items;
     }
@@ -441,20 +486,4 @@ class RequestCreator
         return $parts === [] ? null : implode('; ', $parts);
     }
 
-    /**
-     * @param array<int, int> $items
-     */
-    private function detectIsPartial(OrderInterface $order, array $items): bool
-    {
-        foreach ($this->returnableItems->resolve($order) as $oi) {
-            $oid = (int) $oi->getItemId();
-            if (!isset($items[$oid])) {
-                return true;
-            }
-            if ($items[$oid] !== (int) ((float) $oi->getQtyOrdered())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

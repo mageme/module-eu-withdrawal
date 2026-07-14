@@ -130,21 +130,32 @@
         // qty 0 (item excluded); "intact" dispatches the remaining qty from the
         // row's data-remaining attribute.
         if (boot.selectionMode === 'full_order') {
+            const anyGateBroken = (lineId) => {
+                const own = document.querySelector('[data-role="seal-row"][data-item-id="' + String(lineId) + '"]:not([data-bundle-parent-id])');
+                const ownBroken = own && own.querySelector('input[data-role="seal-input"][value="1"]');
+                if (ownBroken && ownBroken.checked) return true;
+                return Array.prototype.some.call(
+                    document.querySelectorAll('[data-role="seal-row"][data-bundle-parent-id="' + String(lineId) + '"]'),
+                    (r) => { const b = r.querySelector('input[data-role="seal-input"][value="1"]'); return b && b.checked; },
+                );
+            };
             document.addEventListener('change', (evt) => {
                 const radio = evt.target;
                 if (!radio || !radio.matches || !radio.matches('input[data-role="seal-input"]')) return;
                 const sealRow = radio.closest('[data-role="seal-row"]');
                 if (!sealRow) return;
-                const itemId = Number(sealRow.dataset.itemId);
-                const itemRow = document.querySelector('.mm-eu-w-item-row[data-item-id="' + String(itemId) + '"]');
+                // The gated line is the parent for a component seal, else the item itself.
+                const lineId = Number(sealRow.dataset.bundleParentId || sealRow.dataset.itemId);
+                const itemRow = document.querySelector('.mm-eu-w-item-row[data-item-id="' + String(lineId) + '"]');
                 if (radio.value === '1' && radio.checked) {
-                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty: 0 } }));
-                } else if (radio.value === '0' && radio.checked) {
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId: lineId, qty: 0 } }));
+                } else if (radio.value === '0' && radio.checked && !anyGateBroken(lineId)) {
                     const qty = itemRow ? Number(itemRow.dataset.remaining || 0) : 0;
-                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId, qty } }));
+                    document.dispatchEvent(new CustomEvent('mm-eu-w:qty-changed', { detail: { itemId: lineId, qty } }));
                 }
             });
         }
+
 
         // ---- Panel routing ----
         const panels = {
@@ -234,6 +245,18 @@
             return qty * Number(meta.unitTax || 0);
         };
 
+        // Prorate the row, exactly as RefundCalculator does. Multiplying the
+        // already-rounded per-unit `data.price` drifts by up to qty * 0.00005.
+        // The fallback serves pages cached before `netAmount` was emitted.
+        const lineNetFor = (id, qty, data) => {
+            const meta = eligibleItems[String(id)];
+            if (meta && typeof meta.netAmount !== 'undefined' && typeof meta.qtyOrdered !== 'undefined') {
+                const ordered = Number(meta.qtyOrdered) || 1;
+                return roundHalfEven(qty * Number(meta.netAmount || 0) / ordered, 4);
+            }
+            return qty * Number(data ? data.price : 0);
+        };
+
         const sidebarEl = document.querySelector('.mm-eu-w-sidebar');
         const currency = sidebarEl?.dataset.currency || 'EUR';
 
@@ -282,9 +305,8 @@
 
             while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
             let total = 0;
-            const incl = !!boot.inclTax;
             for (const [itemId, data] of state.items.entries()) {
-                const net = data.qty * data.price;
+                const net = lineNetFor(itemId, data.qty, data);
                 total += net;
                 const tr = document.createElement('tr');
                 tr.dataset.itemId = String(itemId);
@@ -343,7 +365,7 @@
                 const totalTd = document.createElement('td');
                 totalTd.className = 'mm-eu-w-col-total';
                 totalTd.textContent = formatPrice(
-                    incl ? roundHalfEven(net + lineTaxFor(itemId, data.qty), 4) : net,
+                    roundHalfEven(net + lineTaxFor(itemId, data.qty), 4),
                     currency,
                 );
                 tr.appendChild(totalTd);
@@ -365,10 +387,9 @@
                     }
                 }
             }
-            // Mode-aware totals — mirrors the step-2 sidebar (withdrawal-summary.js).
-            // incl: gross Subtotal/Shipping + informational VAT (not added);
-            // excl: net Subtotal/Shipping + added VAT. Total identical either way.
-            // (incl is declared once at the top of renderReview.)
+            // Gross totals — mirrors the step-2 sidebar (withdrawal-summary.js).
+            // Subtotal and Shipping include VAT; the VAT line breaks it out and
+            // is not added again.
             let itemTax = 0;
             for (const [id, data] of state.items.entries()) {
                 if (data.qty <= 0) continue;
@@ -384,14 +405,9 @@
             if (Math.abs(orderLevelGap) > 0.005 && orderItemsBase > 0) {
                 orderLevelAdj = roundHalfEven(orderLevelGap * (total / orderItemsBase), 4);
             }
-            const subtotalDisplay = incl ? roundHalfEven(total + itemTax, 4) : total;
-            const shippingDisplay = incl ? roundHalfEven(shipNet + shipTax, 4) : shipNet;
-            const grandRefund = roundHalfEven(
-                incl
-                    ? subtotalDisplay + shippingDisplay + orderLevelAdj
-                    : subtotalDisplay + shippingDisplay + vatLine + orderLevelAdj,
-                4,
-            );
+            const subtotalDisplay = roundHalfEven(total + itemTax, 4);
+            const shippingDisplay = roundHalfEven(shipNet + shipTax, 4);
+            const grandRefund = roundHalfEven(subtotalDisplay + shippingDisplay + orderLevelAdj, 4);
 
             itemsTotalEl.textContent = formatPrice(subtotalDisplay, currency);
             if (shippingEl) shippingEl.textContent = formatPrice(shippingDisplay, currency);
@@ -434,7 +450,7 @@
                 for (const [id, d] of state.items.entries()) {
                     if (d.qty <= 0) continue;
                     selectedCount += 1;
-                    const line = d.qty * d.price;
+                    const line = lineNetFor(id, d.qty, d);
                     subtotal += line;
                     taxTotal += lineTaxFor(id, d.qty);
 
@@ -485,27 +501,50 @@
         const sealGateBlocks = () => {
             for (const [itemId, data] of state.items.entries()) {
                 if (!data || data.qty <= 0) continue;
+                // The line's own seal question (if the line product is itself sealed).
                 const sealRow = document.querySelector(
-                    '[data-role="seal-row"][data-item-id="' + String(itemId) + '"]',
+                    '[data-role="seal-row"][data-item-id="' + String(itemId) + '"]:not([data-bundle-parent-id])',
                 );
-                if (!sealRow) continue;
-                const answered = sealRow.querySelector('input[data-role="seal-input"]:checked');
-                if (!answered) return true;
+                if (sealRow) {
+                    if (!sealRow.querySelector('input[data-role="seal-input"]:checked')) return true;
+                    // Seal-broken is legally excluded; it must not advance to review.
+                    const broken = sealRow.querySelector('input[data-role="seal-input"][value="1"]');
+                    if (broken && broken.checked) return true;
+                }
+                // Every sealed component of a selected bundle must be answered and intact.
+                const childSeals = document.querySelectorAll(
+                    '[data-role="seal-row"][data-bundle-parent-id="' + String(itemId) + '"]',
+                );
+                for (const cs of childSeals) {
+                    if (!cs.querySelector('input[data-role="seal-input"]:checked')) return true;
+                    const b = cs.querySelector('input[data-role="seal-input"][value="1"]');
+                    if (b && b.checked) return true;
+                }
             }
             return false;
         };
 
-        // Seal-photo gate (Pro): mirrors withdrawal-summary.js. Block review when
-        // a selected item's visible seal-photo control has neither a photo nor an
-        // explicit skip. Absent data-photo-satisfied = no requirement.
+        // Seal-photo gate (Pro): block review when a selected item's visible
+        // seal-photo control has neither a photo nor an explicit skip. A sealed
+        // component of a selected bundle carries the requirement under its own
+        // child id, so each child hook is checked too. Absent
+        // data-photo-satisfied = no requirement.
+        const photoHookBlocks = (id) => {
+            const hook = document.querySelector(
+                '[data-role="seal-extra"][data-item-id="' + String(id) + '"]',
+            );
+            return !!hook && !hook.hidden && hook.dataset.photoSatisfied === '0';
+        };
         const photoGateBlocks = () => {
             for (const [itemId, data] of state.items.entries()) {
                 if (!data || data.qty <= 0) continue;
-                const hook = document.querySelector(
-                    '[data-role="seal-extra"][data-item-id="' + String(itemId) + '"]',
+                if (photoHookBlocks(itemId)) return true;
+                const childSeals = document.querySelectorAll(
+                    '[data-role="seal-row"][data-bundle-parent-id="' + String(itemId) + '"]',
                 );
-                if (!hook || hook.hidden) continue;
-                if (hook.dataset.photoSatisfied === '0') return true;
+                for (const cs of childSeals) {
+                    if (photoHookBlocks(cs.dataset.itemId)) return true;
+                }
             }
             return false;
         };

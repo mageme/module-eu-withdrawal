@@ -180,9 +180,10 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                                     </div>
                                 </td>
                                 <td class="col-price">
+                                    <?php // Gross, like the Refund column beside it — VAT in, discount out. ?>
                                     <?= $escaper->escapeHtml(
                                         $orderItem !== null
-                                            ? $block->formatPrice((float) $orderItem->getPrice())
+                                            ? $block->formatPrice($block->getItemUnitPricePaid((int) $item->getOrderItemId()))
                                             : '—'
                                     ) ?>
                                 </td>
@@ -201,9 +202,10 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                                     </table>
                                 </td>
                                 <td class="col-subtotal">
+                                    <?php // Gross for the whole ordered line; the refund can never exceed it. ?>
                                     <?= $escaper->escapeHtml(
                                         $orderItem !== null
-                                            ? $block->formatPrice((float) $orderItem->getRowTotal())
+                                            ? $block->formatPrice($block->getItemLinePaid((int) $item->getOrderItemId()))
                                             : '—'
                                     ) ?>
                                 </td>
@@ -260,6 +262,13 @@ $notesBlock = $block->getLayout()->getBlock('mageme_eu_withdrawal_request_notes'
                             <tr>
                                 <th><?= $escaper->escapeHtml(__('Order Adjustment')) ?></th>
                                 <td><?= $escaper->escapeHtml($block->getOrderAdjustmentRefundDisplay()) ?></td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php // Informational: the VAT is already inside the rows above. ?>
+                        <?php if ($block->getTaxRefund() > 0): ?>
+                            <tr class="mm-eu-w-totals-vat">
+                                <th><?= $escaper->escapeHtml(__('Of which VAT')) ?></th>
+                                <td><?= $escaper->escapeHtml($block->getTaxRefundDisplay()) ?></td>
                             </tr>
                         <?php endif; ?>
                         <tr class="grand_total">

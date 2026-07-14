@@ -29,13 +29,44 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
             <th class="mm-eu-w-col-price"><?= $escaper->escapeHtml(__('Price')) ?></th>
             <th class="mm-eu-w-col-qty"><?= $escaper->escapeHtml(__('Purchased')) ?></th>
             <th class="mm-eu-w-col-qty"><?= $escaper->escapeHtml(__('Returned')) ?></th>
-            <th class="mm-eu-w-col-rqty"><?= $escaper->escapeHtml(__('Qty')) ?></th>
+            <th class="mm-eu-w-col-rqty"><?= $escaper->escapeHtml(__('Return now')) ?></th>
             <th class="mm-eu-w-col-total"><?= $escaper->escapeHtml(__('Total')) ?></th>
         </tr>
     </thead>
     <tbody>
-    <?php foreach ($states as $state): ?>
+    <?php
+        $groups = $block->getReturnGroups();
+        $seenBundle = false;
+        $standaloneHeaderEmitted = false;
+    ?>
+    <?php foreach ($groups as $group): ?>
+        <?php $isBundle = $group->type === \MageMe\EUWithdrawal\Model\Item\ReturnGroup::TYPE_BUNDLE; ?>
+        <?php if (!$isBundle && $seenBundle && !$standaloneHeaderEmitted): $standaloneHeaderEmitted = true; ?>
+            <tr class="mm-eu-w-standalone-header">
+                <td colspan="7"><?= $escaper->escapeHtml(__('Other items')) ?></td>
+            </tr>
+        <?php endif; ?>
+        <?php if ($isBundle) { $seenBundle = true; } ?>
+        <?php if ($group->headerLabel !== null): ?>
+            <tr class="mm-eu-w-bundle-header">
+                <td class="mm-eu-w-col-thumb">
+                    <?php $bundleOi = $group->headerOrderItemId !== null ? $block->getOrderItem($group->headerOrderItemId) : null; ?>
+                    <?php $bundleThumb = $bundleOi !== null ? $block->getThumbnailUrl($bundleOi) : ''; ?>
+                    <?php if ($bundleThumb !== ''): ?>
+                        <img src="<?= $escaper->escapeUrl($bundleThumb) ?>" alt="">
+                    <?php endif; ?>
+                </td>
+                <td colspan="6">
+                    <span class="mm-eu-w-bundle-header-label"><?= $escaper->escapeHtml($group->headerLabel) ?></span>
+                    <span class="mm-eu-w-bundle-header-count"><?= $escaper->escapeHtml(__('%1 items', count($group->rows))) ?></span>
+                </td>
+            </tr>
+        <?php endif; ?>
+        <?php $contentsLabelShown = false; ?>
+        <?php foreach ($group->rows as $row): ?>
+            <?php if ($row->selectable): ?>
         <?php
+            $state        = $row->state;
             $orderItemId  = (int) $state->orderItemId;
             $isEligible   = $state->isEligible();
             $remaining    = (int) $state->remainingQty;
@@ -47,6 +78,9 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
             $pendingList  = $pending[$orderItemId] ?? [];
             $pendingInfo  = $pendingList[0] ?? null;
             $rowClass     = 'mm-eu-w-item-row';
+        if ($group->headerLabel !== null) {
+            $rowClass .= ' mm-eu-w-item-row--bundled';
+        }
         if ($badge !== null) {
             $rowClass .= ' mm-eu-w-item-row--' . $badge['tone'];
         }
@@ -71,7 +105,7 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
             <td class="mm-eu-w-col-item">
                 <div class="mm-eu-w-item-name"><?= $escaper->escapeHtml((string) $state->name) ?></div>
                 <div class="mm-eu-w-item-sku">
-                    <?= $escaper->escapeHtml(__('SKU: %1', (string) $state->sku)) ?>
+                    <?= $escaper->escapeHtml(__('SKU: %1', $block->getDisplaySku($orderItemId, (string) $state->sku))) ?>
                 </div>
                 <?php $options = $block->getOrderItemOptions($orderItemId); ?>
                 <?php if ($options !== []): ?>
@@ -124,9 +158,11 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
                 <?= $escaper->escapeHtml($block->formatPrice(0)) ?>
             </td>
         </tr>
-        <?php $sealKind = $isEligible ? $block->getSealKind($orderItemId) : null; ?>
+        <?php $lineSeal = $isEligible ? $block->getLineSeal($orderItemId) : null; ?>
+        <?php $sealSubjectId = $lineSeal['subjectItemId'] ?? $orderItemId; ?>
+        <?php $sealKind = $lineSeal['kind'] ?? null; ?>
         <?php if ($sealKind !== null): ?>
-            <tr class="mm-eu-w-item-seal-row" data-role="seal-row" data-item-id="<?= /* @noEscape */ $orderItemId ?>" hidden>
+            <tr class="mm-eu-w-item-seal-row" data-role="seal-row" data-item-id="<?= /* @noEscape */ $sealSubjectId ?>"<?php if ($sealSubjectId !== $orderItemId): ?> data-bundle-parent-id="<?= /* @noEscape */ $orderItemId ?>"<?php endif; ?> hidden>
                 <td colspan="7">
                     <div class="mm-eu-w-item-seal-card">
                         <div class="mm-eu-w-item-seal-question">
@@ -140,7 +176,7 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
 
                         <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--ok">
                             <input type="radio"
-                                   name="item_seal_opened[<?= /* @noEscape */ $orderItemId ?>]"
+                                   name="item_seal_opened[<?= /* @noEscape */ $sealSubjectId ?>]"
                                    value="0"
                                    data-role="seal-input"
                                    class="mm-eu-w-item-seal-radio">
@@ -160,12 +196,12 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
 
                         <div class="mm-eu-w-item-seal-extra"
                              data-role="seal-extra"
-                             data-item-id="<?= /* @noEscape */ $orderItemId ?>"
+                             data-item-id="<?= /* @noEscape */ $sealSubjectId ?>"
                              data-product-name="<?= $escaper->escapeHtmlAttr((string) $state->name) ?>"></div>
 
                         <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--warn">
                             <input type="radio"
-                                   name="item_seal_opened[<?= /* @noEscape */ $orderItemId ?>]"
+                                   name="item_seal_opened[<?= /* @noEscape */ $sealSubjectId ?>]"
                                    value="1"
                                    data-role="seal-input"
                                    class="mm-eu-w-item-seal-radio">
@@ -196,7 +232,7 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
             </tr>
         <?php endif; ?>
         <?php if ($isEligible && $block->isReasonsEnabled()): ?>
-            <tr class="mm-eu-w-item-reason-row" data-role="reason-row" data-item-id="<?= /* @noEscape */ $orderItemId ?>" hidden>
+            <tr class="mm-eu-w-item-reason-row<?= $group->headerLabel !== null ? ' mm-eu-w-item-reason-row--bundled' : '' ?>" data-role="reason-row" data-item-id="<?= /* @noEscape */ $orderItemId ?>" hidden>
                 <td colspan="7">
                     <div class="mm-eu-w-item-reason">
                         <label for="mm-eu-w-reason-<?= /* @noEscape */ $orderItemId ?>">
@@ -287,6 +323,128 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
                     </div>
                 </td>
             </tr>
+        <?php endforeach; ?>
+            <?php else: ?>
+                <?php if (!$contentsLabelShown): $contentsLabelShown = true; ?>
+                    <tr class="mm-eu-w-bundle-contents-label">
+                        <td colspan="7">
+                            <div class="mm-eu-w-bundle-contents-head">
+                                <span class="mm-eu-w-bundle-contents-title"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
+                                <span class="mm-eu-w-bundle-contents-value-label"><?= $escaper->escapeHtml(__('Included value')) ?></span>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                <tr class="mm-eu-w-bundle-content">
+                    <td class="mm-eu-w-col-thumb">
+                        <?php $infoOi = $block->getOrderItem((int) $row->orderItemId); ?>
+                        <?php $infoThumb = $infoOi !== null ? $block->getThumbnailUrl($infoOi) : ''; ?>
+                        <?php if ($infoThumb !== ''): ?>
+                            <img src="<?= $escaper->escapeUrl($infoThumb) ?>" alt="">
+                        <?php endif; ?>
+                    </td>
+                    <td colspan="6">
+                        <div class="mm-eu-w-bundle-content-cell">
+                            <span class="mm-eu-w-bundle-content-name"><?= $escaper->escapeHtml((string) $row->label) ?></span>
+                            <?php if ($row->sealed !== null): ?>
+                                <span class="mm-eu-w-bundle-content-seal-badge">
+                                    <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/></svg>
+                                    <?= $escaper->escapeHtml($row->sealed->kind->questionKind() === 'hygiene'
+                                        ? __('Hygiene seal')
+                                        : __('Media seal')) ?>
+                                </span>
+                            <?php endif; ?>
+                            <?php $infoOpt = $block->getOptionSummary((int) $row->orderItemId); ?>
+                            <?php if ($infoOpt !== ''): ?>
+                                <span class="mm-eu-w-bundle-content-opt"><?= $escaper->escapeHtml($infoOpt) ?></span>
+                            <?php endif; ?>
+                            <span class="mm-eu-w-bundle-content-price">
+                                <?php if ($row->priced): ?>
+                                    <?= $escaper->escapeHtml($block->formatItemDisplayPriceGross((int) $row->orderItemId)) ?>
+                                <?php else: ?>
+                                    <?= $escaper->escapeHtml(__('Included')) ?>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <?php if ($row->sealed !== null): ?>
+                    <?php $childSealId = (int) $row->orderItemId; ?>
+                    <?php $childSealKind = $row->sealed->kind->questionKind(); ?>
+                    <tr class="mm-eu-w-item-seal-row mm-eu-w-item-seal-row--bundle"
+                        data-role="seal-row"
+                        data-item-id="<?= /* @noEscape */ $childSealId ?>"
+                        data-bundle-parent-id="<?= /* @noEscape */ (int) $row->sealed->lineOrderItemId ?>"
+                        hidden>
+                        <td colspan="7">
+                            <div class="mm-eu-w-item-seal-card">
+                                <div class="mm-eu-w-item-seal-question">
+                                    <span class="mm-eu-w-item-seal-q-icon" aria-hidden="true">?</span>
+                                    <span class="mm-eu-w-item-seal-q-text">
+                                        <?= $escaper->escapeHtml($childSealKind === 'hygiene'
+                                            ? __('Is the hygiene seal on “%1” still intact?', (string) $row->label)
+                                            : __('Is the media / software seal on “%1” still intact?', (string) $row->label)) ?>
+                                    </span>
+                                </div>
+
+                                <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--ok">
+                                    <input type="radio"
+                                           name="item_seal_opened[<?= /* @noEscape */ $childSealId ?>]"
+                                           value="0"
+                                           data-role="seal-input"
+                                           class="mm-eu-w-item-seal-radio">
+                                    <span class="mm-eu-w-item-seal-choice-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+                                    </span>
+                                    <span class="mm-eu-w-item-seal-choice-content">
+                                        <span class="mm-eu-w-item-seal-choice-label">
+                                            <?= $escaper->escapeHtml(__('Yes — it\'s still sealed')) ?>
+                                        </span>
+                                        <span class="mm-eu-w-item-seal-choice-hint">
+                                            <?= $escaper->escapeHtml(__('Refund possible — return the unopened package.')) ?>
+                                        </span>
+                                    </span>
+                                    <span class="mm-eu-w-item-seal-choice-dot" aria-hidden="true"></span>
+                                </label>
+
+                                <div class="mm-eu-w-item-seal-extra"
+                                     data-role="seal-extra"
+                                     data-item-id="<?= /* @noEscape */ $childSealId ?>"
+                                     data-product-name="<?= $escaper->escapeHtmlAttr((string) $row->label) ?>"></div>
+
+                                <label class="mm-eu-w-item-seal-choice mm-eu-w-item-seal-choice--warn">
+                                    <input type="radio"
+                                           name="item_seal_opened[<?= /* @noEscape */ $childSealId ?>]"
+                                           value="1"
+                                           data-role="seal-input"
+                                           class="mm-eu-w-item-seal-radio">
+                                    <span class="mm-eu-w-item-seal-choice-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 22h22z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.7"/></svg>
+                                    </span>
+                                    <span class="mm-eu-w-item-seal-choice-content">
+                                        <span class="mm-eu-w-item-seal-choice-label">
+                                            <?= $escaper->escapeHtml(__('No — I\'ve opened it')) ?>
+                                        </span>
+                                        <span class="mm-eu-w-item-seal-choice-sublabel">
+                                            <?= $escaper->escapeHtml($childSealKind === 'hygiene'
+                                                ? __('This item cannot be returned (Art. 16(e) Directive 2011/83/EU).')
+                                                : __('This item cannot be returned (Art. 16(i) Directive 2011/83/EU).')) ?>
+                                        </span>
+                                    </span>
+                                    <span class="mm-eu-w-item-seal-choice-dot" aria-hidden="true"></span>
+                                </label>
+
+                                <p class="mm-eu-w-item-seal-warning" data-role="seal-warning" hidden>
+                                    <span class="mm-eu-w-item-seal-warn-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 1 22h22z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="0.6"/></svg>
+                                    </span>
+                                    <?= $escaper->escapeHtml(__('Once you confirm the seal is broken, the whole bundle can’t be returned. Its quantity is set to 0.')) ?>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            <?php endif; ?>
         <?php endforeach; ?>
     <?php endforeach; ?>
     </tbody>

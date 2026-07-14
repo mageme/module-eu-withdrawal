@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Model\Security;
 
+use MageMe\EUWithdrawal\Exception\ItemCapacityExceededException;
+use MageMe\EUWithdrawal\Exception\NoEligibleItemsException;
 use MageMe\EUWithdrawal\Model\Config;
 use MageMe\EUWithdrawal\Model\Mail\WithdrawalNotificationSender;
 use MageMe\EUWithdrawal\Model\Request\CreateRequestInput;
@@ -47,6 +49,13 @@ class AntiEnumeration
     {
         try {
             $result = $this->process($input, $action);
+        } catch (ItemCapacityExceededException | NoEligibleItemsException $e) {
+            // Real, user-actionable domain failures — let the controller map each to
+            // its own message instead of masking it as a uniform "check your email".
+            // They fire only after the order and identity are verified (the creator
+            // returns a silent failure for any mismatch), so surfacing them leaks
+            // nothing to a non-owner.
+            throw $e;
         } catch (\Throwable $e) {
             $this->logger->warning(
                 'EUWithdrawal submit threw: ' . $e->getMessage(),

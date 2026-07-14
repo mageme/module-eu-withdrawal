@@ -27,6 +27,8 @@ class CreateRequestInput
         public readonly array $items = [],
         public readonly array $itemReasons = [],
         public readonly ?string $referrerHost = null,
+        /** @var array<int, bool> $sealAnswers subject order_item_id => opened? */
+        public readonly array $sealAnswers = [],
     ) {
     }
 }

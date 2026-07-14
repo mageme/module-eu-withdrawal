@@ -8,13 +8,16 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Block\Withdraw;
 
 use MageMe\EUWithdrawal\Api\EligibilityEngineInterface;
+use MageMe\EUWithdrawal\Api\Seal\SealKindResolverInterface;
 use MageMe\EUWithdrawal\Exception\NoDeliveryInfoException;
 use MageMe\EUWithdrawal\Model\EligibilityRequestBuilder;
 use MageMe\EUWithdrawal\Model\Item\ExclusionReason;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
 use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
+use MageMe\EUWithdrawal\Model\Item\ItemAmountResolver;
 use MageMe\EUWithdrawal\Model\Item\OrderPartialStateCalculator;
 use MageMe\EUWithdrawal\Model\Item\RemainingItemState;
+use MageMe\EUWithdrawal\Model\Item\ReturnGroupBuilder;
 use MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface;
 use Magento\Customer\Model\Session as CustomerSession;
 use Magento\Framework\App\RequestInterface;
@@ -48,6 +51,10 @@ class ItemSelector extends Template
      * @param PriceCurrencyInterface $priceCurrency
      * @param ProductThumbnail $thumbnail
      * @param ReasonsConfigReader $reasonsConfig
+     * @param TaxDisplayConfig $taxDisplay
+     * @param ReturnGroupBuilder $returnGroupBuilder
+     * @param ItemAmountResolver $itemAmounts
+     * @param SealKindResolverInterface $sealKindResolver
      * @param array $data
      */
     public function __construct(
@@ -63,24 +70,32 @@ class ItemSelector extends Template
         private readonly ProductThumbnail $thumbnail,
         private readonly ReasonsConfigReader $reasonsConfig,
         private readonly TaxDisplayConfig $taxDisplay,
+        private readonly ReturnGroupBuilder $returnGroupBuilder,
+        private readonly ItemAmountResolver $itemAmounts,
+        private readonly SealKindResolverInterface $sealKindResolver,
         array $data = [],
     ) {
         parent::__construct($context, $data);
     }
 
     /**
-     * Whether item prices in the table should render including tax.
+     * Whether the store displays sales prices including tax.
      *
+     * @deprecated The withdrawal preview no longer varies its basis with this
+     *     setting; it always quotes the gross refund. Retained because released
+     *     Hyvä companions call it through method_exists().
      * @return bool
      */
     public function isInclTaxDisplay(): bool
     {
-        return $this->taxDisplay->isInclTax();
+        return $this->taxDisplay->showsGrossFigures();
     }
 
     /**
-     * Per-unit price for the items table: gross (incl tax) when the store
-     * displays sales prices including tax, otherwise the net unit price.
+     * Gross per-unit price for the items table — the amount actually refunded,
+     * matching the confirmation page and the receipt. Independent of the
+     * store's sales-price display setting: that setting governs how a sale is
+     * presented, while this figure is the refund the consumer is owed.
      *
      * @param RemainingItemState $state
      * @return float
@@ -88,9 +103,6 @@ class ItemSelector extends Template
     public function getUnitDisplayPrice(RemainingItemState $state): float
     {
         $net = (float) $state->unitDisplayPrice;
-        if (!$this->isInclTaxDisplay()) {
-            return $net;
-        }
         $oi = $this->getOrderItem((int) $state->orderItemId);
         if ($oi === null) {
             return $net;
@@ -99,7 +111,7 @@ class ItemSelector extends Template
         if ($ordered <= 0.0) {
             return $net;
         }
-        $unitTax = round((float) $oi->getTaxAmount() / $ordered, 4, PHP_ROUND_HALF_EVEN);
+        $unitTax = round((float) $state->rowTaxAmount / $ordered, 4, PHP_ROUND_HALF_EVEN);
         return round($net + $unitTax, 4, PHP_ROUND_HALF_EVEN);
     }
 
@@ -128,6 +140,27 @@ class ItemSelector extends Template
         }
         $item = $order->getItemById($orderItemId);
         return $item instanceof OrderItemInterface ? $item : null;
+    }
+
+    /**
+     * Display SKU for a row. A bundle parent's order-item SKU is the base SKU
+     * concatenated with every child SKU (long and noisy); show the bundle
+     * product's own SKU instead. All other item types keep their order-item SKU.
+     *
+     * @param int $orderItemId
+     * @param string $fallback
+     * @return string
+     */
+    public function getDisplaySku(int $orderItemId, string $fallback): string
+    {
+        $item = $this->getOrderItem($orderItemId);
+        if ($item === null || $item->getProductType() !== 'bundle') {
+            return $fallback;
+        }
+        $product = $item->getProduct();
+        $sku = $product !== null ? (string) $product->getSku() : '';
+
+        return $sku !== '' ? $sku : $fallback;
     }
 
     /**
@@ -304,18 +337,54 @@ class ItemSelector extends Template
         if ($orderItem === null) {
             return null;
         }
-        $product = $orderItem->getProduct();
-        if (!$product instanceof \Magento\Catalog\Api\Data\ProductInterface) {
+        $productId = (int) $orderItem->getProductId();
+        if ($productId <= 0) {
             return null;
         }
-        $hygiene = (int) ($product->getCustomAttribute('is_sealed_hygiene')?->getValue() ?? $product->getData('is_sealed_hygiene'));
-        if ($hygiene === 1) {
-            return 'hygiene';
+        $order = $this->resolveOrder();
+        if ($order === null) {
+            return null;
         }
-        $av = (int) ($product->getCustomAttribute('is_sealed_av')?->getValue() ?? $product->getData('is_sealed_av'));
-        if ($av === 1) {
-            return 'av';
+        return $this->sealKindResolver->resolve($productId, (int) $order->getStoreId())->questionKind();
+    }
+
+    /**
+     * The seal subject for a returnable line: the order-item id the answer must be
+     * keyed by, and the question kind. A configurable's sealed simple variant keys
+     * the answer by the variant's own order-item id (which still gates this parent
+     * line server-side); a self-sealed line keys by itself. Null when nothing on
+     * the line is sealed.
+     *
+     * @param int $lineOrderItemId
+     * @return array{subjectItemId: int, kind: string}|null
+     */
+    public function getLineSeal(int $lineOrderItemId): ?array
+    {
+        $ownKind = $this->getSealKind($lineOrderItemId);
+        if ($ownKind !== null) {
+            return ['subjectItemId' => $lineOrderItemId, 'kind' => $ownKind];
         }
+
+        $line = $this->getOrderItem($lineOrderItemId);
+        $order = $this->resolveOrder();
+        if ($line === null || $order === null || $line->getProductType() !== 'configurable') {
+            return null;
+        }
+
+        $storeId = (int) $order->getStoreId();
+        foreach ($order->getAllItems() as $child) {
+            if ((int) ($child->getParentItemId() ?? 0) !== $lineOrderItemId) {
+                continue;
+            }
+            $productId = (int) $child->getProductId();
+            $kind = $productId > 0
+                ? $this->sealKindResolver->resolve($productId, $storeId)->questionKind()
+                : null;
+            if ($kind !== null) {
+                return ['subjectItemId' => (int) $child->getItemId(), 'kind' => $kind];
+            }
+        }
+
         return null;
     }
 
@@ -337,6 +406,79 @@ class ItemSelector extends Template
             null,
             $code,
         );
+    }
+
+    /** @return \MageMe\EUWithdrawal\Model\Item\ReturnGroup[] */
+    public function getReturnGroups(): array
+    {
+        $states = $this->getStates();
+        $order = $this->resolveOrder();
+        if ($states === null || $order === null) {
+            return [];
+        }
+        return $this->returnGroupBuilder->build($order, $states);
+    }
+
+    /**
+     * Currency-formatted per-unit price of an informational bundle child, on the
+     * store's sales-price display basis.
+     *
+     * @deprecated Released Hyvä companions call this and render its result
+     *     beside rows they price net themselves. Changing its basis would print
+     *     gross contents under net rows. New templates use the Gross variant.
+     * @see self::formatItemDisplayPriceGross()
+     * @param int $orderItemId
+     * @return string
+     */
+    public function formatItemDisplayPrice(int $orderItemId): string
+    {
+        return $this->formatBundleChildUnitPrice($orderItemId, $this->isInclTaxDisplay());
+    }
+
+    /**
+     * Currency-formatted gross per-unit price of an informational bundle child —
+     * the amount that will actually be refunded for it.
+     *
+     * @param int $orderItemId
+     * @return string
+     */
+    public function formatItemDisplayPriceGross(int $orderItemId): string
+    {
+        return $this->formatBundleChildUnitPrice($orderItemId, true);
+    }
+
+    /**
+     * Format bundle child unit price.
+     *
+     * @param int $orderItemId
+     * @param bool $gross
+     * @return string
+     */
+    private function formatBundleChildUnitPrice(int $orderItemId, bool $gross): string
+    {
+        $order = $this->resolveOrder();
+        $oi = $this->getOrderItem($orderItemId);
+        if ($order === null || $oi === null) {
+            return '';
+        }
+        $ordered = (float) $oi->getQtyOrdered();
+        if ($ordered <= 0.0) {
+            return $this->formatPrice(0.0);
+        }
+        $amounts = $this->itemAmounts->resolve($order, $oi);
+        $unit = round($amounts->net() / $ordered, 4, PHP_ROUND_HALF_EVEN);
+        if ($gross) {
+            $unitTax = round($amounts->taxTotal() / $ordered, 4, PHP_ROUND_HALF_EVEN);
+            $unit = round($unit + $unitTax, 4, PHP_ROUND_HALF_EVEN);
+        }
+        return $this->formatPrice($unit);
+    }
+
+    /** Comma-joined selected-option values for an order item (configurable/custom options), or ''. */
+    public function getOptionSummary(int $orderItemId): string
+    {
+        $opts = $this->getOrderItemOptions($orderItemId);
+        return implode(', ', array_map(static fn (array $o) => $o['value'], $opts));
     }
 
     /**

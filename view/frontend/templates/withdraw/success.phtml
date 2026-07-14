@@ -123,7 +123,7 @@ $adjustment = $block->getOrderAdjustmentRefund();
                             </td>
                         </tr>
                     <?php endif; ?>
-                    <?php if ($block->getRefundTaxLine() > 0 && !$block->isTaxLineHidden()): ?>
+                    <?php if ($block->getRefundTaxLine() > 0 && !$block->isVatLineHidden()): ?>
                         <tr class="tax mm-eu-w-totals-tax--info">
                             <th scope="row" colspan="2">
                                 <?= $escaper->escapeHtml(__('Of which VAT')) ?>

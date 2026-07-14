@@ -8,23 +8,36 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Model\Refund;
 
 use MageMe\EUWithdrawal\Api\Data\EligibilityResultInterface;
+use MageMe\EUWithdrawal\Model\Item\ItemAmountResolver;
 use MageMe\EUWithdrawal\Model\Item\ReturnableItemsResolver;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 
 class RefundCalculator
 {
-    public function __construct(private readonly ReturnableItemsResolver $returnableItems)
-    {
+    public function __construct(
+        private readonly ReturnableItemsResolver $returnableItems,
+        private readonly ItemAmountResolver $itemAmounts,
+        private readonly ShippingAmountResolver $shippingAmounts,
+        private readonly BundleRefundedQtyResolver $refundedQty,
+    ) {
     }
 
     /**
      * @param array<int,int> $items order_item_id => qty
+     * @param array<int,int> $heldByOid order_item_id => qty already held by other
+     *        active (pending/approved) withdrawal requests. A withdrawal is a full
+     *        contract withdrawal — and owes the delivery under Art. 14(2) — when it
+     *        takes the last units the consumer still holds, which excludes those
+     *        another request is already returning. The storefront form subtracts
+     *        the same holds from what it offers, so passing them keeps the server's
+     *        full/partial verdict in step with the figure the consumer consented to.
      */
     public function calculate(
         OrderInterface $order,
         array $items,
         EligibilityResultInterface $eligibility,
+        array $heldByOid = [],
     ): RefundBreakdown {
         if ($items === []) {
             throw new \InvalidArgumentException('items must not be empty');
@@ -55,22 +68,18 @@ class RefundCalculator
             // native Magento credit-memo were never paid for (or were paid back)
             // and must not be refunded again. The per-unit price divisor stays
             // `ordered` so the unit amount (row_total / ordered) is unchanged.
-            $returnable = $ordered
-                - (float) ($oi->getQtyCanceled() ?? 0.0)
-                - (float) ($oi->getQtyRefunded() ?? 0.0);
+            $returnable = $this->returnableQty($order, $oi);
             if ($qty > $returnable) {
                 throw new \InvalidArgumentException(
                     sprintf('qty %d exceeds returnable %f for oid %d', $qty, $returnable, $oid),
                 );
             }
 
-            $rowTotal = (float) $oi->getRowTotal();
-            $discount = (float) $oi->getDiscountAmount();
-            $tax = (float) $oi->getTaxAmount();
+            $amounts = $this->itemAmounts->resolve($order, $oi);
 
-            $lineSubtotal = $this->round4($qty * ($rowTotal - $discount) / $ordered);
-            $lineTax = $this->round4($qty * $tax / $ordered);
-            $unitDisplay = $ordered > 0 ? $this->round4(($rowTotal - $discount) / $ordered) : 0.0;
+            $lineSubtotal = $this->round4($qty * $amounts->net() / $ordered);
+            $lineTax = $this->round4($qty * $amounts->taxTotal() / $ordered);
+            $unitDisplay = $ordered > 0 ? $this->round4($amounts->net() / $ordered) : 0.0;
 
             $lines[] = new ItemRefundLine(
                 orderItemId: $oid,
@@ -85,20 +94,23 @@ class RefundCalculator
             $taxRefund += $lineTax;
         }
 
-        $isFullReturn = $this->isFullEligibleReturn($orderItems, $items, $eligibility);
+        $isFullReturn = $this->isFullEligibleReturn($order, $orderItems, $items, $eligibility, $heldByOid);
 
         // EU Art. 14(2) Directive 2011/83 — on full withdrawal the merchant
         // refunds all sums received from the consumer including delivery
-        // costs. Magento splits delivery cost into `shipping_amount` (net) +
-        // `shipping_tax_amount` (VAT), so a full refund must include BOTH or
-        // the consumer is shorted the tax portion. Bake shipping VAT into
-        // `shippingRefund` (rather than into `taxRefund`) so the gross-shipping
-        // total persists into `mm_eu_withdrawal_request.shipping_refund` —
-        // the schema has no separate shipping-tax column and total is
-        // recomputed at admin-grid render time as
-        // `SUM(item.refund_amount) + request.shipping_refund`.
-        $shippingNet = $isFullReturn ? (float) $order->getShippingAmount() : 0.0;
-        $shippingTax = $isFullReturn ? (float) $order->getShippingTaxAmount() : 0.0;
+        // costs. The delivery cost paid is the discounted one, and its VAT
+        // must be included or the consumer is shorted the tax portion. Bake
+        // shipping VAT into `shippingRefund` (rather than into `taxRefund`) so
+        // the gross-shipping total persists into
+        // `mm_eu_withdrawal_request.shipping_refund` — the schema has no
+        // separate shipping-tax column and total is recomputed at admin-grid
+        // render time as `SUM(item.refund_amount) + request.shipping_refund`.
+        //
+        // Only what a native credit memo has not already paid back: carriage can
+        // be refunded on its own, without touching a single item quantity.
+        $shipping = $this->shippingAmounts->resolveRefundable($order);
+        $shippingNet = $isFullReturn ? $shipping->net() : 0.0;
+        $shippingTax = $isFullReturn ? $shipping->taxTotal() : 0.0;
         $shippingRefund = $this->round4($shippingNet + $shippingTax);
 
         $itemsSubtotal = $this->round4($itemsSubtotal);
@@ -122,6 +134,13 @@ class RefundCalculator
         // Epsilon 0.01 (one cent) accommodates Magento's 2-decimal rounding of
         // grand_total vs our 4-decimal sum of parts. Tighter values risk false
         // positives on valid orders with inclusive-tax rounding.
+        //
+        // Deliberately measured against grand_total and not against
+        // `grand_total - total_refunded`: a credit memo's `adjustment_positive`
+        // is goodwill, not a prepayment of a later withdrawal, and subtracting
+        // it would reject the units the consumer still legitimately holds.
+        // Over-refund is prevented per component instead — items by
+        // `qty_refunded`, delivery by ShippingAmountResolver::resolveRefundable().
         if ($total > $grandTotal + 0.01) {
             throw new \LogicException(
                 sprintf('Refund post-condition violated: total %f > grand_total %f', $total, $grandTotal),
@@ -155,34 +174,38 @@ class RefundCalculator
     {
         $base = 0.0;
         $tax = 0.0;
-        // Sum the same returnable line set that calculate() sums, so the
-        // reconciliation base stays net/gross-consistent with itemsSubtotal.
-        // For an expanded dynamic bundle the discount and tax live on the
-        // children, so summing parents only would double-count them.
+        // Sum the same returnable line set that calculate() sums, through the
+        // same amount resolver, so the reconciliation base stays consistent
+        // with itemsSubtotal. Anything left over is genuine order-level money.
         foreach ($this->returnableItems->resolve($order) as $oi) {
-            $base += (float) $oi->getRowTotal() - (float) $oi->getDiscountAmount();
-            $tax += (float) $oi->getTaxAmount();
+            $amounts = $this->itemAmounts->resolve($order, $oi);
+            $base += $amounts->net();
+            $tax += $amounts->taxTotal();
         }
 
+        $shipping = $this->shippingAmounts->resolve($order);
         $gap = $this->round4(
             (float) $order->getGrandTotal()
             - $base
             - $tax
-            - (float) $order->getShippingAmount()
-            - (float) $order->getShippingTaxAmount(),
+            - $shipping->net()
+            - $shipping->taxTotal(),
         );
 
         return ['base' => $this->round4($base), 'gap' => $gap];
     }
 
     /**
+     * @param OrderInterface $order
      * @param array<int, OrderItemInterface> $orderItems
      * @param array<int, int> $items
      */
     private function isFullEligibleReturn(
+        OrderInterface $order,
         array $orderItems,
         array $items,
         EligibilityResultInterface $eligibility,
+        array $heldByOid = [],
     ): bool {
         $decisions = $eligibility->getItemDecisions();
         $eligibleOids = [];
@@ -199,19 +222,55 @@ class RefundCalculator
         }
 
         foreach (array_keys($eligibleOids) as $oid) {
+            // A line with nothing left for THIS request to take — fully cancelled,
+            // fully refunded, or every remaining unit already held by another
+            // active request — cannot appear here (a quantity must be positive).
+            // Requiring it would make the order permanently un-fully-returnable and
+            // withhold the delivery for ever.
+            if (isset($orderItems[$oid])
+                && $this->returnableQty($order, $orderItems[$oid], (int) ($heldByOid[$oid] ?? 0)) <= 0.0
+            ) {
+                continue;
+            }
             if (!isset($items[$oid])) {
                 return false;
             }
         }
 
+        // Every unit the consumer still holds, not every unit the order once
+        // listed. A unit cancelled before invoice was never paid for, and one a
+        // native credit memo already refunded is back in the consumer's pocket —
+        // returning the rest is still a withdrawal from the whole contract, and
+        // Art. 14(2) owes the delivery back.
+        //
+        // Compared as floats: a fractional remainder must never truncate into
+        // fullness, or half a unit still in the consumer's hands would buy them
+        // the whole delivery back.
         foreach ($items as $oid => $qty) {
-            $ordered = (int) ((float) $orderItems[$oid]->getQtyOrdered());
-            if ($qty !== $ordered) {
+            if (abs($qty - $this->returnableQty($order, $orderItems[$oid], (int) ($heldByOid[$oid] ?? 0))) > 0.0001) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * Units this request can still take: ordered, less those cancelled before
+     * invoice, those a native credit memo already refunded, and those another
+     * active withdrawal request is already returning.
+     *
+     * @param OrderInterface $order
+     * @param OrderItemInterface $item
+     * @param int $held Units held by other active requests.
+     * @return float
+     */
+    private function returnableQty(OrderInterface $order, OrderItemInterface $item, int $held = 0): float
+    {
+        return (float) $item->getQtyOrdered()
+            - (float) ($item->getQtyCanceled() ?? 0.0)
+            - $this->refundedQty->refundedQty($order, $item)
+            - (float) $held;
     }
 
     /**

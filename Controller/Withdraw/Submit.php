@@ -75,19 +75,20 @@ class Submit implements HttpPostActionInterface, CsrfAwareActionInterface
         $hasItemSelector = $this->request->getPost('items_selected') !== null
             || $this->request->getPost('items') !== null;
 
-        // Honour the per-item seal-broken declaration server-side so a curl
-        // POST that bypasses the form JS still gets the items dropped under
-        // Art. 16(e)/(i). The form's JS already zeroes the qty when the
-        // customer ticks "seal broken", but this is the legal backstop.
-        $sealBroken = $this->parseSealBroken();
-        if ($sealBroken !== []) {
-            $excluded = array_intersect_key($items, $sealBroken);
-            if ($excluded !== []) {
-                $items = array_diff_key($items, $sealBroken);
-                $this->messageManager->addNoticeMessage(
-                    __('%1 item(s) were excluded from the withdrawal because the seal is broken (Art. 16(e)/(i) Directive 2011/83/EU).', count($excluded))
-                );
+        // The per-item seal declaration is parsed and forwarded to RequestCreator,
+        // which performs the authoritative line-wide exclusion (Art. 16(e)/(i)).
+        // The notice below is a display-only hint; it does not mutate $items.
+        $sealAnswers = $this->parseSealAnswers();
+        $openedInSelection = [];
+        foreach ($sealAnswers as $oid => $opened) {
+            if ($opened && isset($items[$oid])) {
+                $openedInSelection[$oid] = true;
             }
+        }
+        if ($openedInSelection !== []) {
+            $this->messageManager->addNoticeMessage(
+                __('%1 item(s) were excluded from the withdrawal because the seal is broken (Art. 16(e)/(i) Directive 2011/83/EU).', count($openedInSelection))
+            );
         }
 
         if ($hasItemSelector && $items === []) {
@@ -113,6 +114,7 @@ class Submit implements HttpPostActionInterface, CsrfAwareActionInterface
             items: $items,
             itemReasons: $itemReasons,
             referrerHost: $this->resolveReferrerHost(),
+            sealAnswers: $sealAnswers,
         );
 
         try {
@@ -234,14 +236,12 @@ class Submit implements HttpPostActionInterface, CsrfAwareActionInterface
     }
 
     /**
-     * Parse `item_seal_opened[oid]` POST radios. Returns a set of oids the
-     * customer declared as seal-broken. Used to drop those items from the
-     * submission per Art. 16(e)/(i) — the form-side JS already prevents the
-     * qty from being non-zero for these, this is the server backstop.
+     * Parse `item_seal_opened[oid]` POST radios into subject_oid => opened?
+     * 1 = opened, 0 = intact. Non 0/1 values are ignored.
      *
-     * @return array<int, true>
+     * @return array<int, bool>
      */
-    private function parseSealBroken(): array
+    private function parseSealAnswers(): array
     {
         $raw = $this->request->getPost('item_seal_opened');
         if (!is_array($raw)) {
@@ -249,11 +249,13 @@ class Submit implements HttpPostActionInterface, CsrfAwareActionInterface
         }
         $out = [];
         foreach ($raw as $oid => $value) {
-            if (!is_numeric($oid)) {
+            if (!is_numeric($oid) || !is_scalar($value)) {
                 continue;
             }
-            if ((int) $value === 1) {
+            if ($value === 1 || $value === '1' || $value === true) {
                 $out[(int) $oid] = true;
+            } elseif ($value === 0 || $value === '0' || $value === false) {
+                $out[(int) $oid] = false;
             }
         }
         return $out;

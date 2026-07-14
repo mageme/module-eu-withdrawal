@@ -19,6 +19,7 @@ use Magento\Sales\Api\OrderRepositoryInterface;
 use MageMe\EUWithdrawal\Model\Order\ShipmentExistenceChecker;
 use MageMe\EUWithdrawal\Api\Token\MagicLinkServiceInterface;
 use MageMe\EUWithdrawal\Model\Refund\RefundCalculator;
+use MageMe\EUWithdrawal\Model\Refund\ShippingAmountResolver;
 use MageMe\EUWithdrawal\Model\Frontend\OrderEligibilityResolver;
 use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
@@ -38,6 +39,7 @@ class Form extends Template
      * @param OrderEligibilityResolver $eligibilityResolver
      * @param TaxDisplayConfig $taxDisplay
      * @param PeriodDaysConfigReader $periodDays
+     * @param ShippingAmountResolver $shippingAmounts
      * @param array $data
      */
     public function __construct(
@@ -51,6 +53,7 @@ class Form extends Template
         private readonly OrderEligibilityResolver $eligibilityResolver,
         private readonly TaxDisplayConfig $taxDisplay,
         private readonly PeriodDaysConfigReader $periodDays,
+        private readonly ShippingAmountResolver $shippingAmounts,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -67,24 +70,41 @@ class Form extends Template
     }
 
     /**
-     * Whether the refund summary should display prices including tax.
+     * Whether the store displays sales prices including tax.
      *
+     * @deprecated The refund summary always quotes gross figures now.
+     * @see self::isVatLineHidden()
      * @return bool
      */
     public function isInclTaxDisplay(): bool
     {
-        return $this->taxDisplay->isInclTax();
+        return $this->taxDisplay->showsGrossFigures();
     }
 
     /**
      * Whether the standalone tax line is suppressed (incl mode with tax folded
      * into the grand total, mirroring the store's sales-display setting).
      *
+     * @deprecated Retained for released Hyvä companions that call it through
+     *     method_exists(). The summary uses isVatLineHidden().
+     * @see self::isVatLineHidden()
      * @return bool
      */
     public function isTaxLineHidden(): bool
     {
         return $this->taxDisplay->isTaxLineHidden();
+    }
+
+    /**
+     * Whether the informational VAT row is suppressed. The summary quotes gross
+     * figures, so the row is a breakdown rather than an addend and folds away
+     * exactly when the store folds tax into the grand total.
+     *
+     * @return bool
+     */
+    public function isVatLineHidden(): bool
+    {
+        return $this->taxDisplay->isTaxFoldedIntoTotal();
     }
 
     /**
@@ -98,6 +118,21 @@ class Form extends Template
     public function getOrderLevelGap(OrderInterface $order): array
     {
         return $this->refundCalculator->orderLevelGap($order);
+    }
+
+    /**
+     * Delivery a withdrawal may still refund, net and VAT: the discounted cost
+     * the consumer paid, less whatever a native credit memo already returned.
+     * The JS summary needs both halves to mirror RefundCalculator on a full
+     * return, or the preview promises money the server will not pay.
+     *
+     * @param OrderInterface $order
+     * @return array{net: float, tax: float}
+     */
+    public function getShippingRefundable(OrderInterface $order): array
+    {
+        $shipping = $this->shippingAmounts->resolveRefundable($order);
+        return ['net' => $shipping->net(), 'tax' => $shipping->taxTotal()];
     }
 
     /**

@@ -20,19 +20,33 @@ class TaxDisplayConfig
     }
 
     /**
-     * Whether the refund summary should present prices including tax. Mirrors
-     * how placed-order totals are shown (sales-display group): "Including Tax"
-     * or "Both" => incl; "Excluding Tax" => excl. Resolves the current store
-     * when $storeId is null.
+     * Whether the store presents placed-order money gross. True for the
+     * sales-display "Including Tax" (2) setting and for "Including and Excluding
+     * Tax" (3): the latter asks for two columns, the module renders one, and it
+     * picks the gross. Resolves the current store when $storeId is null.
      *
+     * @param int|null $storeId
+     * @return bool
+     */
+    public function showsGrossFigures(?int $storeId = null): bool
+    {
+        $storeId = $this->resolveStoreId($storeId);
+        return $this->taxConfig->displaySalesSubtotalInclTax($storeId)
+            || $this->taxConfig->displaySalesSubtotalBoth($storeId);
+    }
+
+    /**
+     * Whether the refund summary should present prices including tax.
+     *
+     * @deprecated The name claimed "Including Tax" while the method also answers
+     *     true for "Including and Excluding Tax", which is a different setting.
+     * @see self::showsGrossFigures()
      * @param int|null $storeId
      * @return bool
      */
     public function isInclTax(?int $storeId = null): bool
     {
-        $storeId = $this->resolveStoreId($storeId);
-        return $this->taxConfig->displaySalesSubtotalInclTax($storeId)
-            || $this->taxConfig->displaySalesSubtotalBoth($storeId);
+        return $this->showsGrossFigures($storeId);
     }
 
     /**
@@ -60,7 +74,7 @@ class TaxDisplayConfig
     public function isTaxLineHidden(?int $storeId = null): bool
     {
         $storeId = $this->resolveStoreId($storeId);
-        return $this->isInclTax($storeId) && $this->isTaxFoldedIntoTotal($storeId);
+        return $this->showsGrossFigures($storeId) && $this->isTaxFoldedIntoTotal($storeId);
     }
 
     /**

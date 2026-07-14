@@ -133,14 +133,9 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
 
         $items = $this->normalizeItems($itemsRaw);
 
-        // Honour the per-item seal-broken declaration server-side, mirroring the
-        // form Submit controller: the JS zeroes the qty when "seal broken" is
-        // ticked, but a crafted/replayed JSON POST could still carry the item.
-        // This is the Art. 16(e)/(i) legal backstop for the SPA path.
-        $sealBroken = $this->parseSealBroken($payload);
-        if ($sealBroken !== []) {
-            $items = array_diff_key($items, $sealBroken);
-        }
+        // The per-item seal declaration is parsed and forwarded to RequestCreator,
+        // which performs the authoritative line-wide exclusion (Art. 16(e)/(i)).
+        $sealAnswers = $this->parseSealAnswers($payload);
 
         $itemReasons = $this->normalizeItemReasons($itemReasonsRaw, array_keys($items));
 
@@ -158,6 +153,7 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
                 items: $items,
                 itemReasons: $itemReasons,
                 referrerHost: $this->resolveReferrerHost(),
+                sealAnswers: $sealAnswers,
             );
             $created = $this->antiEnumeration->process(
                 $input,
@@ -281,14 +277,13 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
     }
 
     /**
-     * Parse the per-item seal-broken declaration from the JSON payload. Accepts
-     * `itemSeal` (the SPA key) and `item_seal_opened` (form-parity key); a value
-     * of 1 means the customer declared the seal broken. Returns a set of oids.
+     * Parse the per-item seal declaration into subject_oid => opened? Accepts the SPA `itemSeal`
+     * and the form-parity `item_seal_opened`; 1 = opened, 0 = intact. Non 0/1 values are ignored.
      *
      * @param array<string, mixed> $payload
-     * @return array<int, true>
+     * @return array<int, bool>
      */
-    private function parseSealBroken(array $payload): array
+    private function parseSealAnswers(array $payload): array
     {
         $out = [];
         foreach (['itemSeal', 'item_seal_opened'] as $key) {
@@ -297,8 +292,13 @@ class Finalize implements HttpPostActionInterface, CsrfAwareActionInterface
                 continue;
             }
             foreach ($raw as $oid => $value) {
-                if (is_numeric($oid) && (int) $value === 1) {
+                if (!is_numeric($oid) || !is_scalar($value)) {
+                    continue;
+                }
+                if ($value === 1 || $value === '1' || $value === true) {
                     $out[(int) $oid] = true;
+                } elseif ($value === 0 || $value === '0' || $value === false) {
+                    $out[(int) $oid] = false;
                 }
             }
         }

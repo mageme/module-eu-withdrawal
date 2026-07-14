@@ -66,9 +66,22 @@ class Success extends Template
      * always shows gross figures, so the line is dropped only when the store
      * folds tax into the grand total (sales-display "grandtotal" setting).
      *
+     * @deprecated Named like the form's predicate but never meant the same
+     *     thing. Use isVatLineHidden(), which the whole module now shares.
+     * @see self::isVatLineHidden()
      * @return bool
      */
     public function isTaxLineHidden(): bool
+    {
+        return $this->isVatLineHidden();
+    }
+
+    /**
+     * Whether the informational VAT row is suppressed.
+     *
+     * @return bool
+     */
+    public function isVatLineHidden(): bool
     {
         return $this->taxDisplay->isTaxFoldedIntoTotal();
     }

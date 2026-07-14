@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Controller\Adminhtml\Request;
 
 use MageMe\EUWithdrawal\Api\Data\ItemInterface;
+use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Api\RequestRepositoryInterface;
+use MageMe\EUWithdrawal\Model\Refund\CreditMemoQtyExpander;
 use MageMe\EUWithdrawal\Model\ResourceModel\Item\CollectionFactory as RequestItemCollectionFactory;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
@@ -49,6 +51,7 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param RequestItemCollectionFactory $itemCollectionFactory
      * @param BackendSession $backendSession
+     * @param CreditMemoQtyExpander $qtyExpander
      */
     public function __construct(
         Context $context,
@@ -56,6 +59,7 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly RequestItemCollectionFactory $itemCollectionFactory,
         private readonly BackendSession $backendSession,
+        private readonly CreditMemoQtyExpander $qtyExpander,
     ) {
         parent::__construct($context);
     }
@@ -75,6 +79,16 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
         } catch (NoSuchEntityException) {
             $this->messageManager->addErrorMessage((string) __('Request #%1 not found.', $id));
             return $redirect->setPath('*/request');
+        }
+
+        // A credit memo pays out real refund money, so it may only be started for
+        // an approved request — never a pending, denied, cancelled or anonymised
+        // one whose frozen figures must not be booked into a memo.
+        if ($request->getStatus() !== RequestInterface::STATUS_APPROVED) {
+            $this->messageManager->addErrorMessage(
+                (string) __('A credit memo can only be started for an approved withdrawal request.'),
+            );
+            return $redirect->setPath('*/request/edit', ['request_id' => $id]);
         }
 
         $orderId = (int) $request->getOrderId();
@@ -124,7 +138,10 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
             [
                 'order_id'   => $orderId,
                 'invoice_id' => (int) $invoice->getEntityId(),
-                'creditmemo' => $creditmemoData,
+                // Magento's URL builder only serializes scalar route params into the
+                // path and drops a nested array; the prefill rides in the query so
+                // Creditmemo\Loader receives it.
+                '_query'     => ['creditmemo' => $creditmemoData],
             ],
         );
     }
@@ -177,6 +194,10 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
      */
     private function buildCreditmemoData($order, Invoice $invoice, array $qtys, ?string $frozenShippingRefund): array
     {
+        // A dynamic bundle is recorded by its parent alone, but Magento refunds
+        // its children; give them their share or the memo pays out nothing.
+        $qtys = $this->qtyExpander->expand($order, $qtys);
+
         $items = [];
         foreach ($invoice->getAllItems() as $invItem) {
             $oid = (int) $invItem->getOrderItemId();
@@ -190,18 +211,22 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
             ];
         }
 
-        // Art. 13(2) — refund the basic outbound shipping agreed at consent and
-        // frozen on the request (already scoped to a partial withdrawal where
-        // applicable). Admin can still adjust on the credit memo screen.
-        $shippingAmount = $frozenShippingRefund !== null ? (float) $frozenShippingRefund : 0.0;
-
-        return [
-            'items'           => $items,
-            'shipping_amount' => $shippingAmount > 0
-                ? number_format($shippingAmount, 4, '.', '')
-                : '0',
+        // Art. 13(2) — refund the basic outbound delivery on a full withdrawal.
+        // When it is owed, omit shipping_amount so Magento's own credit memo refunds
+        // the full remaining carriage — its Shipping/Discount/Tax collectors apply
+        // the shipping discount, tax and any prior partial shipping refund. A
+        // supplied gross figure would instead be re-prorated (and, on ex-tax stores,
+        // over-refunded or blocked). Suppress delivery (0) when the frozen request
+        // carries no shipping refund. Admin can still adjust on the credit memo screen.
+        $data = [
+            'items'               => $items,
             'adjustment_positive' => '0',
             'adjustment_negative' => '0',
         ];
+        if ($frozenShippingRefund === null || (float) $frozenShippingRefund <= 0.0) {
+            $data['shipping_amount'] = '0';
+        }
+
+        return $data;
     }
 }

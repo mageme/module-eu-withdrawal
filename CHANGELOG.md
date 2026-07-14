@@ -1,3 +1,35 @@
+## 1.0.10
+
++ New: Bundle contents are now grouped under the bundle they belong to, each part showing the amount it contributed to the price, instead of appearing as a flat list of unrelated products.
+- Fix: On orders paid with a discount code, the withdrawal form showed a bundle's price before the discount and hid the discount in an unexplained "Order Adjustment" line; every line now shows the amount actually paid.
+- Fix: A partial withdrawal from an order with a discount code now refunds exactly what was paid for the returned items - previously some items were refunded too much and others too little.
+- Fix: Refunds now include the tax compensation recorded on stores that apply discounts to prices including tax.
+- Fix: The pre-filled credit memo for a bundle returned as a single unit now covers the bundle's components, so the refund is no longer zero.
+- Fix: The pre-filled credit memo now opens with the withdrawn items and correct delivery refund already filled in; the pre-fill was previously lost, so the screen opened showing the whole order and could over-refund if submitted as-is.
+- Fix: Once the hygiene seal is declared broken, the quantity for that item stays at zero; it could previously be raised again with the plus button and the request sent anyway.
+- Fix: On stores that display prices without tax, the withdrawal form quoted each line without VAT while the confirmation page and the receipt showed the amount including VAT; every screen now shows the amount that will actually be refunded.
+- Fix: Product names containing symbols such as ™ or & no longer show the raw HTML code in the review step, the refund sidebar and the bundle headings.
+- Fix: When a discount code also reduced the delivery charge, a full withdrawal quoted the undiscounted delivery and hid the difference in an "Order Adjustment" line, and a partial withdrawal had a share of that delivery discount deducted from it even though no delivery was being refunded.
+- Fix: Delivery that a credit memo had already refunded was refunded a second time by a later withdrawal.
+- Fix: A fixed product tax (FPT) was spread across the returned items by value instead of staying with the product that carried it, so a partial withdrawal refunded too little for that product and too much for the others.
+- Fix: A withdrawal of every unit still held now refunds the delivery even when some units were cancelled before invoice or already refunded by a credit memo.
+- Fix: When a contract is withdrawn across two requests — one covering some items, a later one covering the rest — the request that completes the withdrawal now refunds the delivery, instead of showing it in the summary and withholding it.
+- Fix: In full-order withdrawal mode, an order that had a unit cancelled or refunded could no longer be withdrawn at all; it now covers the units still held.
+- Fix: A sealed hygiene or media item bought as a variant of a configurable product now shows the "is the seal intact?" question and is left out of the return when the customer says it was opened, the same as a standalone sealed item.
+- Fix: Declaring a sealed item opened and submitting now records the withdrawal for the remaining items, instead of the request failing on some storefronts.
+- Fix: When a withdrawal cannot go through because the chosen items are no longer eligible or the quantity is no longer available, the form now explains why, instead of showing a "check your email" message as though the request had succeeded.
+- Fix: After a partial refund on an order that contains a bundle, the bundle units still held are offered for withdrawal again, instead of the bundle being treated as already fully returned.
+- Fix: The credit memo prepared for a full withdrawal now refunds the delivery the customer actually paid — the correct discounted, tax-adjusted amount — instead of over-refunding it or being blocked on stores that show prices without tax.
+- Fix: The "issue credit memo" action can only be started for a withdrawal request that has been approved.
+- Fix: When a bundle is returned as a single unit, the seal-photo step for its sealed parts could be passed over without a photo or the explicit skip confirmation; each sealed part now has to be photographed or explicitly skipped before the return can continue.
+* Other: The VAT line in the refund summary now always breaks the tax out of the amounts above it instead of being added on top of them.
+* Other: The refund preview reconstructs each line the way the server does, so it can no longer drift from the recorded refund on large quantities.
+* Other: The Hyva companion must now be at least version 1.0.7; older versions would mix tax bases on the withdrawal screen.
+* Other: The new bundle-grouping wording is localised across all 22 locales.
+* Other: The item table's quantity columns are now labelled simply "Purchased" and "Returned".
+* Other: The admin withdrawal-request "Refund Totals" now read as one clean, evenly-styled list instead of a striped grid.
+- Fix: The seal questions, order total and bundle labels on the withdrawal page, and the confirmation, checkout and admin messages shown during withdrawal, now appear in every supported language instead of falling back to English.
+
 ## 1.0.9
 
 + New: Bundle Item Selection - return a bundle as a single unit (default) or by its individual components, so a device sold together with an accessory as a bundle can have each part withdrawn and refunded on its own, each with its own VAT.

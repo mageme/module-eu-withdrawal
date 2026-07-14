@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Block\Withdraw;
 
 use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
+use MageMe\EUWithdrawal\Model\Refund\ShippingAmountResolver;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Framework\View\Element\Template;
 use Magento\Framework\View\Element\Template\Context;
@@ -26,30 +27,48 @@ class ReturnSummary extends Template
         Context $context,
         private readonly PriceCurrencyInterface $priceCurrency,
         private readonly TaxDisplayConfig $taxDisplay,
+        private readonly ShippingAmountResolver $shippingAmounts,
         array $data = [],
     ) {
         parent::__construct($context, $data);
     }
 
     /**
-     * Whether the refund summary should display prices including tax.
+     * Whether the store displays sales prices including tax.
      *
+     * @deprecated The refund summary always quotes gross figures now.
+     * @see self::isVatLineHidden()
      * @return bool
      */
     public function isInclTaxDisplay(): bool
     {
-        return $this->taxDisplay->isInclTax();
+        return $this->taxDisplay->showsGrossFigures();
     }
 
     /**
      * Whether the standalone tax line is suppressed (incl mode with tax folded
      * into the grand total, mirroring the store's sales-display setting).
      *
+     * @deprecated Retained for released Hyvä companions that call it through
+     *     method_exists(). The summary uses isVatLineHidden().
+     * @see self::isVatLineHidden()
      * @return bool
      */
     public function isTaxLineHidden(): bool
     {
         return $this->taxDisplay->isTaxLineHidden();
+    }
+
+    /**
+     * Whether the informational VAT row is suppressed. The summary quotes gross
+     * figures, so the row is a breakdown rather than an addend and folds away
+     * exactly when the store folds tax into the grand total.
+     *
+     * @return bool
+     */
+    public function isVatLineHidden(): bool
+    {
+        return $this->taxDisplay->isTaxFoldedIntoTotal();
     }
 
     /**
@@ -72,10 +91,24 @@ class ReturnSummary extends Template
         return [
             'items_total'     => 0.0,
             'tax'             => 0.0,
-            'shipping_paid'   => $order !== null ? (float) $order->getShippingAmount() : 0.0,
+            'shipping_paid'   => $order !== null ? $this->shippingPaidGross($order) : 0.0,
             'shipping_refund' => 0.0,
             'total_refund'    => 0.0,
         ];
+    }
+
+    /**
+     * Delivery still refundable, VAT included: the discounted cost the consumer
+     * paid, less whatever a native credit memo already returned. Seeds the first
+     * paint; the JS summary recomputes it per selection.
+     *
+     * @param OrderInterface $order
+     * @return float
+     */
+    private function shippingPaidGross(OrderInterface $order): float
+    {
+        $shipping = $this->shippingAmounts->resolveRefundable($order);
+        return round($shipping->net() + $shipping->taxTotal(), 4, PHP_ROUND_HALF_EVEN);
     }
 
     /**

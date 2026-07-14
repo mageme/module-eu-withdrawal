@@ -17,6 +17,7 @@ use Magento\Backend\Block\Widget\Tab\TabInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Registry;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use MageMe\EUWithdrawal\Model\Item\ItemAmountResolver;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
@@ -38,6 +39,7 @@ class General extends Template implements TabInterface
      * @param OrderRepositoryInterface $orderRepository
      * @param TimezoneInterface $timezone
      * @param ReasonsConfigReader $reasonsConfig
+     * @param ItemAmountResolver $itemAmounts
      * @param array $data
      */
     public function __construct(
@@ -47,6 +49,7 @@ class General extends Template implements TabInterface
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly TimezoneInterface $timezone,
         private readonly ReasonsConfigReader $reasonsConfig,
+        private readonly ItemAmountResolver $itemAmounts,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -167,11 +170,60 @@ class General extends Template implements TabInterface
     }
 
     /**
-     * Format price.
+     * Gross price of one unit as the consumer paid it — VAT in, discount out.
+     * The refund column beside it is gross; a net price there mixed two bases.
      *
-     * @param float $price
+     * @param int $orderItemId
+     * @return float
+     */
+    public function getItemUnitPricePaid(int $orderItemId): float
+    {
+        $line = $this->getItemLinePaid($orderItemId);
+        $orderItem = $this->getOrderItem($orderItemId);
+        $ordered = $orderItem !== null ? (float) $orderItem->getQtyOrdered() : 0.0;
+        return $ordered > 0.0 ? round($line / $ordered, 4, PHP_ROUND_HALF_EVEN) : 0.0;
+    }
+
+    /**
+     * Gross amount the consumer paid for the whole ordered line. The refund can
+     * never exceed it, which is the point of showing them side by side.
+     *
+     * @param int $orderItemId
+     * @return float
+     */
+    public function getItemLinePaid(int $orderItemId): float
+    {
+        $order = $this->getOrder();
+        $orderItem = $this->getOrderItem($orderItemId);
+        if ($order === null || $orderItem === null) {
+            return 0.0;
+        }
+        $amounts = $this->itemAmounts->resolve($order, $orderItem);
+        return round($amounts->net() + $amounts->taxTotal(), 4, PHP_ROUND_HALF_EVEN);
+    }
+
+    /**
+     * VAT contained in the refund — items plus delivery, as frozen at consent.
+     * Informational: it is already inside the totals above it.
+     *
+     * @return float
+     */
+    public function getTaxRefund(): float
+    {
+        $request = $this->getRequestEntity();
+        return $request !== null ? (float) $request->getTaxRefund() : 0.0;
+    }
+
+    /**
+     * Get tax refund display.
+     *
      * @return string
      */
+    public function getTaxRefundDisplay(): string
+    {
+        return $this->formatPrice($this->getTaxRefund());
+    }
+
     public function formatPrice(float $price): string
     {
         $order = $this->getOrder();
