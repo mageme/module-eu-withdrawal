@@ -31,6 +31,7 @@ It adds only the legal withdrawal step required under Art. 11a, and works alongs
 - **Durable-medium receipt** — confirmation email with a frozen snapshot of the legal text shown to the consumer
 - **Annex I in 22 EU locales** — pre-contractual notice and model withdrawal form, verbatim EUR-Lex translations where available, theme-overridable per locale
 - **Pro-rata refund calculation** — Art. 13(2)/14(2) totals (with order-level adjustments) shown in the admin and added to the order timeline; calculation only — it does not replace Magento's credit-memo / refund processing
+- **Reimbursement tracking** — each approved request tracks its 14-day refund deadline (Art. 13(3)) with a due / withheld / overdue / refunded state and a credit-memo link, a daily overdue digest emailed to admins, the option to withhold a refund until the goods come back and resume it later, and a "mark refund as paid" action for refunds issued outside Magento (bank transfer or elsewhere) — after which no second refund can be raised
 - **Admin grid and workflow** — filterable request list, status changes (approve / deny / cancel), order-timeline notes, column controls, and CSV export
 
 ## Screenshots
@@ -62,11 +63,13 @@ It adds only the legal withdrawal step required under Art. 11a, and works alongs
 | Eligibility controls (window, statuses, delivery)          | Yes  |                     Yes                     |
 | API / headless waiver enforcement                          | Yes  |                     Yes                     |
 | Pro-rata refund calculation                                | Yes  |                     Yes                     |
+| Reimbursement deadline tracking & withhold                 | Yes  |                     Yes                     |
 | **Receipt verification** — SHA-256 cryptographic audit     |  —   |                     Yes                     |
 | **Annex I forensic snapshot** — immutable per-request copy |  —   |                     Yes                     |
 | **Hash-chain audit log** — DB-backed, tamper-evident       |  —   |                     Yes                     |
 | **Magic-link guest access** — one-click tokenised URL      |  —   |                     Yes                     |
 | **Seal-photo evidence** — optional intact-seal photos      |  —   |                     Yes                     |
+| **Auto-approval engine** — rule-based auto-approve + memo  |  —   |                     Yes                     |
 
 → **[Compare tiers and pricing](https://mageme.com/magento-2-withdrawal-button-extension.html)**
 
