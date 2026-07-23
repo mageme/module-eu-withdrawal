@@ -36,6 +36,9 @@
         <column xsi:type="timestamp" name="period_end_at" nullable="true" comment="Anchor + 14 days (NULL until PeriodRule computes; never rely on default)"/>
         <column xsi:type="timestamp" name="anonymised_at" nullable="true" comment="GDPR retention cron (gap #12)"/>
         <column xsi:type="int" name="refund_creditmemo_id" unsigned="true" nullable="true" comment="FK to sales_creditmemo.entity_id once admin issues the refund through the StartCreditMemo flow"/>
+        <column xsi:type="datetime" name="reimbursement_withheld_at" nullable="true" comment="Art. 13(3) lawful withholding timestamp (UTC). Set by the admin toggle; NULL while not withheld."/>
+        <column xsi:type="datetime" name="reimbursement_last_alerted_at" nullable="true" comment="Last time the overdue-reimbursement digest cron alerted on this request (UTC). Idempotency guard."/>
+        <column xsi:type="datetime" name="reimbursement_paid_at" nullable="true" comment="Manual 'reimbursement paid' mark (UTC) for refunds issued outside the StartCreditMemo flow — offline, bank transfer, external PSP, or a credit memo created straight from the order. Set by the admin toggle; NULL while not marked. A linked refund_creditmemo_id already records payment on its own; this covers the cases it cannot."/>
         <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP" comment="Created"/>
         <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated"/>
         <column xsi:type="text" name="status_change_note" nullable="true" comment="Latest admin/customer status-change note (denial/cancellation); shown to the consumer. First-class request state — independent of the Pro audit log."/>

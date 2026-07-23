@@ -70,6 +70,11 @@
                     <template>mageme_eu_withdrawal_admin_notifications_new_request_template</template>
                     <recipients></recipients>
                 </new_request>
+                <reimbursement_overdue>
+                    <enabled>0</enabled>
+                    <template>mageme_eu_withdrawal_admin_notifications_reimbursement_overdue_template</template>
+                    <recipients></recipients>
+                </reimbursement_overdue>
             </admin_notifications>
             <notifications>
                 <submitted>
@@ -104,6 +109,12 @@
                     <retry_attempts>3</retry_attempts>
                     <alert_address></alert_address>
                 </receipt>
+                <auto_refund_initiated>
+                    <enabled>1</enabled>
+                    <identity>support</identity>
+                    <template>mageme_eu_withdrawal_notifications_auto_refund_initiated_template</template>
+                    <bcc_merchant></bcc_merchant>
+                </auto_refund_initiated>
                 <branding>
                     <usp_1>
                         <usp_1_icon>truck</usp_1_icon>

@@ -56,12 +56,56 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                         <th><?= $escaper->escapeHtml(__('Submitted At')) ?></th>
                         <td><?= $escaper->escapeHtml($block->formatIsoDate((string) $request->getCreatedAt())) ?></td>
                     </tr>
+                    <?php $dueState = $block->getReimbursementDueState(); ?>
+                    <?php if ($dueState !== null): ?>
+                        <tr>
+                            <th><?= $escaper->escapeHtml(__('Reimbursement')) ?></th>
+                            <td>
+                                <?php $isOverdue = $dueState['code'] === \MageMe\EUWithdrawal\Model\Reimbursement\DueStateResolver::STATE_OVERDUE; ?>
+                                <span<?= $isOverdue ? ' style="color:#ca4a1f;font-weight:600;"' : '' ?>><?= $escaper->escapeHtml($dueState['label']) ?></span>
+                                <?php $paidAction = $block->getReimbursementMarkPaidAction(); ?>
+                                <?php if ($paidAction !== null): ?>
+                                    <?php
+                                    $paidLabel = $paidAction['is_manual_paid'] ? __('Unmark refunded') : __('Mark as refunded');
+                                    $paidConfirm = $paidAction['is_manual_paid']
+                                        ? __('Remove the refunded mark? The reimbursement is tracked as outstanding again.')
+                                        : __('Mark this reimbursement as already refunded outside the request — offline, bank transfer, or a credit memo raised from the order? No payment is sent; this only records it.');
+                                    // This tab is rendered INSIDE the admin edit_form; a nested <form> is dropped
+                                    // by the browser, so its submit button never fires. Build the POST in <body>
+                                    // instead, exactly like the request's top-bar action buttons do.
+                                    $markPaidJs = "if(confirm('" . addslashes((string) $paidConfirm) . "'))"
+                                        . "{var f=document.createElement('form');f.method='POST';f.action='"
+                                        . addslashes((string) $paidAction['url'])
+                                        . "';var k=document.createElement('input');k.type='hidden';k.name='form_key';k.value='"
+                                        . addslashes((string) $paidAction['form_key'])
+                                        . "';f.appendChild(k);document.body.appendChild(f);f.submit();}return false;";
+                                    ?>
+                                    <div style="margin-top:4px;">
+                                        <a href="#" class="mm-eu-w-mark-paid" style="font-size:1.2rem;color:#1979c3;"
+                                           onclick="<?= /* @noEscape */ $markPaidJs ?>"><?= $escaper->escapeHtml($paidLabel) ?></a>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                    <?php $creditmemoInfo = $block->getRefundCreditmemoInfo(); ?>
+                    <?php if ($creditmemoInfo !== null): ?>
+                        <tr>
+                            <th><?= $escaper->escapeHtml(__('Credit Memo')) ?></th>
+                            <td>
+                                <a href="<?= $escaper->escapeUrl($creditmemoInfo['url']) ?>">
+                                    <?= $escaper->escapeHtml('# ' . $creditmemoInfo['increment_id']) ?>
+                                </a>
+                                <span class="mm-eu-w-creditmemo-total"> — <?= $escaper->escapeHtml($creditmemoInfo['total']) ?></span>
+                            </td>
+                        </tr>
+                    <?php endif; ?>
                     <tr>
                         <th><?= $escaper->escapeHtml(__('Related Order')) ?></th>
                         <td>
                             <?php if ($orderIncrement !== ''): ?>
                                 <a href="<?= $escaper->escapeUrl($block->getOrderUrl((int) $request->getOrderId())) ?>">
-                                    <?= $escaper->escapeHtml('#' . $orderIncrement) ?>
+                                    <?= $escaper->escapeHtml('# ' . $orderIncrement) ?>
                                 </a>
                             <?php else: ?>
                                 —
@@ -117,7 +161,14 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                 <table class="admin__table-secondary">
                     <tr>
                         <th><?= $escaper->escapeHtml(__('Customer Name')) ?></th>
-                        <td><?= $escaper->escapeHtml((string) $request->getCustomerName()) ?></td>
+                        <td>
+                            <?php $customerEditUrl = $block->getCustomerEditUrl(); ?>
+                            <?php if ($customerEditUrl !== null): ?>
+                                <a href="<?= $escaper->escapeUrl($customerEditUrl) ?>"><?= $escaper->escapeHtml((string) $request->getCustomerName()) ?></a>
+                            <?php else: ?>
+                                <?= $escaper->escapeHtml((string) $request->getCustomerName()) ?>
+                            <?php endif; ?>
+                        </td>
                     </tr>
                     <tr>
                         <th><?= $escaper->escapeHtml(__('Email')) ?></th>

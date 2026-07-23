@@ -48,6 +48,7 @@
         const itemsContainer = sidebar.querySelector('[data-role="items-to-return"]');
         const itemsCount = sidebar.querySelector('[data-role="items-count"]');
         const itemsEmpty = sidebar.querySelector('[data-role="items-empty"]');
+        const itemsEmptySeal = sidebar.querySelector('[data-role="items-empty-seal"]');
         const itemsTotalEl = sidebar.querySelector('[data-role="items-total"]');
         const shippingPaidEl = sidebar.querySelector('[data-role="shipping-paid"]');
         const taxEl = sidebar.querySelector('[data-role="tax"]');
@@ -215,7 +216,13 @@
                 }
             }
             if (itemsCount) itemsCount.textContent = visibleCount + (visibleCount === 1 ? ' item' : ' items');
-            if (itemsEmpty) itemsEmpty.style.display = visibleCount === 0 ? '' : 'none';
+            // Empty selection: when it is empty because a seal was declared open,
+            // explain that instead of the "use the + button" hint (which is wrong
+            // in full-order mode and misleading after a seal exclusion).
+            const sealBrokeSelection = visibleCount === 0
+                && document.querySelector('[data-role="seal-input"][value="1"]:checked') !== null;
+            if (itemsEmpty) itemsEmpty.style.display = (visibleCount === 0 && !sealBrokeSelection) ? '' : 'none';
+            if (itemsEmptySeal) itemsEmptySeal.hidden = !sealBrokeSelection;
             if (selectionSummary) {
                 if (visibleCount > 0) {
                     selectionSummary.removeAttribute('hidden');
@@ -281,6 +288,10 @@
             document.querySelectorAll('.mm-eu-w-item-row').forEach((row) => {
                 const id = Number(row.dataset.itemId);
                 const data = state.get(id);
+                // Full-order rows show a fixed "Return now" count; keep it in sync
+                // so a seal-excluded line reads 0 instead of its original quantity.
+                const qtyFixed = row.querySelector('.mm-eu-w-qty-fixed');
+                if (qtyFixed) qtyFixed.textContent = data ? data.qty : 0;
                 const lineCell = row.querySelector('[data-role="line-total"]');
                 if (!lineCell) return;
                 lineCell.textContent = formatPrice(data ? lineDisplay(id, data) : 0, currency);

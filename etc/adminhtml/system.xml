@@ -402,6 +402,25 @@
                         <depends><field id="enabled">1</field></depends>
                     </field>
                 </group>
+
+                <group id="reimbursement_overdue" translate="label comment" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>2. Reimbursement Overdue Digest</label>
+                    <comment>A once-daily digest listing approved requests whose 14-day reimbursement deadline (Art. 13(1)) has passed with no refund issued. Lawfully withheld requests (Art. 13(3)) are excluded.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="recipients" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Recipient Email(s)</label>
+                        <comment>Comma-separated. Each recipient receives a separate email. Invalid addresses dropped silently.</comment>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                </group>
             </group>
 
             <group id="notifications" translate="label comment" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
@@ -529,6 +548,30 @@
                     <field id="alert_address" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>DLQ Alert Recipient</label>
                         <comment>Notified when a receipt fails permanently. Falls back to Store Email Addresses → General Contact.</comment>
+                    </field>
+                </group>
+
+                <group id="auto_refund_initiated" translate="label comment" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>7. Automatic Refund Email</label>
+                    <comment>Sent to the customer when the auto-approval engine issues their refund credit memo. Requires the Auto-Approval add-on.</comment>
+                    <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Enabled</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    </field>
+                    <field id="template" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Template</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Template</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="identity" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Email Identity</label>
+                        <source_model>Magento\Config\Model\Config\Source\Email\Identity</source_model>
+                        <depends><field id="enabled">1</field></depends>
+                    </field>
+                    <field id="bcc_merchant" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>BCC Merchant</label>
+                        <comment>Comma-separated. Leave blank to disable.</comment>
+                        <depends><field id="enabled">1</field></depends>
                     </field>
                 </group>
 

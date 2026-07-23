@@ -110,6 +110,9 @@
     <preference for="MageMe\EUWithdrawal\Api\RequestRepositoryInterface"
                 type="MageMe\EUWithdrawal\Model\Request\RequestRepository"/>
 
+    <preference for="MageMe\EUWithdrawal\Api\CreditmemoIssuerInterface"
+                type="MageMe\EUWithdrawal\Model\Refund\HeadlessCreditmemoIssuer"/>
+
     <type name="MageMe\EUWithdrawal\Model\Request\RequestRepository">
         <arguments>
             <argument name="collectionFactory" xsi:type="object">MageMe\EUWithdrawal\Model\ResourceModel\Request\CollectionFactory</argument>

@@ -17,5 +17,10 @@
              method="execute">
             <schedule>0 * * * *</schedule>
         </job>
+        <job name="mageme_eu_withdrawal_reimbursement_deadline_digest"
+             instance="MageMe\EUWithdrawal\Cron\ReimbursementDeadlineDigest"
+             method="execute">
+            <schedule>0 7 * * *</schedule>
+        </job>
     </group>
 </config>

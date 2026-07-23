@@ -67,6 +67,12 @@ class Edit extends Container
         $id = (int) $request->getRequestId();
         $formKey = $this->formKeyGenerator->getFormKey();
 
+        // A request counts as reimbursed on either evidence: a linked credit memo,
+        // or a manual paid mark for a refund issued outside the request. Both close
+        // the credit-memo action off so the refund can never be paid out twice.
+        $creditmemoPaid = (int) $request->getData(RequestInterface::REFUND_CREDITMEMO_ID) > 0;
+        $manuallyPaid = $request->getReimbursementPaidAt() !== null;
+
         // Post-approval action button. If a credit memo has already been
         // linked to this request (via `Observer\LinkCreditMemoToRequest`),
         // swap the action button for a "View Credit Memo" link so the admin
@@ -97,7 +103,9 @@ class Edit extends Container
                     ],
                     -1,
                 );
-            } else {
+            } elseif (!$manuallyPaid) {
+                // A manual paid mark means the refund already went out outside the
+                // request; offering a credit memo here would pay it a second time.
                 $action = $this->actionPolicy->resolve($this->resolveOrder($request));
                 if ($action === PostApprovalActionPolicy::CREDITMEMO) {
                     $this->buttonList->add(
@@ -195,6 +203,33 @@ class Edit extends Container
                         $this->getUrl('mageme_eu_withdrawal/receipt/resend', ['request_id' => $id]),
                         $formKey,
                         (string) __('Send the receipt email again? The customer will receive another copy.'),
+                    ),
+                ],
+                -1,
+            );
+        }
+
+        // Art. 13(3): the trader may lawfully withhold reimbursement until the
+        // goods are returned. Offered while the request is still open and unpaid;
+        // every open request has a reimbursement deadline (computed from created_at).
+        // The manual "Mark Reimbursement Paid" action is rendered inline in the
+        // request summary block (not here), kept away from the top-bar Approve
+        // button so it can't be clicked by accident.
+        $isOpen = in_array($status, [RequestInterface::STATUS_PENDING, RequestInterface::STATUS_APPROVED], true);
+        $isWithheld = $request->getReimbursementWithheldAt() !== null;
+
+        if ($isOpen && !$creditmemoPaid && !$manuallyPaid) {
+            $this->buttonList->add(
+                'toggle_withhold_reimbursement',
+                [
+                    'label'   => $isWithheld ? __('Resume Reimbursement') : __('Withhold Reimbursement'),
+                    'class'   => '',
+                    'onclick' => $this->buildPostJs(
+                        $this->getUrl('*/*/toggleWithhold', ['request_id' => $id]),
+                        $formKey,
+                        $isWithheld
+                            ? (string) __('Lift the withholding? The 14-day reimbursement clock resumes.')
+                            : (string) __('Withhold reimbursement pending return of goods (Art. 13(3))?'),
                     ),
                 ],
                 -1,

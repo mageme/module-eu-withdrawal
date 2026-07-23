@@ -7,11 +7,10 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Controller\Adminhtml\Request;
 
-use MageMe\EUWithdrawal\Api\Data\ItemInterface;
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Api\RequestRepositoryInterface;
-use MageMe\EUWithdrawal\Model\Refund\CreditMemoQtyExpander;
-use MageMe\EUWithdrawal\Model\ResourceModel\Item\CollectionFactory as RequestItemCollectionFactory;
+use MageMe\EUWithdrawal\Model\Refund\CreditmemoPlanBuilder;
+use MageMe\EUWithdrawal\Model\Refund\CreditmemoPrefill;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Backend\Model\Session as BackendSession;
@@ -19,7 +18,6 @@ use Magento\Framework\App\Action\HttpGetActionInterface;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\OrderRepositoryInterface;
-use Magento\Sales\Model\Order\Invoice;
 
 /**
  * Pre-fills Magento's native "New Credit Memo" form with the items + qtys
@@ -30,12 +28,14 @@ use Magento\Sales\Model\Order\Invoice;
  * online/offline refund, and submit. We don't auto-create or auto-refund;
  * the admin remains the decision point.
  *
+ * The prefill data (covering invoice, expanded item qtys, shipping) is
+ * computed by the shared CreditmemoPlanBuilder so the free admin flow and the
+ * Pro auto path agree on invoice coverage and shipping treatment. Unlike the
+ * auto path, the admin form is opened for every approved request — including
+ * partial and multi-invoice cases, which are legitimate manual admin work.
+ *
  * URL pattern: `mageme_eu_withdrawal/request/startCreditMemo/request_id/N`
  * Redirects to: `sales/order_creditmemo/new/order_id/X/invoice_id/Y/?creditmemo[...]`
- *
- * Falls back to `sales/order_creditmemo/start/order_id/X/` if the order
- * has no invoice yet (Magento's start action will surface the proper
- * error).
  */
 class StartCreditMemo extends Action implements HttpGetActionInterface
 {
@@ -49,17 +49,15 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
      * @param Context $context
      * @param RequestRepositoryInterface $requestRepository
      * @param OrderRepositoryInterface $orderRepository
-     * @param RequestItemCollectionFactory $itemCollectionFactory
      * @param BackendSession $backendSession
-     * @param CreditMemoQtyExpander $qtyExpander
+     * @param CreditmemoPlanBuilder $planBuilder
      */
     public function __construct(
         Context $context,
         private readonly RequestRepositoryInterface $requestRepository,
         private readonly OrderRepositoryInterface $orderRepository,
-        private readonly RequestItemCollectionFactory $itemCollectionFactory,
         private readonly BackendSession $backendSession,
-        private readonly CreditMemoQtyExpander $qtyExpander,
+        private readonly CreditmemoPlanBuilder $planBuilder,
     ) {
         parent::__construct($context);
     }
@@ -91,6 +89,18 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
             return $redirect->setPath('*/request/edit', ['request_id' => $id]);
         }
 
+        // A manual paid mark records a refund already issued outside the request;
+        // starting a credit memo now would refund the customer twice.
+        if ($request->getReimbursementPaidAt() !== null) {
+            $this->messageManager->addErrorMessage(
+                (string) __(
+                    'Request #%1 is already recorded as reimbursed (marked as refunded). Clear the refunded mark on the request first if you really need to issue a credit memo.',
+                    $id,
+                ),
+            );
+            return $redirect->setPath('*/request/edit', ['request_id' => $id]);
+        }
+
         $orderId = (int) $request->getOrderId();
         try {
             $order = $this->orderRepository->get($orderId);
@@ -99,8 +109,9 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
             return $redirect->setPath('*/request/edit', ['request_id' => $id]);
         }
 
-        $invoice = $this->resolveInvoice($order);
-        if ($invoice === null) {
+        $prefill = $this->planBuilder->resolvePrefill($request, $order);
+
+        if ($prefill->invoiceId === null) {
             $this->messageManager->addErrorMessage(
                 (string) __(
                     'Order #%1 has no invoice yet — Magento requires an invoice before a credit memo can be created. Open an invoice first (Sales → Orders → #%1 → Invoice button), then return here to refund.',
@@ -110,14 +121,21 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
             return $redirect->setPath('*/request/edit', ['request_id' => $id]);
         }
 
-        $qtys = $this->loadRequestItemQtys($id);
-        if ($qtys === []) {
+        if ($prefill->items === []) {
             $this->messageManager->addNoticeMessage(
                 (string) __('No items recorded on this withdrawal request — the credit memo will open with default invoice qtys; please adjust manually.')
             );
         }
 
-        $creditmemoData = $this->buildCreditmemoData($order, $invoice, $qtys, $request->getShippingRefund());
+        // A partial or split-invoice order is still refundable by hand — advise,
+        // never block: the admin reviews the prefilled qtys before submitting.
+        if (!$prefill->coverageClean) {
+            $this->messageManager->addNoticeMessage(
+                (string) __('No single invoice covers every withdrawn item on this order — the credit memo opened against one invoice; review the qtys before refunding.')
+            );
+        }
+
+        $creditmemoData = $this->buildCreditmemoData($prefill);
 
         // Stash the request id so the link-back observer can connect the
         // saved credit memo back to this withdrawal request. Cleared on
@@ -137,7 +155,7 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
             'sales/order_creditmemo/new',
             [
                 'order_id'   => $orderId,
-                'invoice_id' => (int) $invoice->getEntityId(),
+                'invoice_id' => $prefill->invoiceId,
                 // Magento's URL builder only serializes scalar route params into the
                 // path and drops a nested array; the prefill rides in the query so
                 // Creditmemo\Loader receives it.
@@ -147,83 +165,37 @@ class StartCreditMemo extends Action implements HttpGetActionInterface
     }
 
     /**
-     * Resolve invoice.
-     *
-     * @param mixed $order
-     * @return ?Invoice
-     */
-    private function resolveInvoice($order): ?Invoice
-    {
-        $invoices = $order->getInvoiceCollection();
-        if ($invoices === null || $invoices->getSize() === 0) {
-            return null;
-        }
-        // Use the first invoice — most orders have a single one. Multi-invoice
-        // orders are rare in the EU consumer-goods context this module targets.
-        foreach ($invoices as $inv) {
-            return $inv;
-        }
-        return null;
-    }
-
-    /**
-     * @return array<int, int>  order_item_id => qty
-     */
-    private function loadRequestItemQtys(int $requestId): array
-    {
-        $collection = $this->itemCollectionFactory->create();
-        $collection->addFieldToFilter(ItemInterface::REQUEST_ID, $requestId);
-        $out = [];
-        foreach ($collection as $row) {
-            $oid = (int) $row->getData(ItemInterface::ORDER_ITEM_ID);
-            $qty = (int) $row->getData(ItemInterface::QTY_WITHDRAW);
-            if ($oid > 0 && $qty > 0) {
-                $out[$oid] = ($out[$oid] ?? 0) + $qty;
-            }
-        }
-        return $out;
-    }
-
-    /**
      * Build the `creditmemo` array Magento's `Order\Creditmemo\Loader` reads
-     * from `$_request->getParam('creditmemo')` to pre-populate the New
-     * Credit Memo form.
+     * from `$_request->getParam('creditmemo')` to pre-populate the New Credit
+     * Memo form. Items carry back_to_stock=1 — this is the human-reviewed RMA
+     * context where returned goods go back into inventory.
      *
-     * @param array<int, int> $qtys
      * @return array<string, mixed>
      */
-    private function buildCreditmemoData($order, Invoice $invoice, array $qtys, ?string $frozenShippingRefund): array
+    private function buildCreditmemoData(CreditmemoPrefill $prefill): array
     {
-        // A dynamic bundle is recorded by its parent alone, but Magento refunds
-        // its children; give them their share or the memo pays out nothing.
-        $qtys = $this->qtyExpander->expand($order, $qtys);
-
         $items = [];
-        foreach ($invoice->getAllItems() as $invItem) {
-            $oid = (int) $invItem->getOrderItemId();
-            if ($qtys === []) {
-                // No request-item rows — let Magento default to invoiced qty.
-                continue;
-            }
-            $items[$oid] = [
-                'qty' => $qtys[$oid] ?? 0,
+        foreach ($prefill->items as $oid => $qty) {
+            $items[(int) $oid] = [
+                'qty' => $qty,
                 'back_to_stock' => 1,
             ];
         }
 
         // Art. 13(2) — refund the basic outbound delivery on a full withdrawal.
-        // When it is owed, omit shipping_amount so Magento's own credit memo refunds
-        // the full remaining carriage — its Shipping/Discount/Tax collectors apply
-        // the shipping discount, tax and any prior partial shipping refund. A
-        // supplied gross figure would instead be re-prorated (and, on ex-tax stores,
-        // over-refunded or blocked). Suppress delivery (0) when the frozen request
-        // carries no shipping refund. Admin can still adjust on the credit memo screen.
+        // When it is owed (shippingAmount === null) omit shipping_amount so
+        // Magento's own credit memo refunds the full remaining carriage — its
+        // Shipping/Discount/Tax collectors apply the shipping discount, tax and
+        // any prior partial shipping refund. A supplied gross figure would instead
+        // be re-prorated (and, on ex-tax stores, over-refunded or blocked).
+        // Suppress delivery (0) when no shipping refund is owed. Admin can still
+        // adjust on the credit memo screen.
         $data = [
             'items'               => $items,
             'adjustment_positive' => '0',
             'adjustment_negative' => '0',
         ];
-        if ($frozenShippingRefund === null || (float) $frozenShippingRefund <= 0.0) {
+        if ($prefill->shippingAmount !== null) {
             $data['shipping_amount'] = '0';
         }
 

@@ -59,6 +59,9 @@ interface RequestInterface
     public const STATUS_CHANGE_NOTE       = 'status_change_note';
     public const STATUS_CHANGE_LEGAL_BASIS = 'status_change_legal_basis';
     public const STATUS_CHANGE_ACTOR      = 'status_change_actor';
+    public const REIMBURSEMENT_WITHHELD_AT = 'reimbursement_withheld_at';
+    public const REIMBURSEMENT_LAST_ALERTED_AT = 'reimbursement_last_alerted_at';
+    public const REIMBURSEMENT_PAID_AT     = 'reimbursement_paid_at';
 
     /** Get request id. */
     public function getRequestId(): int;
@@ -281,4 +284,16 @@ interface RequestInterface
 
     /** Set status change actor. */
     public function setStatusChangeActor(?string $statusChangeActor): self;
+
+    /** Get Art. 13(3) reimbursement withheld-at timestamp (UTC), or null. */
+    public function getReimbursementWithheldAt(): ?string;
+
+    /** Set Art. 13(3) reimbursement withheld-at timestamp (UTC); null lifts it. */
+    public function setReimbursementWithheldAt(?string $reimbursementWithheldAt): self;
+
+    /** Get manual "reimbursement paid" mark timestamp (UTC), or null. */
+    public function getReimbursementPaidAt(): ?string;
+
+    /** Set manual "reimbursement paid" mark timestamp (UTC); null clears it. */
+    public function setReimbursementPaidAt(?string $reimbursementPaidAt): self;
 }

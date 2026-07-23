@@ -67,12 +67,12 @@ class Collection extends SearchResult
     }
 
     /**
-     * Prefix bare column names with `main_table.` so grid filters never collide
-     * with the LEFT-joined `sales_order` table — bare `WHERE status = ?` is
-     * ambiguous because both `mm_eu_withdrawal_request` and `sales_order`
-     * carry a `status` column. Columns that exist only as join aliases
-     * (`order_*`) or sub-select expressions (`items_*`) are passed through
-     * unchanged.
+     * Resolve grid-filter fields to real SQL. A filter targeting a SELECT alias
+     * (the join columns and sub-select expressions added in _initSelect) would
+     * land in WHERE, where MySQL can't see the alias, so each alias is mapped to
+     * its underlying column or expression. Every other bare column is prefixed
+     * with `main_table.` to stay unambiguous against the LEFT-joined
+     * `sales_order` (both tables carry a `status` column).
      *
      * @param string|array $field
      * @param mixed $condition
@@ -81,10 +81,20 @@ class Collection extends SearchResult
     public function addFieldToFilter($field, $condition = null)
     {
         if (is_string($field) && !str_contains($field, '.')) {
-            $passThrough = ['order_increment_id', 'order_total', 'items_count', 'items_refund_total', 'shipment_id'];
-            if (!in_array($field, $passThrough, true)) {
-                $field = 'main_table.' . $field;
-            }
+            $itemTable = $this->getTable('mm_eu_withdrawal_item');
+            $shipmentTable = $this->getTable('sales_shipment');
+            $aliasMap = [
+                'order_increment_id' => 'so.increment_id',
+                'order_total'        => 'so.grand_total',
+                'items_refund_total' => new \Zend_Db_Expr('COALESCE(main_table.total_refund, 0)'),
+                'items_count'        => new \Zend_Db_Expr(
+                    '(SELECT COUNT(*) FROM ' . $itemTable . ' i WHERE i.request_id = main_table.request_id)'
+                ),
+                'shipment_id'        => new \Zend_Db_Expr(
+                    '(SELECT MAX(s.entity_id) FROM ' . $shipmentTable . ' s WHERE s.order_id = main_table.order_id)'
+                ),
+            ];
+            $field = $aliasMap[$field] ?? 'main_table.' . $field;
         }
         return parent::addFieldToFilter($field, $condition);
     }

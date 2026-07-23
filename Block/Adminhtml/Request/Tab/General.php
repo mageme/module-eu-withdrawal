@@ -11,6 +11,7 @@ use MageMe\EUWithdrawal\Api\Data\ItemInterface;
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Api\ItemRepositoryInterface;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
+use MageMe\EUWithdrawal\Model\Reimbursement\DueStateResolver;
 use Magento\Backend\Block\Template;
 use Magento\Backend\Block\Template\Context;
 use Magento\Backend\Block\Widget\Tab\TabInterface;
@@ -18,6 +19,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Registry;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use MageMe\EUWithdrawal\Model\Item\ItemAmountResolver;
+use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 
@@ -50,9 +52,115 @@ class General extends Template implements TabInterface
         private readonly TimezoneInterface $timezone,
         private readonly ReasonsConfigReader $reasonsConfig,
         private readonly ItemAmountResolver $itemAmounts,
+        private readonly DueStateResolver $dueStateResolver,
+        private readonly CreditmemoRepositoryInterface $creditmemoRepository,
         array $data = [],
     ) {
         parent::__construct($context, $data);
+    }
+
+    /**
+     * The linked refund credit memo — its number, view URL and refunded total —
+     * for the summary block, or null when the request has no linked credit memo
+     * (a manual "refunded" mark leaves none). Read-only.
+     *
+     * @return array{increment_id: string, url: string, total: string}|null
+     */
+    public function getRefundCreditmemoInfo(): ?array
+    {
+        $request = $this->getRequestEntity();
+        if ($request === null) {
+            return null;
+        }
+        $creditmemoId = (int) ($request->getRefundCreditmemoId() ?? 0);
+        if ($creditmemoId <= 0) {
+            return null;
+        }
+        try {
+            $creditmemo = $this->creditmemoRepository->get($creditmemoId);
+        } catch (NoSuchEntityException) {
+            return null;
+        }
+        return [
+            'increment_id' => (string) ($creditmemo->getIncrementId() ?? $creditmemoId),
+            'url' => $this->getUrl('sales/order_creditmemo/view', ['creditmemo_id' => $creditmemoId]),
+            'total' => $this->formatPrice((float) $creditmemo->getGrandTotal()),
+        ];
+    }
+
+    /**
+     * Admin "edit customer" URL for a registered customer, or null for a guest
+     * request (no customer_id). Same target as the order view's customer link.
+     *
+     * @return ?string
+     */
+    public function getCustomerEditUrl(): ?string
+    {
+        $request = $this->getRequestEntity();
+        if ($request === null) {
+            return null;
+        }
+        $customerId = (int) ($request->getCustomerId() ?? 0);
+        if ($customerId <= 0) {
+            return null;
+        }
+        return $this->getUrl('customer/index/edit', ['id' => $customerId]);
+    }
+
+    /**
+     * Advisory reimbursement due-state for the summary block, or null when it does
+     * not apply (terminal or unreadable request) so the row is simply omitted.
+     * Shares DueStateResolver with the grid column, so both surfaces always agree.
+     *
+     * @return array{code: string, label: string, days_overdue: int}|null
+     */
+    public function getReimbursementDueState(): ?array
+    {
+        $request = $this->getRequestEntity();
+        if ($request === null) {
+            return null;
+        }
+        $state = $this->dueStateResolver->resolve(
+            (string) $request->getStatus(),
+            (string) $request->getCreatedAt(),
+            (int) ($request->getRefundCreditmemoId() ?? 0),
+            $request->getReimbursementWithheldAt(),
+            $request->getReimbursementPaidAt(),
+        );
+        return $state['code'] === DueStateResolver::STATE_NA ? null : $state;
+    }
+
+    /**
+     * The inline "Mark Reimbursement Paid / Unpaid" action for the summary block,
+     * or null when it should not be offered (the request is terminal, or a credit
+     * memo is already linked — that records payment on its own). Kept here, next to
+     * the reimbursement state, rather than in the top action bar beside Approve.
+     *
+     * @return array{url: string, form_key: string, is_manual_paid: bool}|null
+     */
+    public function getReimbursementMarkPaidAction(): ?array
+    {
+        $request = $this->getRequestEntity();
+        if ($request === null) {
+            return null;
+        }
+        $isOpen = in_array(
+            (string) $request->getStatus(),
+            [RequestInterface::STATUS_PENDING, RequestInterface::STATUS_APPROVED],
+            true,
+        );
+        $creditmemoPaid = (int) ($request->getRefundCreditmemoId() ?? 0) > 0;
+        if (!$isOpen || $creditmemoPaid) {
+            return null;
+        }
+        return [
+            'url' => $this->getUrl(
+                'mageme_eu_withdrawal/request/toggleReimbursementPaid',
+                ['request_id' => (int) $request->getRequestId()],
+            ),
+            'form_key' => $this->getFormKey(),
+            'is_manual_paid' => $request->getReimbursementPaidAt() !== null,
+        ];
     }
 
     /**

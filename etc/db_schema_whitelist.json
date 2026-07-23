@@ -39,7 +39,11 @@
             "order_adjustment_refund": true,
             "items_subtotal": true,
             "tax_refund": true,
-            "total_refund": true
+            "total_refund": true,
+            "reimbursement_deadline": true,
+            "reimbursement_withheld_at": true,
+            "reimbursement_last_alerted_at": true,
+            "reimbursement_paid_at": true
         },
         "index": {
             "MM_EU_WITHDRAWAL_REQUEST_ORDER_ID": true,

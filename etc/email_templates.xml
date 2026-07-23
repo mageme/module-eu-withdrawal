@@ -38,6 +38,12 @@
               type="html"
               module="MageMe_EUWithdrawal"
               area="frontend"/>
+    <template id="mageme_eu_withdrawal_notifications_auto_refund_initiated_template"
+              label="MageMe EU Withdrawal — Auto Refund Initiated"
+              file="auto_refund_initiated.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="frontend"/>
     <template id="mageme_eu_withdrawal_digital_waiver_email_template"
               label="MageMe EU Withdrawal — Digital Waiver Confirmation"
               file="waiver_confirmation_consumer.html"
@@ -63,6 +69,15 @@
     <template id="mageme_eu_withdrawal_admin_notifications_new_request_template"
               label="MageMe EU Withdrawal — Admin Alert: New Request"
               file="admin_alert_new_request.html"
+              type="html"
+              module="MageMe_EUWithdrawal"
+              area="adminhtml"/>
+    <!-- Admin alert: daily digest of reimbursements past their Art. 13(1)
+         deadline. ID follows Magento's `Source\Email\Template` path-convention:
+         section_group_subgroup_field → str_replace('/', '_'). -->
+    <template id="mageme_eu_withdrawal_admin_notifications_reimbursement_overdue_template"
+              label="MageMe EU Withdrawal — Admin Alert: Reimbursements Overdue"
+              file="reimbursement_overdue_digest.html"
               type="html"
               module="MageMe_EUWithdrawal"
               area="adminhtml"/>

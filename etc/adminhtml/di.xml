@@ -12,4 +12,8 @@
         <plugin name="mageme_eu_withdrawal_add_withdrawal_template_option"
                 type="MageMe\EUWithdrawal\Plugin\Config\Source\Email\AddWithdrawalTemplateOption"/>
     </type>
+    <type name="Magento\Sales\Api\CreditmemoManagementInterface">
+        <plugin name="mageme_eu_withdrawal_guard_creditmemo_refund"
+                type="MageMe\EUWithdrawal\Plugin\Sales\GuardCreditmemoRefund"/>
+    </type>
 </config>

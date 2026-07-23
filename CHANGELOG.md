@@ -1,3 +1,18 @@
+## 1.1.0
+
++ New: Each request tracks its 14-day refund deadline, shown in the admin grid, with a daily overdue digest emailed to admins.
++ New: You can withhold a request's refund until the goods are returned and resume it later, from the request.
++ New: The request page shows whether the refund is still due, withheld, overdue or already refunded, links to the credit memo and customer, and lets you mark a refund as paid when it was issued outside the request (bank transfer or elsewhere) — after which no second refund can be raised for it.
+- Fix: Switching the language on the checkout page no longer skips the digital-content consent step; on a digital-only order the shopper was carried straight to payment and then could not place the order.
+- Fix: A bundle returned as a single unit now asks whether the seal is intact once for the whole bundle, instead of repeating the question for every sealed part.
+- Fix: When the only item on an order is set aside because its seal was opened, the refund summary no longer shows the "your refund will be issued" note while there is nothing to refund; it explains instead that there is nothing to return, and the item's "Return now" count drops to 0 to match its zero line total.
+- Fix: The admin request grid's Order, Total, Items and Refund-total column filters now work.
+- Fix: The approval email no longer implies the refund was already paid; it now states the timing.
+* Other: The admin "Issue Credit Memo" prefill now uses the shared, invoice-checked refund path and warns when no single invoice covers all the withdrawn items.
+* Other: In whole-order mode, the "this request covers all returnable items / contact us for a partial return" note now sits in a tidy bordered info box instead of loose text under the last item.
+* Other: Settings moved to the bottom of the Withdrawals admin menu.
+* Other: The person who filed a withdrawal is now labelled "Customer" instead of "Submitter".
+
 ## 1.0.10
 
 + New: Bundle contents are now grouped under the bundle they belong to, each part showing the amount it contributed to the price, instead of appearing as a flat list of unrelated products.

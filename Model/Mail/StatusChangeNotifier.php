@@ -32,10 +32,14 @@ use Psr\Log\LoggerInterface;
  * `admin_id` value in the StatusMachine context: customer-side `Cancel`
  * controller passes `'admin_id' => 'customer-self'` (sentinel); any other
  * value (typically the admin user numeric id) is treated as merchant-side.
+ * The same context key doubles as the auto-approval discriminator: the Pro
+ * auto-approve engine passes `'admin_id' => 'system:auto-approve'`, exposed
+ * to the approved-email template as the `auto_approved` var.
  */
 class StatusChangeNotifier
 {
     public const ACTOR_CUSTOMER_SELF = 'customer-self';
+    public const ACTOR_SYSTEM_AUTO_APPROVE = 'system:auto-approve';
 
     /**
      * Constructor.
@@ -229,7 +233,7 @@ class StatusChangeNotifier
 
         $requestIncrementId = (string) ($request->getIncrementId() ?? sprintf('%09d', (int) $request->getRequestId()));
         $subjectText = match ($type) {
-            EmailConfig::TYPE_APPROVED        => (string) __('Your refund is on its way — Withdrawal #%1', $requestIncrementId),
+            EmailConfig::TYPE_APPROVED        => (string) __('Your withdrawal request has been approved — Withdrawal #%1', $requestIncrementId),
             EmailConfig::TYPE_DENIED          => (string) __('Update on your withdrawal request — Withdrawal #%1', $requestIncrementId),
             EmailConfig::TYPE_CANCELLED_ADMIN => (string) __('Your withdrawal was cancelled — Withdrawal #%1', $requestIncrementId),
             EmailConfig::TYPE_CANCELLED_SELF  => (string) __('Cancellation confirmed — Withdrawal #%1', $requestIncrementId),
@@ -250,7 +254,7 @@ class StatusChangeNotifier
             'refund_method'            => $this->emailData->getRefundMethod($orderId),
             'event_date_formatted'     => $this->emailData->formatDate(gmdate('Y-m-d H:i:s'), $storeId),
             'submitted_at_formatted'   => $this->emailData->formatDate((string) $request->getCreatedAt(), $storeId),
-            'estimated_arrival'        => (string) __('5–7 business days'),
+            'auto_approved'            => ((string) ($context['admin_id'] ?? '')) === self::ACTOR_SYSTEM_AUTO_APPROVE,
             // StatusMachine renames the `denial_reason` context key to
             // `legal_basis` when building the audit event payload — accept both.
             'denial_reason'            => (string) ($context['denial_reason'] ?? $context['legal_basis'] ?? ''),

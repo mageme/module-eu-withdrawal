@@ -20,7 +20,7 @@
         <add id="MageMe_EUWithdrawal::config"
              title="Settings"
              module="MageMe_EUWithdrawal"
-             sortOrder="20"
+             sortOrder="100"
              parent="MageMe_EUWithdrawal::menu"
              action="adminhtml/system_config/edit/section/mageme_eu_withdrawal"
              resource="MageMe_EUWithdrawal::config"/>

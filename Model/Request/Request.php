@@ -526,4 +526,32 @@ class Request extends AbstractModel implements RequestInterface
         $this->setData(self::STATUS_CHANGE_ACTOR, $statusChangeActor);
         return $this;
     }
+
+    /** Get Art. 13(3) reimbursement withheld-at timestamp (UTC), or null. */
+    public function getReimbursementWithheldAt(): ?string
+    {
+        $v = $this->getData(self::REIMBURSEMENT_WITHHELD_AT);
+        return $v === null ? null : (string) $v;
+    }
+
+    /** Set Art. 13(3) reimbursement withheld-at timestamp (UTC); null lifts it. */
+    public function setReimbursementWithheldAt(?string $reimbursementWithheldAt): self
+    {
+        $this->setData(self::REIMBURSEMENT_WITHHELD_AT, $reimbursementWithheldAt);
+        return $this;
+    }
+
+    /** Get manual "reimbursement paid" mark timestamp (UTC), or null. */
+    public function getReimbursementPaidAt(): ?string
+    {
+        $v = $this->getData(self::REIMBURSEMENT_PAID_AT);
+        return $v === null ? null : (string) $v;
+    }
+
+    /** Set manual "reimbursement paid" mark timestamp (UTC); null clears it. */
+    public function setReimbursementPaidAt(?string $reimbursementPaidAt): self
+    {
+        $this->setData(self::REIMBURSEMENT_PAID_AT, $reimbursementPaidAt);
+        return $this;
+    }
 }

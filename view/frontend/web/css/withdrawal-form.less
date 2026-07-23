@@ -441,6 +441,16 @@
 .mm-eu-w-items-table:not(.mm-eu-w-items-table--review) .mm-eu-w-item-reason-row:not(.mm-eu-w-item-reason-row--bundled):not(:last-child) td { border-bottom: 1px solid @mm-eu-w-border; padding-bottom: 16px; }
 .mm-eu-w-item-reason { color: @mm-eu-w-text-muted; font-size: 12px; line-height: 1.4; background: @mm-eu-w-bg-subtle; border-radius: @mm-eu-w-radius; padding: 12px 16px; margin: 0 8px; }
 
+.mm-eu-w-partial-note {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin: 20px 0 0; padding: 12px 14px;
+    background: @mm-eu-w-bg-subtle; border: 1px solid @mm-eu-w-border; border-radius: @mm-eu-w-radius;
+    color: @mm-eu-w-text-muted; font-size: 14px; line-height: 1.5;
+}
+.mm-eu-w-partial-note-icon { color: @mm-eu-w-primary; display: inline-flex; flex-shrink: 0; margin-top: 1px; }
+.column.main .mm-eu-w-partial-note a { color: @mm-eu-w-primary; text-decoration: none; }
+.column.main .mm-eu-w-partial-note a:hover { text-decoration: underline; color: @mm-eu-w-primary-dark; }
+
 .mm-eu-w-item-options {
     margin: 4px 0 0; padding: 0;
     font-size: 12px; color: @mm-eu-w-text-muted; line-height: 1.4;

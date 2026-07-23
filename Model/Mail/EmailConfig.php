@@ -32,11 +32,13 @@ class EmailConfig
     public const TYPE_CANCELLED_ADMIN      = 'cancelled_admin';
     public const TYPE_CANCELLED_SELF       = 'cancelled_self';
     public const TYPE_RECEIPT              = 'receipt';
+    public const TYPE_AUTO_REFUND_INITIATED = 'auto_refund_initiated';
     public const TYPE_WAIVER_CONFIRMATION  = 'waiver_confirmation';
     public const TYPE_ADMIN_NEW_REQUEST    = 'new_request';
+    public const TYPE_ADMIN_REIMBURSEMENT_OVERDUE = 'reimbursement_overdue';
 
     /** @var string[] admin-notification types (live under PATH_ADMIN, not PATH_DEFAULT) */
-    private const ADMIN_TYPES = [self::TYPE_ADMIN_NEW_REQUEST];
+    private const ADMIN_TYPES = [self::TYPE_ADMIN_NEW_REQUEST, self::TYPE_ADMIN_REIMBURSEMENT_OVERDUE];
 
     private const PATH_DEFAULT = 'mageme_eu_withdrawal/notifications/%s/%s';
     private const PATH_WAIVER_CONFIRMATION = 'mageme_eu_withdrawal/digital_waiver/email/%s';

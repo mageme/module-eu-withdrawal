@@ -1,0 +1,50 @@
+<!--@subject {{trans "[Withdrawal] %count reimbursement(s) overdue" count=$overdue_count}} @-->
+<!--@vars {
+    "var overdue_count":"Number of overdue reimbursements",
+    "var overdue_rows_html":"Rendered <tr> rows, one per overdue request"
+} @-->
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="x-apple-disable-message-reformatting" />
+<title>{{trans "Reimbursements overdue"}}</title>
+<style>
+@media only screen and (max-width: 620px) {
+    .container { width: 100% !important; max-width: 100% !important; border-radius: 0 !important; }
+    .pad-cell { padding: 24px 16px !important; }
+    .data-table td { padding-left: 3px !important; padding-right: 3px !important; font-size: 12px !important; }
+    .data-table td:first-child { padding-left: 0 !important; }
+    .data-table td:last-child { padding-right: 0 !important; }
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;-webkit-font-smoothing:antialiased;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f5f6f8" style="background:#f5f6f8;">
+    <tr><td align="center" style="padding:24px 12px;">
+        <table role="presentation" class="container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e6e8ec;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+
+            <tr><td class="pad-cell" style="padding:32px 32px 28px;">
+                <h1 style="margin:0 0 8px;font-size:19px;font-weight:700;color:#0f172a;line-height:1.3;">{{trans "Reimbursements overdue"}}</h1>
+                <p style="margin:0 0 24px;color:#475569;font-size:14px;line-height:1.55;">{{trans "The 14-day reimbursement deadline (Art. 13(1)) has passed for the request(s) below, and no credit memo has been recorded. Issue a credit memo, or withhold reimbursement (Art. 13(3)) on any request where you are entitled to hold the refund."}}</p>
+
+                <table role="presentation" class="data-table" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                    <tr>
+                        <td align="left" style="padding:0 8px 8px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;border-bottom:1px solid #e5e7eb;">{{trans "Withdrawal"}}</td>
+                        <td align="left" style="padding:0 8px 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;border-bottom:1px solid #e5e7eb;">{{trans "Order"}}</td>
+                        <td align="left" style="padding:0 8px 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;border-bottom:1px solid #e5e7eb;">{{trans "Deadline"}}</td>
+                        <td align="right" style="padding:0 0 8px 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#6b7280;border-bottom:1px solid #e5e7eb;">{{trans "Overdue"}}</td>
+                    </tr>
+                    {{var overdue_rows_html|raw}}
+                </table>
+
+                <p style="margin:20px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;line-height:1.5;color:#6b7280;">{{trans "This is an internal operational notification."}} <span style="font-weight:600;color:#475569;">{{trans "Do not forward this email to the customer."}}</span></p>
+            </td></tr>
+
+        </table>
+    </td></tr>
+</table>
+</body>
+</html>

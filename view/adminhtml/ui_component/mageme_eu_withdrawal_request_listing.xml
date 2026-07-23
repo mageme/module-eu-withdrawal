@@ -65,6 +65,19 @@
                 <label translate="true">Order #</label>
             </settings>
         </column>
+        <!--
+            Declared ahead of `status` on purpose: columns receive the row in
+            declaration order, and the status column replaces the raw status
+            with badge markup. `sortOrder` places this cell in the grid.
+        -->
+        <column name="reimbursement_due_state"
+                class="MageMe\EUWithdrawal\Ui\Component\Listing\Column\DueState"
+                sortOrder="110">
+            <settings>
+                <label translate="true">Reimbursement</label>
+                <sortable>false</sortable>
+            </settings>
+        </column>
         <column name="status"
                 class="MageMe\EUWithdrawal\Ui\Component\Listing\Column\StatusBadge"
                 component="MageMe_EUWithdrawal/js/grid/columns/status-badge"
@@ -94,7 +107,7 @@
         <column name="customer_name" sortOrder="60">
             <settings>
                 <filter>text</filter>
-                <label translate="true">Submitter</label>
+                <label translate="true">Customer</label>
             </settings>
         </column>
         <column name="customer_email" sortOrder="70">

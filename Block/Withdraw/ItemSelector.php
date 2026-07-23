@@ -350,10 +350,11 @@ class ItemSelector extends Template
 
     /**
      * The seal subject for a returnable line: the order-item id the answer must be
-     * keyed by, and the question kind. A configurable's sealed simple variant keys
-     * the answer by the variant's own order-item id (which still gates this parent
-     * line server-side); a self-sealed line keys by itself. Null when nothing on
-     * the line is sealed.
+     * keyed by, and the question kind. A configurable's sealed simple variant — or,
+     * for a bundle returned as a single unit, the first sealed component — keys the
+     * answer by that child's own order-item id (which still gates this parent line
+     * server-side), so the whole bundle carries one seal question; a self-sealed
+     * line keys by itself. Null when nothing on the line is sealed.
      *
      * @param int $lineOrderItemId
      * @return array{subjectItemId: int, kind: string}|null
@@ -367,7 +368,8 @@ class ItemSelector extends Template
 
         $line = $this->getOrderItem($lineOrderItemId);
         $order = $this->resolveOrder();
-        if ($line === null || $order === null || $line->getProductType() !== 'configurable') {
+        if ($line === null || $order === null
+            || !in_array($line->getProductType(), ['configurable', 'bundle'], true)) {
             return null;
         }
 

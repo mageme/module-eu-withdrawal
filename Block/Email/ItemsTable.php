@@ -172,7 +172,7 @@ class ItemsTable extends Template
     {
         return match ($requestStatus) {
             RequestInterface::STATUS_PENDING       => ['label' => (string) __('In progress'),  'bg' => '#fef3c7', 'fg' => '#92400e'],
-            RequestInterface::STATUS_APPROVED        => ['label' => (string) __('Refund issued'), 'bg' => '#dcfce7', 'fg' => '#166534'],
+            RequestInterface::STATUS_APPROVED        => ['label' => (string) __('Approved'), 'bg' => '#dcfce7', 'fg' => '#166534'],
             RequestInterface::STATUS_DENIED          => ['label' => (string) __('Denied'),       'bg' => '#fee2e2', 'fg' => '#991b1b'],
             RequestInterface::STATUS_CANCELLED       => ['label' => (string) __('Cancelled'),    'bg' => '#e5e7eb', 'fg' => '#374151'],
             default                                  => ['label' => (string) __('In progress'),  'bg' => '#fef3c7', 'fg' => '#92400e'],

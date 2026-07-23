@@ -27,6 +27,7 @@ define([
             template: 'MageMe_EUWithdrawal/checkout/waiver',
             contextUrl: null,
             saveUrl: null,
+            hasDigitalContent: false,
             stepCode: 'eu-withdrawal-waiver-step',
             stepTitle: 'Digital content waiver',
             stepSortOrder: 15,
@@ -49,26 +50,38 @@ define([
                     && self.items().length > 0;
             });
 
-            this.loadContextAndMaybeRegister();
+            // Register before the progress bar picks the first step, using the
+            // server-computed flag. `loadContext` still runs to populate the
+            // consent texts/hashes (and registers as a fallback if the flag is
+            // absent but the cart does carry digital items).
+            if (this.hasDigitalContent) {
+                this.registerStep();
+            }
+            this.loadContext();
             return this;
         },
 
-        loadContextAndMaybeRegister: function () {
+        registerStep: function () {
+            if (this.registered) { return; }
+            stepNavigator.registerStep(
+                this.stepCode,
+                null,
+                $t(this.stepTitle),
+                this.isVisible,
+                $.proxy(this.navigate, this),
+                this.stepSortOrder
+            );
+            this.registered = true;
+        },
+
+        loadContext: function () {
             var self = this;
             $.getJSON(this.contextUrl)
                 .done(function (resp) {
                     self.items(resp.items || []);
                     self.loaded(true);
                     if (self.items().length > 0 && !self.registered) {
-                        stepNavigator.registerStep(
-                            self.stepCode,
-                            null,
-                            $t(self.stepTitle),
-                            self.isVisible,
-                            $.proxy(self.navigate, self),
-                            self.stepSortOrder
-                        );
-                        self.registered = true;
+                        self.registerStep();
                     }
                 });
         },
