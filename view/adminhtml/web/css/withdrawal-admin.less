@@ -163,3 +163,48 @@
     border-color: #d1d5db; // gray-300
     color: #6b7280;      // gray-500
 }
+
+// What travels back inside a withdrawn bundle line, in the request items table.
+// The inset rule marks the rows as belonging to the line above, not as lines of
+// their own: the refund is the single figure on the bundle line.
+.mm-eu-w-items-table .mm-eu-w-bundle-parts {
+    border-left: 2px solid #e5e7eb; // gray-200
+    margin-top: 8px;
+    padding-left: 12px;
+}
+
+.mm-eu-w-items-table .mm-eu-w-bundle-parts-title {
+    color: #6b7280;      // gray-500
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.mm-eu-w-items-table .mm-eu-w-bundle-parts-list {
+    list-style: none;
+    margin: 4px 0 0;
+    padding: 0;
+
+    // Grid, not flex: a wrapping product name must not drag its quantity out of line.
+    li {
+        align-items: start;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(0, 1fr) max-content;
+        padding: 2px 0;
+    }
+}
+
+.mm-eu-w-items-table .mm-eu-w-bundle-parts-name {
+    color: #374151;      // gray-700
+    font-size: 12px;
+    min-width: 0;
+}
+
+.mm-eu-w-items-table .mm-eu-w-bundle-parts-meta {
+    color: #6b7280;      // gray-500
+    font-size: 12px;
+    white-space: nowrap;
+}

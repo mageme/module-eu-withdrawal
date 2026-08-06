@@ -330,7 +330,6 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
                         <td colspan="7">
                             <div class="mm-eu-w-bundle-contents-head">
                                 <span class="mm-eu-w-bundle-contents-title"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
-                                <span class="mm-eu-w-bundle-contents-value-label"><?= $escaper->escapeHtml(__('Included value')) ?></span>
                             </div>
                         </td>
                     </tr>
@@ -346,6 +345,15 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
                     <td colspan="6">
                         <div class="mm-eu-w-bundle-content-cell">
                             <span class="mm-eu-w-bundle-content-name"><?= $escaper->escapeHtml((string) $row->label) ?></span>
+                            <?php if (!$row->physical): ?>
+                                <span class="mm-eu-w-bundle-content-qty">
+                                    <?= $escaper->escapeHtml(__('Nothing to send back')) ?>
+                                </span>
+                            <?php elseif ($row->qtyPerParentUnit > 0): ?>
+                                <span class="mm-eu-w-bundle-content-qty">
+                                    <?= $escaper->escapeHtml(__('Qty %1', $block->formatComponentQty($row->qtyPerParentUnit))) ?>
+                                </span>
+                            <?php endif; ?>
                             <?php if ($row->sealed !== null): ?>
                                 <span class="mm-eu-w-bundle-content-seal-badge">
                                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/></svg>
@@ -358,13 +366,6 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
                             <?php if ($infoOpt !== ''): ?>
                                 <span class="mm-eu-w-bundle-content-opt"><?= $escaper->escapeHtml($infoOpt) ?></span>
                             <?php endif; ?>
-                            <span class="mm-eu-w-bundle-content-price">
-                                <?php if ($row->priced): ?>
-                                    <?= $escaper->escapeHtml($block->formatItemDisplayPriceGross((int) $row->orderItemId)) ?>
-                                <?php else: ?>
-                                    <?= $escaper->escapeHtml(__('Included')) ?>
-                                <?php endif; ?>
-                            </span>
                         </div>
                     </td>
                 </tr>

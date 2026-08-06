@@ -229,6 +229,30 @@ $statusBadgeLabel = \MageMe\EUWithdrawal\Model\Request\Source\Status::labelFor($
                                         <span><?= $escaper->escapeHtml(__('SKU')) ?>:</span>
                                         <?= $escaper->escapeHtml((string) $item->getSku()) ?>
                                     </div>
+                                    <?php $contents = $block->getBundleContents($item); ?>
+                                    <?php if ($contents !== []): ?>
+                                        <div class="mm-eu-w-bundle-parts">
+                                            <span class="mm-eu-w-bundle-parts-head">
+                                                <span class="mm-eu-w-bundle-parts-title">
+                                                    <?= $escaper->escapeHtml(__('Included in this bundle')) ?>
+                                                </span>
+                                            </span>
+                                            <ul class="mm-eu-w-bundle-parts-list">
+                                                <?php foreach ($contents as $part): ?>
+                                                    <li>
+                                                        <span class="mm-eu-w-bundle-parts-name"><?= $escaper->escapeHtml($part['name']) ?></span>
+                                                        <span class="mm-eu-w-bundle-parts-meta">
+                                                            <?= $escaper->escapeHtml(
+                                                                empty($part['physical'])
+                                                                    ? __('Nothing to send back')
+                                                                    : __('Qty %1', $block->formatComponentQty((float) $part['qty']))
+                                                            ) ?>
+                                                        </span>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="col-price">
                                     <?php // Gross, like the Refund column beside it — VAT in, discount out. ?>

@@ -1,3 +1,16 @@
+## 1.1.1
+
++ New: A bundle returned as one item now lists what is inside it, each part with the quantity to send back, in the return summary, on the review step, in every email that lists the returned items, on the confirmation page, in the customer's order view and on the admin request screen, so nobody sends back one part of a set by mistake. The refund stays a single figure on the bundle line.
++ New: The confirmation page now repeats what was requested — the items, their quantities and the total refund — so the customer can check the return before leaving the page.
++ New: A part of a bundle that is a download or a service is marked "Nothing to send back" instead of a quantity, so nobody looks for it when packing the parcel.
+- Fix: The confirmation page is no longer kept in the full-page cache, so one shopper's withdrawal details can never be shown to another.
+- Fix: The item count above the return summary is now a plain number, so it no longer reads in English on a translated storefront.
+- Fix: The quantity beside an item in the return summary is now translated, instead of always reading "Qty:" in English.
+- Fix: Deep links to a request's tabs in the admin open the right tab again.
+* Other: The "Select items to return" heading now reads "Items to return" when there is nothing to pick — whole-order mode, or an order whose every line is already spoken for.
+* Other: A bundle that can only be returned whole no longer shows a price beside each of its parts on the selection step, so nothing suggests a single part could be sent back on its own for that amount. Parts keep their prices when Bundle Item Selection makes them returnable in their own right — which a bundle sold at one fixed price never does — and the credit memo breaks the refund down across the components when the bundle is priced from its contents.
+* Other: The admin request screen lists what a whole-returned bundle contains, with quantities only — no price beside a part that cannot be returned on its own.
+
 ## 1.1.0
 
 + New: Each request tracks its 14-day refund deadline, shown in the admin grid, with a daily overdue digest emailed to admins.

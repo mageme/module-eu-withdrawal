@@ -9,6 +9,7 @@ namespace MageMe\EUWithdrawal\Model\Customer;
 
 use MageMe\EUWithdrawal\Api\Data\ItemInterface;
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
+use MageMe\EUWithdrawal\Model\Item\BundleContentsViewAssembler;
 use MageMe\EUWithdrawal\Model\ResourceModel\Item\CollectionFactory as ItemCollectionFactory;
 use MageMe\EUWithdrawal\Model\ResourceModel\Request\CollectionFactory as RequestCollectionFactory;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -39,13 +40,26 @@ class OrderWithdrawalHistoryService
      * @param ItemCollectionFactory $itemCollectionFactory
      * @param OrderRepositoryInterface $orderRepository
      * @param LoggerInterface $logger
+     * @param BundleContentsViewAssembler $bundleContentsView
      */
     public function __construct(
         private readonly RequestCollectionFactory $requestCollectionFactory,
         private readonly ItemCollectionFactory $itemCollectionFactory,
         private readonly OrderRepositoryInterface $orderRepository,
         private readonly LoggerInterface $logger,
+        private readonly BundleContentsViewAssembler $bundleContentsView,
     ) {
+    }
+
+    /**
+     * How many of a bundle component a return covers, as a plain count.
+     *
+     * @param float $qty
+     * @return string
+     */
+    public function formatComponentQty(float $qty): string
+    {
+        return $this->bundleContentsView->formatQty($qty);
     }
 
     /**
@@ -127,6 +141,14 @@ class OrderWithdrawalHistoryService
                 'eligibility'   => (string) $ir[ItemInterface::ELIGIBILITY],
                 'reason_code'   => $ir[ItemInterface::REASON_CODE] !== null ? (string) $ir[ItemInterface::REASON_CODE] : null,
                 'reason_text'   => $ir[ItemInterface::REASON_TEXT] !== null ? (string) $ir[ItemInterface::REASON_TEXT] : null,
+                // A bundle line stands for several goods; list them so the
+                // customer can see the whole set one line covers.
+                'contents'      => $this->bundleContentsView->rowsFor(
+                    $order,
+                    (int) $ir[ItemInterface::ORDER_ITEM_ID],
+                    (float) $ir[ItemInterface::QTY_WITHDRAW],
+                    $rawRefund,
+                ),
             ];
         }
 

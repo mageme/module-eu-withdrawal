@@ -25,6 +25,11 @@ class ReturnRow
         public readonly ?string $optionLabel = null,
         public readonly bool $priced = false,
         public readonly ?SealedComponent $sealed = null,
+        // How many of this component one bundle holds — 0.0 on a selectable row.
+        public readonly float $qtyPerParentUnit = 0.0,
+        // False for a virtual or downloadable component: it travels back with
+        // nothing in the parcel, so no quantity is quoted for it.
+        public readonly bool $physical = true,
     ) {
     }
 }

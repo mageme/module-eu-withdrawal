@@ -34,6 +34,21 @@ $count = count($rows);
                             <div style="font-size:11px;color:#6b7280;margin-top:2px;line-height:1.4;"><?= $escaper->escapeHtml($row['options']) ?></div>
                         <?php endif; ?>
                         <div style="font-size:11px;color:#9ca3af;margin-top:2px;line-height:1.35;"><?= $escaper->escapeHtml(__('SKU')) ?>: <?= $escaper->escapeHtml($row['sku']) ?></div>
+                        <?php if (!empty($row['contents'])): ?>
+                            <div style="font-size:11px;color:#6b7280;margin-top:6px;line-height:1.4;text-transform:uppercase;letter-spacing:.05em;">
+                                <?= $escaper->escapeHtml(__('Included in this bundle')) ?>
+                            </div>
+                            <?php foreach ($row['contents'] as $part): ?>
+                                <div style="font-size:12px;color:#475569;margin-top:2px;line-height:1.4;">
+                                    <?= $escaper->escapeHtml($part['name']) ?>
+                                    <span style="color:#9ca3af;"><?= $escaper->escapeHtml(
+                                        empty($part['physical'])
+                                            ? __('Nothing to send back')
+                                            : __('Qty %1', $block->formatComponentQty((float) $part['qty']))
+                                    ) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </td>
                     <!-- Quantity -->
                     <td valign="top" align="center" width="48" style="width:48px;padding:2px 4px;">

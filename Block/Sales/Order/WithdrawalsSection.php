@@ -510,6 +510,17 @@ class WithdrawalsSection extends Template
     }
 
     /**
+     * How many of a bundle component the return covers, as a plain count.
+     *
+     * @param float $qty
+     * @return string
+     */
+    public function formatComponentQty(float $qty): string
+    {
+        return $this->historyService->formatComponentQty($qty);
+    }
+
+    /**
      * Get product image url.
      *
      * @param int $orderItemId

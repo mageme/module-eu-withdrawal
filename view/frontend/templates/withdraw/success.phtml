@@ -94,6 +94,28 @@ $adjustment = $block->getOrderAdjustmentRefund();
                                     <?php endforeach; ?>
                                 </dl>
                             <?php endif; ?>
+                            <?php $contents = $block->getBundleContents($item); ?>
+                            <?php if ($contents !== []): ?>
+                                <div class="mm-eu-w-bundle-parts">
+                                    <span class="mm-eu-w-bundle-parts-title">
+                                        <?= $escaper->escapeHtml(__('Included in this bundle')) ?>
+                                    </span>
+                                    <ul class="mm-eu-w-bundle-parts-list">
+                                        <?php foreach ($contents as $part): ?>
+                                            <li>
+                                                <span class="mm-eu-w-bundle-parts-name"><?= $escaper->escapeHtml($part['name']) ?></span>
+                                                <span class="mm-eu-w-bundle-parts-meta">
+                                                    <?= $escaper->escapeHtml(
+                                                        empty($part['physical'])
+                                                            ? __('Nothing to send back')
+                                                            : __('Qty %1', $block->formatComponentQty((float) $part['qty']))
+                                                    ) ?>
+                                                </span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td class="col qty" data-th="<?= $escaper->escapeHtmlAttr(__('Qty')) ?>">
                             <?= (int) (float) $item->getQtyWithdraw() ?>

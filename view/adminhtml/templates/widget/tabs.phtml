@@ -58,8 +58,12 @@ $mageInit = [
                 $liClass .= ' no-display';
             }
             ?>
+            <?php // The anchor below must own this id exclusively: mage/backend/tabs
+                  // resolves the `active` option and the active_tab URL argument via
+                  // $('#' + tabId) on the anchor, and a duplicate id on the <li> would
+                  // shadow it (document.getElementById returns the <li>). ?>
             <li class="<?= $escaper->escapeHtmlAttr($liClass) ?>"
-                id="<?= $escaper->escapeHtmlAttr($tabId) ?>"
+                id="<?= $escaper->escapeHtmlAttr($tabId) ?>_item"
                 <?= /* @noEscape */ $block->getUiId('tab', 'item', $_tab->getId()) ?>>
                 <a href="<?= $escaper->escapeUrl($tabHref) ?>"
                    id="<?= $escaper->escapeHtmlAttr($tabId) ?>"

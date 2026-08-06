@@ -7,26 +7,24 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Model\Item;
 
-use MageMe\EUWithdrawal\Api\Seal\SealKindResolverInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
 
 /**
  * Organises the flat returnable states into display groups. Presentation only:
  * it re-uses the already-computed states and the order graph, performs no
- * eligibility or pricing business logic, and decides only structure + whether a
- * whole-bundle content breakdown reconciles to the parent (so child amounts are
- * safe to show) or must read "Included".
+ * eligibility or pricing business logic, and decides only structure. What sits
+ * inside a whole-bundle line — and whether its parts carry quotable amounts —
+ * comes from BundleContentsResolver, the one source every other surface reads.
  */
 class ReturnGroupBuilder
 {
-    private const EPSILON = 0.005;
     private const TYPE_BUNDLE = 'bundle';
 
     public function __construct(
         private readonly BundleReturnModeResolver $bundleReturnMode,
         private readonly ProductNameDecoder $productName,
-        private readonly SealKindResolverInterface $sealKind,
+        private readonly BundleContentsResolver $bundleContents,
     ) {
     }
 
@@ -96,42 +94,24 @@ class ReturnGroupBuilder
     }
 
     /**
-     * Inert content rows for a whole-bundle parent: all children, priced when the
-     * children's row-totals reconcile to the parent's row-total (dynamic bundle
-     * where the parent carries the aggregate), otherwise "Included" (fixed-price
-     * bundle with 0-priced children, or non-reconciling data).
+     * Inert content rows for a whole-bundle parent — the goods that physically
+     * travel back inside it.
      *
      * @return ReturnRow[]
      */
     private function contentRows(OrderInterface $order, OrderItemInterface $parent): array
     {
-        $children = [];
-        foreach ($order->getAllItems() as $item) {
-            if ($item->getParentItemId() !== null && (int) $item->getParentItemId() === (int) $parent->getItemId()) {
-                $children[] = $item;
-            }
-        }
-
-        $parentRow = (float) $parent->getRowTotal();
-        $childrenSum = 0.0;
-        foreach ($children as $c) {
-            $childrenSum += (float) $c->getRowTotal();
-        }
-        $reconciles = $parentRow > self::EPSILON && abs($childrenSum - $parentRow) <= self::EPSILON;
-
-        $storeId = (int) $order->getStoreId();
-        $parentItemId = (int) $parent->getItemId();
-
         $rows = [];
-        foreach ($children as $c) {
-            $kind = $this->sealKind->resolve((int) $c->getProductId(), $storeId);
+        foreach ($this->bundleContents->resolve($order, (int) $parent->getItemId()) as $content) {
             $rows[] = new ReturnRow(
                 selectable: false,
-                orderItemId: (int) $c->getItemId(),
-                label: $this->productName->decode((string) $c->getName()),
+                orderItemId: $content->orderItemId,
+                label: $content->name,
                 optionLabel: null,
-                priced: $reconciles,
-                sealed: $kind->isSealed() ? new SealedComponent($kind, $parentItemId) : null,
+                priced: $content->priced,
+                sealed: $content->sealed,
+                qtyPerParentUnit: $content->qtyPerParentUnit,
+                physical: $content->physical,
             );
         }
         return $rows;

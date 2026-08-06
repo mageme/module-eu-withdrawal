@@ -17,11 +17,22 @@ $t = $block->getInitialTotals();
             <details class="mm-eu-w-items-to-return" open>
                 <summary>
                     <span><?= $escaper->escapeHtml(__('Items to return')) ?></span>
-                    <span class="mm-eu-w-items-count" data-role="items-count">
-                        <?= $escaper->escapeHtml(__('0 items')) ?>
-                    </span>
+                    <?php // Bare count: the heading beside it already names what is
+                          // being counted, and a number carries no grammatical
+                          // number of its own to get wrong in 22 languages. ?>
+                    <span class="mm-eu-w-items-count" data-role="items-count">0</span>
                 </summary>
                 <ul class="mm-eu-w-items-to-return-list" data-role="items-to-return"></ul>
+                <template data-role="items-to-return-contents">
+                    <div class="mm-eu-w-items-to-return-contents">
+                        <span class="mm-eu-w-items-to-return-contents-title">
+                            <?= $escaper->escapeHtml(__('Included in this bundle')) ?>
+                        </span>
+                        <ul class="mm-eu-w-items-to-return-contents-list"></ul>
+                    </div>
+                </template>
+                <span hidden data-role="i18n-qty"><?= $escaper->escapeHtml(__('Qty %1', '%1')) ?></span>
+                <span hidden data-role="i18n-nothing-to-send-back"><?= $escaper->escapeHtml(__('Nothing to send back')) ?></span>
             </details>
             <h4 class="mm-eu-w-sidebar-subtitle"><?= $escaper->escapeHtml(__('Refund summary')) ?></h4>
             <dl class="mm-eu-w-totals">

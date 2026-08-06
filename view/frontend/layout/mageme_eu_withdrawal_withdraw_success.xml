@@ -11,7 +11,8 @@
         <referenceContainer name="content">
             <block class="MageMe\EUWithdrawal\Block\Withdraw\Success"
                    name="mageme_eu_withdrawal.success"
-                   template="MageMe_EUWithdrawal::withdraw/success.phtml"/>
+                   template="MageMe_EUWithdrawal::withdraw/success.phtml"
+                   cacheable="false"/>
         </referenceContainer>
     </body>
 </page>

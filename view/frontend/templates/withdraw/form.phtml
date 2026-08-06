@@ -32,6 +32,11 @@ if ($itemSelectorChild !== false && method_exists($block, 'getPendingRequestsByO
 }
 $selectionModeVm = $itemSelectorChild !== false ? $itemSelectorChild->getData('selection_mode_view_model') : null;
 $isFullOrder = $selectionModeVm !== null && $selectionModeVm->isFullOrderMode();
+// "Select items" is only honest when something on the page can actually be
+// picked. In whole-order mode there are no quantity steppers, and an order
+// whose every line is spoken for offers no choice either — both read as a
+// listing, not a selection.
+$isSelectionEditable = !$isFullOrder && !$noEligibleItems;
 
 // Art. 11a(3) confirmation label: counsel-signed per-locale whitelist string,
 // rendered verbatim (never through __()).
@@ -58,6 +63,7 @@ $confirmLabel = $confirmLabelVm !== null ? $confirmLabelVm->getLabel() : 'Confir
 $shippingPaid   = 0.0;
 $shippingTax    = 0.0;
 $eligibleItems  = [];
+$bundleContents = [];
 $orderForMeta   = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta
     ? $orderMeta->getOrder()
     : null;
@@ -91,6 +97,7 @@ if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelect
         }
         $eligibleItems[(int) $s->orderItemId] = $meta;
     }
+    $bundleContents = $itemSelectorChild->getBundleContentsPreview();
     if ($orderForMeta !== null) {
         // Discounted carriage, less anything a native credit memo already
         // refunded: shipping_amount stays at the carrier's quote either way.
@@ -145,6 +152,11 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             'shippingPaid'     => round($shippingPaid, 2),
             'shippingTax'      => round($shippingTax, 2),
             'eligibleItems'    => $eligibleItems,
+            // What travels back inside each whole-bundle line, with the refund
+            // split already allocated per pickable quantity. Kept out of
+            // `eligibleItems` on purpose: that map has a documented legacy
+            // shape older cached pages still rely on.
+            'bundleContents'   => $bundleContents,
             'orderItemsBase'   => round($orderLevel['base'], 4),
             'orderLevelGap'    => round($orderLevel['gap'], 4),
             // `inclTax` reports the store's sales-price display setting. The
@@ -155,6 +167,10 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             'i18n'             => [
                 'orderPrefix'        => (string) __('Order #'),
                 'qtyPrefix'          => (string) __('Qty: '),
+                'bundleContents'     => (string) __('Included in this bundle'),
+                'qty'                => (string) __('Qty'),
+                'qtyPart'            => (string) __('Qty %1', '%1'),
+                'nothingToSendBack'  => (string) __('Nothing to send back'),
                 'submissionFailed'   => (string) __('Submission failed. Please try again.'),
                 'networkError'       => (string) __('Network error. Please try again.'),
                 'invalidServerReply' => (string) __('Invalid server response.'),
@@ -183,11 +199,15 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
             <?= $block->getBlockHtml('formkey') ?>
             <div class="mm-eu-w-main">
                 <div class="mm-eu-w-card">
-                    <h2 class="mm-eu-w-card-title"><?= $escaper->escapeHtml(__('Select items to return')) ?></h2>
+                    <h2 class="mm-eu-w-card-title">
+                        <?= $escaper->escapeHtml($isSelectionEditable
+                            ? __('Select items to return')
+                            : __('Items to return')) ?>
+                    </h2>
                     <p class="mm-eu-w-card-subtitle">
-                        <?= $escaper->escapeHtml($isFullOrder
-                            ? __('Review the items included in your return.')
-                            : __('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
+                        <?= $escaper->escapeHtml($isSelectionEditable
+                            ? __('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')
+                            : __('Review the items included in your return.')) ?>
                     </p>
                     <?= $block->getChildHtml('order_meta') ?>
                     <?= $block->getChildHtml('item_selector') ?>
@@ -392,6 +412,28 @@ $icon = static function (string $name, string $class = 'mm-eu-w-icon', int $size
                         </ol>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="mm-eu-w-card">
+            <h2 class="mm-eu-w-card-title"><?= $escaper->escapeHtml(__('Return summary')) ?></h2>
+            <div class="mm-eu-w-summary-header" data-role="submitted-order-header"></div>
+            <ul class="mm-eu-w-summary-items" data-role="submitted-items"></ul>
+            <div class="mm-eu-w-summary-line">
+                <span><?= $escaper->escapeHtml(__('Subtotal')) ?></span>
+                <span data-role="submitted-subtotal">—</span>
+            </div>
+            <div class="mm-eu-w-summary-line">
+                <span><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></span>
+                <span data-role="submitted-shipping">—</span>
+            </div>
+            <div class="mm-eu-w-summary-line mm-eu-w-summary-line--vat" data-role="submitted-vat-row">
+                <span><?= $escaper->escapeHtml(__('Of which VAT')) ?></span>
+                <span data-role="submitted-vat">—</span>
+            </div>
+            <div class="mm-eu-w-summary-total">
+                <span><?= $escaper->escapeHtml(__('Total refund')) ?></span>
+                <strong data-role="submitted-total">—</strong>
             </div>
         </div>
 

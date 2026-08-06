@@ -14,6 +14,7 @@ use MageMe\EUWithdrawal\Model\EligibilityRequestBuilder;
 use MageMe\EUWithdrawal\Model\Item\ExclusionReason;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
 use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
+use MageMe\EUWithdrawal\Model\Item\BundleContentsViewAssembler;
 use MageMe\EUWithdrawal\Model\Item\ItemAmountResolver;
 use MageMe\EUWithdrawal\Model\Item\OrderPartialStateCalculator;
 use MageMe\EUWithdrawal\Model\Item\RemainingItemState;
@@ -55,6 +56,7 @@ class ItemSelector extends Template
      * @param ReturnGroupBuilder $returnGroupBuilder
      * @param ItemAmountResolver $itemAmounts
      * @param SealKindResolverInterface $sealKindResolver
+     * @param BundleContentsViewAssembler $bundleContentsView
      * @param array $data
      */
     public function __construct(
@@ -73,6 +75,7 @@ class ItemSelector extends Template
         private readonly ReturnGroupBuilder $returnGroupBuilder,
         private readonly ItemAmountResolver $itemAmounts,
         private readonly SealKindResolverInterface $sealKindResolver,
+        private readonly BundleContentsViewAssembler $bundleContentsView,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -408,6 +411,46 @@ class ItemSelector extends Template
             null,
             $code,
         );
+    }
+
+    /**
+     * What sits inside each eligible whole-bundle line, with the refund split
+     * already computed for every quantity the customer can pick. Keyed by the
+     * bundle line's order-item id; lines that hold nothing to break out are
+     * absent. The storefront reads this instead of re-deriving the split.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getBundleContentsPreview(): array
+    {
+        $states = $this->getStates();
+        $order = $this->resolveOrder();
+        if ($states === null || $order === null) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($states as $state) {
+            if (!$state->isEligible() || $state->remainingQty <= 0) {
+                continue;
+            }
+            $preview = $this->bundleContentsView->previewFor($order, $state);
+            if ($preview !== null) {
+                $out[(int) $state->orderItemId] = $preview;
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * How many of a bundle component one bundle holds, as a plain count.
+     *
+     * @param float $qty
+     * @return string
+     */
+    public function formatComponentQty(float $qty): string
+    {
+        return $this->bundleContentsView->formatQty($qty);
     }
 
     /** @return \MageMe\EUWithdrawal\Model\Item\ReturnGroup[] */

@@ -10,6 +10,7 @@ namespace MageMe\EUWithdrawal\Block\Email;
 use MageMe\EUWithdrawal\Api\Data\ItemInterface;
 use MageMe\EUWithdrawal\Api\Data\RequestInterface;
 use MageMe\EUWithdrawal\Model\Frontend\ReasonsConfigReader;
+use MageMe\EUWithdrawal\Model\Item\BundleContentsViewAssembler;
 use MageMe\EUWithdrawal\Model\Lookup\RequestLookup;
 use MageMe\EUWithdrawal\Model\ResourceModel\Item\CollectionFactory as ItemCollectionFactory;
 use Magento\Catalog\Helper\Image as ImageHelper;
@@ -40,6 +41,7 @@ class ItemsTable extends Template
      * @param ProductRepositoryInterface $productRepository
      * @param ImageHelper $imageHelper
      * @param ReasonsConfigReader $reasonsConfig
+     * @param BundleContentsViewAssembler $bundleContentsView
      * @param array $data
      */
     public function __construct(
@@ -50,6 +52,7 @@ class ItemsTable extends Template
         private readonly ProductRepositoryInterface $productRepository,
         private readonly ImageHelper $imageHelper,
         private readonly ReasonsConfigReader $reasonsConfig,
+        private readonly BundleContentsViewAssembler $bundleContentsView,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -62,6 +65,7 @@ class ItemsTable extends Template
      *     qty: int,
      *     refund_amount: string,
      *     image_url: ?string,
+     *     contents: array<int, array<string, mixed>>,
      *     eligibility: string,
      *     reason: string,
      *     options: string,
@@ -125,6 +129,14 @@ class ItemsTable extends Template
                 'qty'           => (int) $i['qty_withdraw'],
                 'refund_amount' => (string) $i['refund_amount'],
                 'image_url'     => $imageUrl,
+                // A bundle line covers several goods; spell them out so the
+                // customer packs the whole set, not one item.
+                'contents'      => $this->bundleContentsView->rowsFor(
+                    $order,
+                    $oid,
+                    (float) $i['qty_withdraw'],
+                    (float) $i['refund_amount'],
+                ),
                 'eligibility'   => (string) $i['eligibility'],
                 'reason'        => $this->resolveReasonLabel(
                     (string) ($i['reason_code'] ?? ''),
@@ -138,6 +150,17 @@ class ItemsTable extends Template
             ];
         }
         return $rows;
+    }
+
+    /**
+     * How many of a bundle component the return covers, as a plain count.
+     *
+     * @param float $qty
+     * @return string
+     */
+    public function formatComponentQty(float $qty): string
+    {
+        return $this->bundleContentsView->formatQty($qty);
     }
 
     /**
@@ -253,6 +276,7 @@ class ItemsTable extends Template
                 'qty'           => (int) $i['qty_withdraw'],
                 'refund_amount' => (string) $i['refund_amount'],
                 'image_url'     => null,
+                'contents'      => [],
                 'eligibility'   => (string) $i['eligibility'],
                 'reason'        => $this->resolveReasonLabel(
                     (string) ($i['reason_code'] ?? ''),

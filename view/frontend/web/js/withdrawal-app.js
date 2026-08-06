@@ -275,6 +275,62 @@
         const shippingPaid = Number(boot.shippingPaid || 0);
         const shippingTax  = Number(boot.shippingTax || 0);
         const eligibleItems = boot.eligibleItems || {};
+        // What travels back inside a bundle line. The split is allocated
+        // server-side for every pickable quantity; here we only look it up.
+        const bundleContents = boot.bundleContents || {};
+
+        /** Component counts read as counts: "2", not "2.0000". */
+        const formatQty = (qty) => {
+            const n = Number(qty) || 0;
+            return Math.abs(n - Math.round(n)) < 0.0001
+                ? String(Math.round(n))
+                : String(Number(n.toFixed(4)));
+        };
+
+        /**
+         * What goes in the parcel for the selected quantity, and how many of
+         * each. No per-part money: the bundle can only be withdrawn whole, so
+         * the one refund figure belongs to the bundle line. Null when the line
+         * is not a bundle.
+         */
+        const bundlePartsFor = (id, qty) => {
+            const entry = bundleContents[String(id)];
+            if (!entry || !entry.rows || !entry.rows.length) return null;
+            return entry.rows.map((row) => ({
+                name: row.name || '',
+                qty: Number(row.qty_per_unit || 0) * qty,
+                physical: row.physical !== false,
+            }));
+        };
+
+        /** Inert "Included in this bundle" block appended under a bundle's name. */
+        const bundlePartsNode = (parts) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'mm-eu-w-bundle-parts';
+            const title = document.createElement('span');
+            title.className = 'mm-eu-w-bundle-parts-title';
+            title.textContent = (boot.i18n && boot.i18n.bundleContents) || 'Included in this bundle';
+            wrap.appendChild(title);
+            const list = document.createElement('ul');
+            list.className = 'mm-eu-w-bundle-parts-list';
+            parts.forEach((part) => {
+                const li = document.createElement('li');
+                const name = document.createElement('span');
+                name.className = 'mm-eu-w-bundle-parts-name';
+                name.textContent = part.name;
+                const meta = document.createElement('span');
+                meta.className = 'mm-eu-w-bundle-parts-meta';
+                const qtyTemplate = (boot.i18n && boot.i18n.qtyPart) || 'Qty %1';
+                meta.textContent = part.physical
+                    ? qtyTemplate.replace('%1', formatQty(part.qty))
+                    : ((boot.i18n && boot.i18n.nothingToSendBack) || 'Nothing to send back');
+                li.appendChild(name);
+                li.appendChild(meta);
+                list.appendChild(li);
+            });
+            wrap.appendChild(list);
+            return wrap;
+        };
 
         // Full-order mode: seed this file's own selection store directly from the
         // pre-filled rows (data-remaining carries the qty). withdrawal-summary.js
@@ -350,6 +406,8 @@
                 nameDiv.className = 'mm-eu-w-item-name';
                 nameDiv.textContent = data.name;
                 nameTd.appendChild(nameDiv);
+                const reviewParts = bundlePartsFor(itemId, data.qty);
+                if (reviewParts) nameTd.appendChild(bundlePartsNode(reviewParts));
                 tr.appendChild(nameTd);
 
                 const qtyTd = document.createElement('td');
@@ -437,6 +495,10 @@
             const headerEl = panels['4'].querySelector('[data-role="submitted-order-header"]');
             const itemsEl = panels['4'].querySelector('[data-role="submitted-items"]');
             const totalEl = panels['4'].querySelector('[data-role="submitted-total"]');
+            const subtotalEl = panels['4'].querySelector('[data-role="submitted-subtotal"]');
+            const shippingEl = panels['4'].querySelector('[data-role="submitted-shipping"]');
+            const vatRowEl = panels['4'].querySelector('[data-role="submitted-vat-row"]');
+            const vatEl = panels['4'].querySelector('[data-role="submitted-vat"]');
             if (headerEl) {
                 headerEl.textContent = boot.orderIncrementId
                     ? ((boot.i18n && boot.i18n.orderPrefix) || 'Order #') + boot.orderIncrementId
@@ -460,11 +522,16 @@
                     const nameDiv = document.createElement('div');
                     nameDiv.className = 'mm-eu-w-summary-name';
                     nameDiv.textContent = d.name;
+                    const submittedParts = bundlePartsFor(id, d.qty);
+                    if (submittedParts) nameDiv.appendChild(bundlePartsNode(submittedParts));
                     li.appendChild(nameDiv);
 
                     const qtyDiv = document.createElement('div');
                     qtyDiv.className = 'mm-eu-w-summary-qty';
-                    qtyDiv.textContent = ((boot.i18n && boot.i18n.qtyPrefix) || 'Qty: ') + d.qty;
+                    // Same wording as the component rows below it: both figures are
+                    // quantities actually going back, so they must not read as
+                    // two different measures.
+                    qtyDiv.textContent = ((boot.i18n && boot.i18n.qtyPart) || 'Qty %1').replace('%1', d.qty);
                     li.appendChild(qtyDiv);
 
                     const priceDiv = document.createElement('div');
@@ -491,6 +558,12 @@
                 taxTotal = roundHalfEven(taxTotal, 4);
                 const shippingRefund = fullReturn ? roundHalfEven(shippingPaid + shippingTax, 4) : 0;
                 const grand = roundHalfEven(subtotal + taxTotal + shippingRefund, 4);
+                // The lines add up to the total, so the figure beside an item and
+                // the figure at the bottom never look like a contradiction.
+                if (subtotalEl) subtotalEl.textContent = formatPrice(subtotal + taxTotal, currency);
+                if (shippingEl) shippingEl.textContent = formatPrice(shippingRefund, currency);
+                if (vatRowEl) vatRowEl.hidden = boot.hideTax === true;
+                if (vatEl) vatEl.textContent = formatPrice(taxTotal, currency);
                 if (totalEl) totalEl.textContent = formatPrice(grand, currency);
             }
         };

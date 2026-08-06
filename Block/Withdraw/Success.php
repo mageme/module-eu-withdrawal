@@ -13,6 +13,7 @@ use MageMe\EUWithdrawal\Api\ItemRepositoryInterface;
 use MageMe\EUWithdrawal\Api\RequestRepositoryInterface;
 use MageMe\EUWithdrawal\Model\Frontend\PeriodDaysConfigReader;
 use MageMe\EUWithdrawal\Model\Frontend\TaxDisplayConfig;
+use MageMe\EUWithdrawal\Model\Item\BundleContentsViewAssembler;
 use MageMe\EUWithdrawal\Model\Session as WithdrawalSession;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
@@ -44,6 +45,7 @@ class Success extends Template
      * @param TimezoneInterface $timezone
      * @param PeriodDaysConfigReader $periodDays
      * @param TaxDisplayConfig $taxDisplay
+     * @param BundleContentsViewAssembler $bundleContentsView
      * @param array $data
      */
     public function __construct(
@@ -56,6 +58,7 @@ class Success extends Template
         private readonly TimezoneInterface $timezone,
         private readonly PeriodDaysConfigReader $periodDays,
         private readonly TaxDisplayConfig $taxDisplay,
+        private readonly BundleContentsViewAssembler $bundleContentsView,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -229,6 +232,38 @@ class Success extends Template
             return $this->items = [];
         }
         return $this->items = $this->itemRepository->getByRequest((int) $r->getRequestId());
+    }
+
+    /**
+     * The goods travelling back inside a withdrawn bundle line, with its refund
+     * split across them. Empty for anything that is not a bundle parent.
+     *
+     * @param ItemInterface $item
+     * @return array<int, array<string, mixed>>
+     */
+    public function getBundleContents(ItemInterface $item): array
+    {
+        $order = $this->getOrder();
+        if ($order === null) {
+            return [];
+        }
+        return $this->bundleContentsView->rowsFor(
+            $order,
+            (int) $item->getOrderItemId(),
+            (float) $item->getQtyWithdraw(),
+            (float) $item->getRefundAmount(),
+        );
+    }
+
+    /**
+     * How many of a bundle component the return covers, as a plain count.
+     *
+     * @param float $qty
+     * @return string
+     */
+    public function formatComponentQty(float $qty): string
+    {
+        return $this->bundleContentsView->formatQty($qty);
     }
 
     /**

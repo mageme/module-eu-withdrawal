@@ -20,6 +20,14 @@
         }
     };
 
+    /** Component counts read as counts: "2", not "2.0000". */
+    const formatQty = (qty) => {
+        const n = Number(qty) || 0;
+        return Math.abs(n - Math.round(n)) < 0.0001
+            ? String(Math.round(n))
+            : String(Number(n.toFixed(4)));
+    };
+
     /**
      * Banker's rounding (half-to-even). Mirrors PHP's
      * round($value, $dp, PHP_ROUND_HALF_EVEN) used by RefundCalculator so the
@@ -70,6 +78,45 @@
         }
         const shippingPaid = Number(boot.shippingPaid || 0);
         const shippingTax = Number(boot.shippingTax || 0);
+        // What travels back inside a bundle line, with the refund split already
+        // allocated per pickable quantity. Server-computed on purpose — the
+        // client only looks a row up, it never re-derives the money.
+        const bundleContents = boot.bundleContents || {};
+        const contentsTemplate = sidebar.querySelector('template[data-role="items-to-return-contents"]');
+        const qtyLabel = (sidebar.querySelector('[data-role="i18n-qty"]')?.textContent || 'Qty %1').trim();
+        const nothingToSendBackLabel = (
+            sidebar.querySelector('[data-role="i18n-nothing-to-send-back"]')?.textContent || 'Nothing to send back'
+        ).trim();
+
+        // Nested "Included in this bundle" list for one selected bundle line:
+        // what goes in the parcel, and how many of each. No per-part money —
+        // the bundle can only be withdrawn whole, so the single refund figure
+        // stays on the bundle line above. Null when the line is not a bundle.
+        const contentsNodeFor = (id, qty) => {
+            const entry = bundleContents[String(id)];
+            if (!entry || !contentsTemplate || !entry.rows || !entry.rows.length) return null;
+
+            const node = contentsTemplate.content.firstElementChild.cloneNode(true);
+            const list = node.querySelector('.mm-eu-w-items-to-return-contents-list');
+            entry.rows.forEach((row) => {
+                const li = document.createElement('li');
+
+                const name = document.createElement('span');
+                name.className = 'mm-eu-w-items-to-return-contents-name';
+                name.textContent = row.name || '';
+                li.appendChild(name);
+
+                const meta = document.createElement('span');
+                meta.className = 'mm-eu-w-items-to-return-contents-meta';
+                meta.textContent = row.physical === false
+                    ? nothingToSendBackLabel
+                    : qtyLabel.replace('%1', formatQty(Number(row.qty_per_unit || 0) * qty));
+                li.appendChild(meta);
+
+                list.appendChild(li);
+            });
+            return list.children.length ? node : null;
+        };
         // eligibleItems[id] = { qty: maxRemaining, taxAmount, qtyOrdered }
         // (legacy `unitTax` schema kept as fallback for cached pages)
         const eligibleItems = boot.eligibleItems || {};
@@ -202,7 +249,7 @@
                     nameEl.textContent = data.name || '';
                     const qtyEl = document.createElement('div');
                     qtyEl.className = 'mm-eu-w-items-to-return-qty';
-                    qtyEl.textContent = `Qty: ${data.qty}`;
+                    qtyEl.textContent = qtyLabel.replace('%1', data.qty);
                     body.appendChild(nameEl);
                     body.appendChild(qtyEl);
                     li.appendChild(body);
@@ -212,10 +259,18 @@
                     priceEl.textContent = formatPrice(lineDisplay(id, data), currency);
                     li.appendChild(priceEl);
 
+                    // A bundle goes back as several goods; spell them out so the
+                    // customer does not pack one item for a line that covers many.
+                    const contents = contentsNodeFor(id, data.qty);
+                    if (contents) {
+                        li.classList.add('mm-eu-w-items-to-return-item--bundle');
+                        li.appendChild(contents);
+                    }
+
                     itemsContainer.appendChild(li);
                 }
             }
-            if (itemsCount) itemsCount.textContent = visibleCount + (visibleCount === 1 ? ' item' : ' items');
+            if (itemsCount) itemsCount.textContent = String(visibleCount);
             // Empty selection: when it is empty because a seal was declared open,
             // explain that instead of the "use the + button" hint (which is wrong
             // in full-order mode and misleading after a seal exclusion).

@@ -136,7 +136,9 @@ $formKey    = $block->getFormKeyValue();
                             <ul class="mm-eu-w-detail-items">
                                 <?php foreach ($request->items as $item): ?>
                                     <?php $imgUrl = $block->getProductImageUrl((int) $item['order_item_id']); ?>
-                                    <li class="mm-eu-w-detail-item">
+                                    <?php // A bundle row is tall; top-align it so the line's own Qty does not
+                                          // centre itself alongside a part's Qty. ?>
+                                    <li class="mm-eu-w-detail-item<?= empty($item['contents']) ? '' : ' mm-eu-w-detail-item--bundle' ?>">
                                         <span class="mm-eu-w-detail-thumb">
                                             <?php if ($imgUrl !== null): ?>
                                                 <img src="<?= $escaper->escapeUrl($imgUrl) ?>" alt="<?= $escaper->escapeHtmlAttr((string) $item['name']) ?>" />
@@ -145,6 +147,25 @@ $formKey    = $block->getFormKeyValue();
                                         <span class="mm-eu-w-detail-name">
                                             <strong><?= $escaper->escapeHtml((string) $item['name']) ?></strong>
                                             <span class="mm-eu-w-detail-sku"><?= $escaper->escapeHtml(__('SKU')) ?>: <?= $escaper->escapeHtml((string) $item['sku']) ?></span>
+                                            <?php if (!empty($item['contents'])): ?>
+                                                <span class="mm-eu-w-bundle-parts">
+                                                    <span class="mm-eu-w-bundle-parts-title">
+                                                        <?= $escaper->escapeHtml(__('Included in this bundle')) ?>
+                                                    </span>
+                                                    <?php foreach ($item['contents'] as $part): ?>
+                                                        <span class="mm-eu-w-bundle-parts-row">
+                                                            <span class="mm-eu-w-bundle-parts-name"><?= $escaper->escapeHtml($part['name']) ?></span>
+                                                            <span class="mm-eu-w-bundle-parts-meta">
+                                                                <?= $escaper->escapeHtml(
+                                                                    empty($part['physical'])
+                                                                        ? __('Nothing to send back')
+                                                                        : __('Qty %1', $block->formatComponentQty((float) $part['qty']))
+                                                                ) ?>
+                                                            </span>
+                                                        </span>
+                                                    <?php endforeach; ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </span>
                                         <span class="mm-eu-w-detail-qty">
                                             <?= $escaper->escapeHtml(__('Qty %1', (int) $item['qty'])) ?>

@@ -271,6 +271,9 @@
     font-size: 13px;
     color: @mm-eu-w-text;
 }
+.column.main .mm-eu-w-detail-item--bundle {
+    align-items: start;
+}
 .column.main .mm-eu-w-detail-item:first-child {
     border-top: 0;
     padding-top: 0;
@@ -387,5 +390,38 @@
     color: #9ca3af;
     font-size: 12px;
     margin-left: 6px;
+    white-space: nowrap;
+}
+
+// Bundle breakdown nested under a withdrawn bundle line.
+.column.main .mm-eu-w-bundle-parts {
+    border-left: 2px solid #e5e7eb;
+    display: block;
+    margin-top: 6px;
+    padding-left: 12px;
+}
+.column.main .mm-eu-w-bundle-parts-title {
+    display: block;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+.column.main .mm-eu-w-bundle-parts-row {
+    align-items: start;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    padding: 2px 0;
+}
+.column.main .mm-eu-w-bundle-parts-name {
+    color: #374151;
+    font-size: 12px;
+    min-width: 0;
+}
+.column.main .mm-eu-w-bundle-parts-meta {
+    color: #6b7280;
+    font-size: 12px;
     white-space: nowrap;
 }

@@ -18,6 +18,7 @@ use Magento\Backend\Block\Widget\Tab\TabInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Registry;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use MageMe\EUWithdrawal\Model\Item\BundleContentsViewAssembler;
 use MageMe\EUWithdrawal\Model\Item\ItemAmountResolver;
 use Magento\Sales\Api\CreditmemoRepositoryInterface;
 use Magento\Sales\Api\Data\OrderInterface;
@@ -42,6 +43,9 @@ class General extends Template implements TabInterface
      * @param TimezoneInterface $timezone
      * @param ReasonsConfigReader $reasonsConfig
      * @param ItemAmountResolver $itemAmounts
+     * @param DueStateResolver $dueStateResolver
+     * @param CreditmemoRepositoryInterface $creditmemoRepository
+     * @param BundleContentsViewAssembler $bundleContentsView
      * @param array $data
      */
     public function __construct(
@@ -54,6 +58,7 @@ class General extends Template implements TabInterface
         private readonly ItemAmountResolver $itemAmounts,
         private readonly DueStateResolver $dueStateResolver,
         private readonly CreditmemoRepositoryInterface $creditmemoRepository,
+        private readonly BundleContentsViewAssembler $bundleContentsView,
         array $data = [],
     ) {
         parent::__construct($context, $data);
@@ -275,6 +280,39 @@ class General extends Template implements TabInterface
         }
         $item = $order->getItemById($orderItemId);
         return $item instanceof \Magento\Sales\Api\Data\OrderItemInterface ? $item : null;
+    }
+
+    /**
+     * The goods expected back inside a withdrawn bundle line, with its refund
+     * split across them, so the operator checking the parcel knows what the one
+     * line covers. Empty for anything that is not a bundle parent.
+     *
+     * @param ItemInterface $item
+     * @return array<int, array<string, mixed>>
+     */
+    public function getBundleContents(ItemInterface $item): array
+    {
+        $order = $this->getOrder();
+        if ($order === null) {
+            return [];
+        }
+        return $this->bundleContentsView->rowsFor(
+            $order,
+            (int) $item->getOrderItemId(),
+            (float) $item->getQtyWithdraw(),
+            (float) $item->getRefundAmount(),
+        );
+    }
+
+    /**
+     * How many of a bundle component the return covers, as a plain count.
+     *
+     * @param float $qty
+     * @return string
+     */
+    public function formatComponentQty(float $qty): string
+    {
+        return $this->bundleContentsView->formatQty($qty);
     }
 
     /**

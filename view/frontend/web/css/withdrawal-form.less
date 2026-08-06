@@ -411,12 +411,15 @@
 .mm-eu-w-items-table .mm-eu-w-bundle-content td.mm-eu-w-col-thumb { padding-top: 6px; padding-bottom: 6px; }
 // Breathing room below the final bundle component before the next section.
 .mm-eu-w-items-table .mm-eu-w-bundle-content:not(:has(~ .mm-eu-w-bundle-content)) td { padding-bottom: 18px; }
+// Smaller than the parent's thumb and flush to the column's right edge, so it
+// reads as subordinate without leaving a hole between it and the part's name.
 .mm-eu-w-items-table .mm-eu-w-bundle-content td.mm-eu-w-col-thumb img {
-    width: 40px; height: 40px; object-fit: cover;
+    width: 40px; height: 40px; object-fit: cover; display: block; margin-left: auto;
     border-radius: @mm-eu-w-radius; border: 1px solid @mm-eu-w-border;
     background: @mm-eu-w-bg-subtle;
 }
-.mm-eu-w-bundle-content-cell { padding-left: 16px; display: flex; align-items: center; gap: 10px; }
+// 6px keeps the thumb-to-name gap identical to the parent row's above it.
+.mm-eu-w-bundle-content-cell { padding-left: 6px; display: flex; align-items: center; gap: 10px; }
 .mm-eu-w-bundle-content-name { font-size: 14px; color: @mm-eu-w-text; }
 .mm-eu-w-bundle-content-seal-badge {
     display: inline-flex; align-items: center; gap: 4px;
@@ -425,7 +428,34 @@
     color: #9a3412; font-size: 11px; font-weight: 700; white-space: nowrap;
 }
 .mm-eu-w-bundle-content-opt { color: @mm-eu-w-text-muted; font-size: 12px; }
+.mm-eu-w-bundle-content-qty { color: @mm-eu-w-text-muted; font-size: 12px; white-space: nowrap; }
 .mm-eu-w-bundle-content-price { margin-left: auto; color: @mm-eu-w-text-muted; font-style: normal; font-size: 14px; white-space: nowrap; }
+
+/* Bundle breakdown nested under a line on the review and success screens. The
+   inset rule is what marks the rows as belonging to the line above rather than
+   standing on their own; the bottom margin keeps whatever an add-on appends
+   next (Pro seal-photo echo) from reading as one more component. */
+.mm-eu-w-bundle-parts {
+    margin: 6px 0 10px; padding-left: 12px; border-left: 2px solid @mm-eu-w-border;
+}
+.mm-eu-w-bundle-parts-title {
+    display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    color: #6b7280;
+}
+.mm-eu-w-bundle-parts-list {
+    list-style: none; padding: 0; margin: 4px 0 0;
+    li {
+        display: grid; grid-template-columns: minmax(0, 1fr) max-content;
+        gap: 12px; align-items: start; padding: 2px 0; font-size: 12px;
+    }
+}
+.mm-eu-w-bundle-parts-name { color: @mm-eu-w-text; min-width: 0; }
+.mm-eu-w-bundle-parts-meta { color: #6b7280; white-space: nowrap; }
+
+/* A bundle line grows tall once its contents are listed. Keep Qty / Reason /
+   Total level with the product name instead of floating to the middle of the
+   parts list, where they read as belonging to a component. */
+.mm-eu-w-items-table--review td { vertical-align: top; }
 .mm-eu-w-items-table .mm-eu-w-standalone-header td { padding: 20px 8px 8px; border-bottom: none; border-top: 1px solid @mm-eu-w-hairline; font-weight: 400; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: @mm-eu-w-text-muted; }
 // No hard line between a bundle parent and its own read-only contents.
 .mm-eu-w-items-table .mm-eu-w-item-row:has(+ .mm-eu-w-bundle-contents-label) td { border-bottom: none; }
@@ -593,11 +623,31 @@ button.mm-eu-w-link--danger:active,
     display: grid; grid-template-columns: 40px minmax(0, 1fr) auto;
     gap: 10px; align-items: center; padding: 8px 0;
 }
+.mm-eu-w-items-to-return-item + .mm-eu-w-items-to-return-item { border-top: 1px solid @mm-eu-w-border; }
 .mm-eu-w-items-to-return-item img { width: 40px; height: 40px; object-fit: cover; border-radius: @mm-eu-w-radius; background: @mm-eu-w-bg-subtle; }
 .mm-eu-w-items-to-return-item .mm-eu-w-thumb-fallback-svg { width: 22px; height: 22px; color: @mm-eu-w-text-muted; }
-.mm-eu-w-items-to-return-name { font-weight: 500; font-size: 13px; color: @mm-eu-w-text; }
+.mm-eu-w-items-to-return-name { font-weight: 600; font-size: 13px; color: @mm-eu-w-text; }
 .mm-eu-w-items-to-return-qty { font-size: 12px; color: @mm-eu-w-text-muted; }
 .mm-eu-w-items-to-return-price { font-weight: 600; font-size: 13px; color: @mm-eu-w-text; }
+.mm-eu-w-items-to-return-contents {
+    grid-column: 1 / -1; margin: 4px 0 2px; padding-left: 12px;
+    border-left: 2px solid @mm-eu-w-border;
+}
+.mm-eu-w-items-to-return-contents-title {
+    display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+    color: #6b7280;
+}
+.mm-eu-w-items-to-return-contents-list {
+    list-style: none; padding: 0; margin: 4px 0 0;
+    // Grid, not flex: a wrapping product name must not drag its amount out of
+    // line — the amount column keeps its own track and stays top-aligned.
+    li {
+        display: grid; grid-template-columns: minmax(0, 1fr) max-content;
+        gap: 12px; align-items: start; padding: 2px 0; font-size: 12px;
+    }
+}
+.mm-eu-w-items-to-return-contents-name { color: @mm-eu-w-text; min-width: 0; }
+.mm-eu-w-items-to-return-contents-meta { color: #6b7280; white-space: nowrap; }
 .mm-eu-w-empty-hint { color: @mm-eu-w-text-muted; font-size: 13px; margin: 8px 0 16px; line-height: 1.5; }
 .mm-eu-w-sidebar-notice {
     padding: 12px 14px; border-radius: @mm-eu-w-radius;
@@ -801,8 +851,14 @@ button.mm-eu-w-link--danger:active,
 .mm-eu-w-summary-item:last-child { border-bottom: none; }
 .mm-eu-w-summary-name { font-weight: 500; }
 .mm-eu-w-summary-qty { color: @mm-eu-w-text-muted; }
+.mm-eu-w-summary-line {
+    display: flex; justify-content: space-between; padding: 4px 0;
+    font-size: 15px; color: @mm-eu-w-text-muted;
+}
+.mm-eu-w-summary-line--vat { font-size: 13px; padding-top: 0; }
+.mm-eu-w-summary-line--vat span:first-child { padding-left: 14px; }
 .mm-eu-w-summary-total {
-    display: flex; justify-content: space-between; padding-top: 12px;
+    display: flex; justify-content: space-between; padding-top: 12px; margin-top: 8px;
     border-top: 1px solid @mm-eu-w-border; font-size: 17px;
 }
 
