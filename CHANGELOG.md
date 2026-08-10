@@ -1,3 +1,8 @@
+## 1.1.2
+
+- Fix: The withdrawal receipt email is now sent in the language the withdrawal was made in, instead of always arriving in English.
+- Fix: The digital content waiver confirmation email is now sent in the language of the store the order was placed on.
+
 ## 1.1.1
 
 + New: A bundle returned as one item now lists what is inside it, each part with the quantity to send back, in the return summary, on the review step, in every email that lists the returned items, on the confirmation page, in the customer's order view and on the admin request screen, so nobody sends back one part of a set by mistake. The refund stays a single figure on the bundle line.

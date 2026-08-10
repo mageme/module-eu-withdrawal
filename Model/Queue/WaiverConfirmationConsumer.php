@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Model\Queue;
 
+use MageMe\EUWithdrawal\Model\Mail\MailScope;
 use MageMe\EUWithdrawal\Model\Notification\DlqAlerter;
 use MageMe\EUWithdrawal\Model\Waiver\PerformanceDetector;
 use MageMe\EUWithdrawal\Model\Waiver\WaiverConfirmationBuilder;
@@ -45,6 +46,7 @@ class WaiverConfirmationConsumer
      * @param ScopeConfigInterface $config
      * @param LoggerInterface $logger
      * @param EventManager $eventManager
+     * @param MailScope $mailScope
      */
     public function __construct(
         private readonly OrderRepositoryInterface $orderRepo,
@@ -58,6 +60,7 @@ class WaiverConfirmationConsumer
         private readonly ScopeConfigInterface $config,
         private readonly LoggerInterface $logger,
         private readonly EventManager $eventManager,
+        private readonly MailScope $mailScope,
     ) {
     }
 
@@ -114,7 +117,14 @@ class WaiverConfirmationConsumer
      */
     private function sendEmails(WaiverConfirmationDto $dto, int $storeId): void
     {
-        $this->renderer->renderConsumer($dto, $storeId)->sendMessage();
+        // A scope per email: rendering a template ends the store emulation, so
+        // the merchant copy needs its own. The consumer copy follows the locale
+        // the waiver was signed in, the merchant copy the store's own.
+        $this->mailScope->run(
+            $storeId,
+            $dto->locale,
+            fn() => $this->renderer->renderConsumer($dto, $storeId)->sendMessage(),
+        );
 
         $bccTo = (string) $this->config->getValue(
             self::XML_BCC,
@@ -122,7 +132,11 @@ class WaiverConfirmationConsumer
             $storeId
         );
         if ($bccTo !== '') {
-            $this->renderer->renderMerchantBcc($dto, $storeId, $bccTo)->sendMessage();
+            $this->mailScope->run(
+                $storeId,
+                '',
+                fn() => $this->renderer->renderMerchantBcc($dto, $storeId, $bccTo)->sendMessage(),
+            );
         }
     }
 

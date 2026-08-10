@@ -12,17 +12,16 @@ use MageMe\EUWithdrawal\Api\Receipt\ContentHasherInterface;
 use MageMe\EUWithdrawal\Exception\ReceiptBuilderException;
 use MageMe\EUWithdrawal\Model\Frontend\RouteResolver;
 use MageMe\EUWithdrawal\Model\Mail\EmailConfig;
+use MageMe\EUWithdrawal\Model\Mail\MailScope;
 use MageMe\EUWithdrawal\Model\Mail\ReceiptTransport;
 use MageMe\EUWithdrawal\Model\Notification\DlqAlerter;
 use MageMe\EUWithdrawal\Model\Receipt\ReceiptBuilder;
-use Magento\Framework\App\Area;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\ManagerInterface;
 use Magento\Framework\Exception\MailException;
 use Magento\Framework\Phrase;
 use Magento\Framework\UrlInterface;
-use Magento\Store\Model\App\Emulation;
 
 class ReceiptSendConsumer
 {
@@ -66,7 +65,7 @@ class ReceiptSendConsumer
      * @param RetryScheduler $scheduler
      * @param ScopeConfigInterface $scopeConfig
      * @param ManagerInterface $eventManager
-     * @param Emulation $emulation
+     * @param MailScope $mailScope
      * @param UrlInterface $url
      * @param EmailConfig $emailConfig
      * @param RouteResolver $routeResolver
@@ -79,7 +78,7 @@ class ReceiptSendConsumer
         private readonly RetryScheduler $scheduler,
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly ManagerInterface $eventManager,
-        private readonly Emulation $emulation,
+        private readonly MailScope $mailScope,
         private readonly UrlInterface $url,
         private readonly EmailConfig $emailConfig,
         private readonly RouteResolver $routeResolver,
@@ -116,70 +115,69 @@ class ReceiptSendConsumer
             return;
         }
 
-        $storeId  = (int) $row['store_id'];
+        $storeId = (int) $row['store_id'];
+        $locale  = (string) $row['locale'];
 
-        // The email transport resolves a frontend-area template. Consumers run
-        // in a neutral/CLI area by default — emulate the order's store in the
-        // frontend area so the template resolver finds the right asset.
-        $this->emulation->startEnvironmentEmulation($storeId, Area::AREA_FRONTEND, true);
         try {
-            $dto = $this->builder->build($requestId);
-            $computed = null;
-            $verifyUrl = '';
+            // The email transport resolves a frontend-area template. Consumers run
+            // in a neutral/CLI area by default — emulate the order's store in the
+            // frontend area so the template resolver finds the right asset, and so
+            // the request's own locale drives the translations.
+            $this->mailScope->run($storeId, $locale, function () use ($row, $requestId, $attempts, $storeId, $locale): void {
+                $dto = $this->builder->build($requestId);
+                $computed = null;
+                $verifyUrl = '';
 
-            // Hash validation is Pro-only (forensic tamper-evidence). When
-            // ContentHasherInterface is unbound (module-only install) or the row
-            // has no stored hash, skip both the equality check and the verify
-            // URL — the email's integrity-hash card is hidden via {{depend}}.
-            if ($this->hasher !== null && (string) $row['content_hash'] !== '') {
-                $computed = $this->hasher->hash($dto);
-                if (!hash_equals((string) $row['content_hash'], $computed)) {
-                    throw new ReceiptBuilderException(
-                        new Phrase('Receipt hash mismatch for request %1', [$requestId]),
+                // Hash validation is Pro-only (forensic tamper-evidence). When
+                // ContentHasherInterface is unbound (module-only install) or the row
+                // has no stored hash, skip both the equality check and the verify
+                // URL — the email's integrity-hash card is hidden via {{depend}}.
+                if ($this->hasher !== null && (string) $row['content_hash'] !== '') {
+                    $computed = $this->hasher->hash($dto);
+                    if (!hash_equals((string) $row['content_hash'], $computed)) {
+                        throw new ReceiptBuilderException(
+                            new Phrase('Receipt hash mismatch for request %1', [$requestId]),
+                        );
+                    }
+                    $verifyUrl = $this->routeResolver->rewriteCanonical(
+                        $this->url->getUrl(
+                            RouteResolver::CANONICAL_FRONT_NAME . '/verify/index',
+                            ['request_id' => $requestId, 'hash' => $computed, '_store' => $storeId],
+                        ),
+                        $storeId,
                     );
                 }
-                $verifyUrl = $this->routeResolver->rewriteCanonical(
-                    $this->url->getUrl(
-                        RouteResolver::CANONICAL_FRONT_NAME . '/verify/index',
-                        ['request_id' => $requestId, 'hash' => $computed, '_store' => $storeId],
-                    ),
-                    $storeId,
+
+                if (!$this->emailConfig->isEnabled(EmailConfig::TYPE_RECEIPT, $storeId)) {
+                    // Receipt is still generated and stored — only the email send is gated.
+                    $this->markSent($requestId, $attempts, (string) $row['customer_email']);
+                    return;
+                }
+                $bcc = $this->emailConfig->getBccCsv(EmailConfig::TYPE_RECEIPT, $storeId);
+
+                $this->transport->send(
+                    toEmail: (string) $row['customer_email'],
+                    bccCsv: $bcc,
+                    vars: [
+                        'order_increment_id' => (string) $dto->order['increment_id'],
+                        'consumer_name'      => (string) $dto->consumer['name'],
+                        'refund_total'       => (string) $dto->refund['total'],
+                        'verify_url'         => $verifyUrl,
+                        'content_hash'       => $computed ?? '',
+                    ],
+                    locale: $locale,
+                    storeId: $storeId,
+                    requestId: $requestId,
                 );
-            }
 
-            $locale = (string) $row['locale'];
-
-            if (!$this->emailConfig->isEnabled(EmailConfig::TYPE_RECEIPT, $storeId)) {
-                // Receipt is still generated and stored — only the email send is gated.
                 $this->markSent($requestId, $attempts, (string) $row['customer_email']);
-                return;
-            }
-            $bcc = $this->emailConfig->getBccCsv(EmailConfig::TYPE_RECEIPT, $storeId);
-
-            $this->transport->send(
-                toEmail: (string) $row['customer_email'],
-                bccCsv: $bcc,
-                vars: [
-                    'order_increment_id' => (string) $dto->order['increment_id'],
-                    'consumer_name'      => (string) $dto->consumer['name'],
-                    'refund_total'       => (string) $dto->refund['total'],
-                    'verify_url'         => $verifyUrl,
-                    'content_hash'       => $computed ?? '',
-                ],
-                locale: $locale,
-                storeId: $storeId,
-                requestId: $requestId,
-            );
-
-            $this->markSent($requestId, $attempts, (string) $row['customer_email']);
+            });
         } catch (ReceiptBuilderException $e) {
             $this->markPermanent($requestId, $attempts, $e);
         } catch (MailException | \RuntimeException $e) {
             $this->scheduleRetryOrPermanent($requestId, $attempts, $e);
         } catch (\Throwable $e) {
             $this->scheduleRetryOrPermanent($requestId, $attempts, $e);
-        } finally {
-            $this->emulation->stopEnvironmentEmulation();
         }
     }
 
