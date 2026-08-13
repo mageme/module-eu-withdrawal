@@ -21,6 +21,8 @@ class ProgressStepper extends Template
 
     private const STEP2_SUBTITLE_FULL_ORDER = 'Review the items to return';
 
+    private const STEP_SUBMITTED = 4;
+
     /**
      * Constructor.
      *
@@ -51,7 +53,17 @@ class ProgressStepper extends Template
     }
 
     /**
-     * @return array<int, array{number:int, title:string, subtitle:string, status:string}>
+     * Get the order-search page URL — the destination behind step 1.
+     *
+     * @return string
+     */
+    public function getOrderSearchUrl(): string
+    {
+        return $this->getUrl('withdraw-contract');
+    }
+
+    /**
+     * @return array<int, array{number:int, title:string, subtitle:string, status:string, navigable:bool}>
      */
     public function getSteps(): array
     {
@@ -65,8 +77,26 @@ class ProgressStepper extends Template
                 default        => 'upcoming',
             };
             $subtitle = $n === 2 && $fullOrder ? self::STEP2_SUBTITLE_FULL_ORDER : $meta['subtitle'];
-            $out[] = ['number' => $n, 'title' => $meta['title'], 'subtitle' => $subtitle, 'status' => $status];
+            $out[] = [
+                'number' => $n,
+                'title' => $meta['title'],
+                'subtitle' => $subtitle,
+                'status' => $status,
+                'navigable' => $this->isNavigable($n, $active),
+            ];
         }
         return $out;
+    }
+
+    /**
+     * A step can be revisited once it is behind the customer, and never after the request is submitted.
+     *
+     * @param int $number
+     * @param int $active
+     * @return bool
+     */
+    private function isNavigable(int $number, int $active): bool
+    {
+        return $number < $active && $active < self::STEP_SUBMITTED;
     }
 }

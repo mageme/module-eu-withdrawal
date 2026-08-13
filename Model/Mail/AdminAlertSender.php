@@ -15,6 +15,7 @@ use Magento\Framework\Mail\Template\TransportBuilder;
 use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Sales\Api\OrderRepositoryInterface;
 use Magento\Store\Model\Store;
+use Magento\Store\Model\StoreManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -42,6 +43,7 @@ class AdminAlertSender
         private readonly PriceCurrencyInterface $priceCurrency,
         private readonly ItemRepositoryInterface $itemRepository,
         private readonly LoggerInterface $logger,
+        private readonly StoreManagerInterface $storeManager,
     ) {
     }
 
@@ -109,8 +111,13 @@ class AdminAlertSender
         return [
             'request_increment_id'   => (string) ($request->getIncrementId() ?? '(no-increment)'),
             'order_increment_id'     => (string) $order->getIncrementId(),
+            'customer_name'          => (string) ($request->getCustomerName() ?? ''),
             'customer_email'         => (string) ($request->getCustomerEmail() ?? ''),
             'refund_total_formatted' => $refundFormatted,
+            'submitted_at_utc'       => trim((string) $request->getCreatedAt()) !== ''
+                ? trim((string) $request->getCreatedAt()) . ' UTC'
+                : '',
+            'store_name'             => (string) $this->storeManager->getStore((int) $order->getStoreId())->getName(),
         ];
     }
 

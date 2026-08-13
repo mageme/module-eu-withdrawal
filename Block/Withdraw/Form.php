@@ -225,14 +225,18 @@ class Form extends Template
      * Admin-configured notice text for step 3 (Review & confirm). Merchants
      * fill it in system.xml under "Review & Confirm Page" — e.g. describing
      * the prepaid return label, who pays shipping, etc.
+     *
+     * The shipped default is carried in every locale CSV, so a store that never touches the setting
+     * shows it in the storefront's own language. Wording a merchant typed in has no CSV entry and
+     * comes back untouched.
      */
     public function getReturnShippingNotice(): string
     {
-        $raw = (string) $this->_scopeConfig->getValue(
+        $raw = trim((string) $this->_scopeConfig->getValue(
             'mageme_eu_withdrawal/frontend/review/shipping_info_text',
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-        );
-        return trim($raw);
+        ));
+        return $raw === '' ? '' : (string) __($raw);
     }
 
     /**

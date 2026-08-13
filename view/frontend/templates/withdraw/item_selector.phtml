@@ -120,7 +120,7 @@ $selectionModeKey = $isFullOrder ? 'full_order' : 'per_item';
             <td class="mm-eu-w-col-price">
                 <?= $escaper->escapeHtml($block->formatPrice($block->getUnitDisplayPrice($state))) ?>
             </td>
-            <td class="mm-eu-w-col-qty">
+            <td class="mm-eu-w-col-qty" data-mm-label="<?= $escaper->escapeHtmlAttr(__('Qty: ')) ?>">
                 <?= (int) $state->purchasedQty ?>
             </td>
             <td class="mm-eu-w-col-qty">

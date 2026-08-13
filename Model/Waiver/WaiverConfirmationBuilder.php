@@ -103,6 +103,7 @@ class WaiverConfirmationBuilder
             waiverReference: $this->waiverReference->generate($orderId, $referenceSeed),
             locale: $locale,
             downloadUrl: null,
+            customerId: (int) $order->getCustomerId(),
         );
     }
 

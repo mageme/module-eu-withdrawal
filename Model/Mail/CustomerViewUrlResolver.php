@@ -51,4 +51,23 @@ class CustomerViewUrlResolver
         }
         return $base . '/sales/order/view/order_id/' . $orderEntityId . '/';
     }
+
+    /**
+     * Whether a resolved URL lands the customer on their own request rather than on the lookup form.
+     *
+     * An account holder always gets a personal page. A guest only does when the link carries the
+     * one-click token the Pro tier adds — the resolver contract documents that `?t=TOKEN` query.
+     *
+     * @param string $resolvedUrl URL previously returned by resolveForCustomer()
+     * @param ?int $customerId Account id on the request; null/0 means a guest order
+     * @return bool
+     */
+    public function isPersonalView(string $resolvedUrl, ?int $customerId): bool
+    {
+        if (($customerId ?? 0) > 0) {
+            return true;
+        }
+        parse_str((string) parse_url($resolvedUrl, PHP_URL_QUERY), $query);
+        return ($query['t'] ?? '') !== '';
+    }
 }

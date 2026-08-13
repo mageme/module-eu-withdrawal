@@ -153,6 +153,7 @@
     background: @mm-eu-w-bg; border: 2px solid @mm-eu-w-border;
     font-weight: 600; font-size: 15px;
     color: @mm-eu-w-text-muted; margin-bottom: 10px;
+    transition: box-shadow 120ms ease-out;
 }
 .column.main .mm-eu-w-step--done .mm-eu-w-step-number,
 .column.main .mm-eu-w-step--active .mm-eu-w-step-number {
@@ -163,6 +164,33 @@
 .mm-eu-w-step-title { font-weight: 600; font-size: 15px; line-height: 1.3; color: @mm-eu-w-text-muted; }
 .column.main .mm-eu-w-step--active .mm-eu-w-step-title { color: @mm-eu-w-primary; }
 .mm-eu-w-step-subtitle { font-size: 13px; line-height: 1.4; color: @mm-eu-w-text-muted; }
+
+// A completed step doubles as the control for going back to it. The link/button carries no chrome of its
+// own — the circle and labels stay the whole visual — so the reset has to beat the theme's button styles.
+.mm-eu-w-step-inner,
+.column.main .mm-eu-w-step-inner {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%; height: auto; padding: 0; margin: 0;
+    background: none; border: 0; border-radius: 0; box-shadow: none;
+    font: inherit; color: inherit; text-align: center; text-decoration: none;
+}
+.column.main a.mm-eu-w-step-inner:not([aria-disabled="true"]),
+.column.main button.mm-eu-w-step-inner:not([disabled]) { cursor: pointer; }
+.column.main button.mm-eu-w-step-inner[disabled] { cursor: default; opacity: 1; }
+.column.main a.mm-eu-w-step-inner[aria-disabled="true"] { cursor: default; pointer-events: none; }
+// Hovering a step you can go back to haloes its circle and lifts the label out of the muted grey. Kept
+// deliberately light: the active-step blue and a heavier ring would both read as "you are here".
+.column.main a.mm-eu-w-step-inner:not([aria-disabled="true"]):hover .mm-eu-w-step-number,
+.column.main button.mm-eu-w-step-inner:not([disabled]):hover .mm-eu-w-step-number {
+    box-shadow: 0 0 0 5px fade(@mm-eu-w-primary, 22%);
+}
+.column.main a.mm-eu-w-step-inner:not([aria-disabled="true"]):hover .mm-eu-w-step-title,
+.column.main button.mm-eu-w-step-inner:not([disabled]):hover .mm-eu-w-step-title {
+    color: darken(@mm-eu-w-text-muted, 18%);
+}
+.column.main .mm-eu-w-step-inner:focus-visible {
+    outline: 2px solid @mm-eu-w-primary; outline-offset: 4px; border-radius: @mm-eu-w-radius;
+}
 
 // ---- Grid / 2-column ----
 .mm-eu-w-grid {
@@ -345,9 +373,12 @@
 .mm-eu-w-icon { margin-right: 4px; }
 
 // ---- Item table ----
+// The numeric columns are sized by their own content rather than by a px width, so a translated header
+// wider than the English one widens its column instead of spilling across the neighbouring one. The item
+// column absorbs whatever is left.
 .mm-eu-w-items-table {
     width: 100%; border-collapse: collapse; font-size: 16px;
-    table-layout: fixed;
+    table-layout: auto;
 }
 .mm-eu-w-items-table col { background: transparent; }
 .mm-eu-w-items-table th {
@@ -360,20 +391,23 @@
 // so this table's separators are driven only by the <td> rules above/below,
 // keeping Luma, Breeze and any other Luma-compatible theme identical.
 .mm-eu-w-items-table tr { border-bottom: none; }
-.mm-eu-w-col-thumb { width: 68px; }
-.mm-eu-w-col-item { width: auto; }
+// The thumbnail is an <img> the theme caps at `max-width: 100%`, so without a floor of its own the column
+// has nothing to hold it open and the item column squeezes it away.
+.mm-eu-w-col-thumb { width: 68px; min-width: 68px; }
+.mm-eu-w-col-item { width: 100%; }
 .mm-eu-w-items-table th.mm-eu-w-col-price,
 .mm-eu-w-items-table td.mm-eu-w-col-price,
-.mm-eu-w-col-price { width: 60px; text-align: right; }
+.mm-eu-w-col-price { width: 1%; white-space: nowrap; text-align: right; }
 .mm-eu-w-items-table th.mm-eu-w-col-qty,
 .mm-eu-w-items-table td.mm-eu-w-col-qty,
-.mm-eu-w-col-qty { width: 78px; text-align: center; }
+.mm-eu-w-col-qty { width: 1%; white-space: nowrap; text-align: center; }
+// The quantity stepper's input can be squeezed below the control's natural size, so this one keeps a floor.
 .mm-eu-w-items-table th.mm-eu-w-col-rqty,
 .mm-eu-w-items-table td.mm-eu-w-col-rqty,
-.mm-eu-w-col-rqty { width: 104px; text-align: center; }
+.mm-eu-w-col-rqty { width: 1%; min-width: 104px; white-space: nowrap; text-align: center; }
 .mm-eu-w-items-table th.mm-eu-w-col-total,
 .mm-eu-w-items-table td.mm-eu-w-col-total,
-.mm-eu-w-col-total { width: 64px; text-align: right; }
+.mm-eu-w-col-total { width: 1%; white-space: nowrap; text-align: right; }
 .mm-eu-w-col-thumb img {
     width: 60px; height: 60px; object-fit: cover;
     border-radius: @mm-eu-w-radius; border: 1px solid @mm-eu-w-border;
@@ -674,23 +708,27 @@ button.mm-eu-w-link--danger:active,
 .mm-eu-w-reason-select { padding: 5px 10px; margin: 5px 0; border-radius: @mm-eu-w-radius; }
 
 .mm-eu-w-totals {
-    display: grid; grid-template-columns: 1fr auto;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
     gap: 10px 12px; margin: 0 0 16px;
     font-size: 15px;
+    align-items: baseline;
 }
 .mm-eu-w-totals dt { color: @mm-eu-w-text-muted; font-weight: 400; margin: 0; }
-.mm-eu-w-totals dd { margin: 0; text-align: right; font-weight: 400; color: @mm-eu-w-text; }
+.mm-eu-w-totals dd { margin: 0; text-align: right; font-weight: 400; color: @mm-eu-w-text; white-space: nowrap; }
 // Not an addend: it breaks the VAT out of the rows above. Indented and pulled
 // tight against them so it reads as their sub-line, not a third charge.
 .mm-eu-w-totals-tax--info { color: @mm-eu-w-text-muted; font-size: 12px; margin-top: -6px; }
 .mm-eu-w-totals dt.mm-eu-w-totals-tax--info { padding-left: 14px; }
 .mm-eu-w-total--negative { color: @mm-eu-w-success; }
+// Each half of the rule reaches into the column gutter so the two meet as one unbroken line.
 .mm-eu-w-totals dt.mm-eu-w-total-row,
 .mm-eu-w-totals dd.mm-eu-w-total-row {
     font-weight: 700; font-size: 17px; color: @mm-eu-w-text;
     border-top: 1px solid @mm-eu-w-border;
     padding-top: 12px; margin-top: 4px;
 }
+.mm-eu-w-totals dt.mm-eu-w-total-row { margin-right: -6px; padding-right: 6px; }
+.mm-eu-w-totals dd.mm-eu-w-total-row { margin-left: -6px; padding-left: 6px; }
 
 .mm-eu-w-refund-policy {
     display: flex; align-items: center; gap: 12px; padding: 12px 14px;

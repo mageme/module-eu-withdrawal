@@ -159,6 +159,7 @@ class ReceiptSendConsumer
                     toEmail: (string) $row['customer_email'],
                     bccCsv: $bcc,
                     vars: [
+                        'request_increment_id' => (string) ($row['increment_id'] ?? ''),
                         'order_increment_id' => (string) $dto->order['increment_id'],
                         'consumer_name'      => (string) $dto->consumer['name'],
                         'refund_total'       => (string) $dto->refund['total'],

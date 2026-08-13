@@ -12,8 +12,9 @@
     "var waiver.ack_at_formatted":"Acknowledgment timestamp",
     "var waiver.ip":"IP address recorded with the consent",
     "var waiver.waiver_reference":"Waiver reference ID",
-    "var waiver.text_hash_short":"Short SHA-256 fingerprint of the legal text",
-    "var view_url":"URL to the customer's order"
+    "var waiver.text_hash_full":"Full SHA-256 fingerprint of the legal text",
+    "var view_url":"URL to the customer's order",
+    "var view_is_personal":"Whether view_url opens a page the recipient can reach (account holders only)"
 } @-->
 {{var email_header_html|raw}}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
@@ -27,7 +28,7 @@
                 <p style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#5b6471;margin:0 24px 16px;">
                     {{trans "Hi %name, you've consented to immediate digital delivery of the items below — this is your durable-medium copy of that consent (Art. 11a(4) CRD)." name=$waiver.customer_name}}
                 </p>
-                <a href="{{var view_url}}" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:10px 24px;border-radius:4px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;">{{trans "View order"}}</a>
+                {{depend view_is_personal}}<a href="{{var view_url}}" style="display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:10px 24px;border-radius:4px;font-family:Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;">{{trans "View order"}}</a>{{/depend}}
             </td></tr>
         </table>
     </td></tr>
@@ -78,7 +79,7 @@
     <tr><td style="padding:0 24px 8px;text-align:center;">
         <p style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:#6b7280;line-height:1.5;margin:0;">
             {{trans "Keep this email as your durable-medium record. The merchant has stored the SHA-256 hash of the legal text you accepted:"}}
-            <code style="font-family:Menlo,Consolas,monospace;color:#374151;">{{var waiver.text_hash_short}}</code>
+            <code style="font-family:Menlo,Consolas,monospace;color:#374151;overflow-wrap:anywhere;">{{var waiver.text_hash_full}}</code>
         </p>
         <p style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:#9ca3af;margin:6px 0 0;">
             {{trans "Legal basis: Art. 16(m) Consumer Rights Directive 2011/83/EU."}}

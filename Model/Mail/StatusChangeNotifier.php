@@ -229,6 +229,15 @@ class StatusChangeNotifier
             ),
         };
 
+        // The CTA label follows the destination. Self-cancellation sends account holders to
+        // their order history; a guest's link — tokened or not — is not that page, so the
+        // account is what decides. The other types land on the request when the URL is personal.
+        $viewIsPersonal = match ($type) {
+            EmailConfig::TYPE_CANCELLED_ADMIN => false,
+            EmailConfig::TYPE_CANCELLED_SELF  => ((int) $request->getCustomerId()) > 0,
+            default => $this->customerViewUrl->isPersonalView($viewUrl, $request->getCustomerId()),
+        };
+
         $refundTotal = $dto !== null ? (string) ($dto->refund['total'] ?? '0.00') : '0.00';
 
         $requestIncrementId = (string) ($request->getIncrementId() ?? sprintf('%09d', (int) $request->getRequestId()));
@@ -261,7 +270,9 @@ class StatusChangeNotifier
             'admin_note'               => (string) ($context['note'] ?? ''),
             'period_days'              => $this->periodDays->getDays($storeId),
             'view_url'                 => $viewUrl,
+            'view_is_personal'         => $viewIsPersonal,
             'support_email'            => $layout->getSupportEmail(),
+            'contact_page_url'         => $layout->getContactUrl(),
             'store_name'               => $layout->getStoreName(),
             'store_url'                => $store->getBaseUrl(),
             'items'                    => $dto !== null ? $dto->items : [],

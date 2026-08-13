@@ -6,6 +6,7 @@
     "var admin_note":"Admin note",
     "var view_url":"Withdraw-contract URL",
     "var support_email":"Support email",
+    "var contact_page_url":"Contact page URL (falls back to support email when empty)",
     "var email_header_html":"Branded email header",
     "var email_footer_html":"Branded email footer"
 } @-->
@@ -74,7 +75,7 @@
     <tr>
         <td valign="top" style="padding:14px 12px 14px 18px;width:36px;font-size:18px;color:#475569;">&#9993;</td>
         <td style="padding:14px 18px 14px 0;font-size:13px;color:#334155;line-height:1.5;">
-            <strong>{{trans "Need help?"}}</strong> {{trans "Reply to this email or contact us at"}} <a href="mailto:{{var support_email}}" style="color:#1d4ed8;text-decoration:none;font-weight:600;">{{var support_email}}</a>.
+            {{if contact_page_url}}<strong>{{trans "Need help?"}}</strong> {{trans "If you have any questions, our customer service team is here to help."}}<br /><a href="{{var contact_page_url}}" style="color:#1d4ed8;text-decoration:none;font-weight:600;">{{trans "Contact support"}}</a>{{else}}<strong>{{trans "Need help?"}}</strong> {{trans "Reply to this email or contact us at"}} <a href="mailto:{{var support_email}}" style="color:#1d4ed8;text-decoration:none;font-weight:600;overflow-wrap:anywhere;">{{var support_email}}</a>.{{/if}}
         </td>
     </tr>
 </table>

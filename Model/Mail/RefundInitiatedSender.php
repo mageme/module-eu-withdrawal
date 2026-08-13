@@ -159,6 +159,13 @@ class RefundInitiatedSender
         $memoIncrementId = (string) $memo->getIncrementId();
         $refundAmount = (string) ($memo->getGrandTotal() ?? '0.00');
 
+        $viewUrl = $this->customerViewUrl->resolveForCustomer(
+            $orderId,
+            $request->getCustomerId(),
+            $storeId,
+            $baseUrl,
+        );
+
         return [
             'subject_text'             => (string) __('Your refund has been initiated — Credit memo #%1', $memoIncrementId),
             'consumer_name'            => (string) $request->getCustomerName(),
@@ -166,13 +173,13 @@ class RefundInitiatedSender
             'order_increment_id'       => $orderIncrementId,
             'refund_amount_formatted'  => $this->emailData->formatPrice($refundAmount, $storeId, $orderCurrency),
             'refund_online'            => $online,
-            'view_url'                 => $this->customerViewUrl->resolveForCustomer(
-                $orderId,
+            'view_url'                 => $viewUrl,
+            'view_is_personal'         => $this->customerViewUrl->isPersonalView(
+                $viewUrl,
                 $request->getCustomerId(),
-                $storeId,
-                $baseUrl,
             ),
             'support_email'            => $layout->getSupportEmail(),
+            'contact_page_url'         => $layout->getContactUrl(),
             'store_name'               => $layout->getStoreName(),
             'store_url'                => $baseUrl,
             'email_header_html'        => $layout->renderHeader(),

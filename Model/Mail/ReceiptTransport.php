@@ -79,6 +79,7 @@ class ReceiptTransport
             $vars['email_header_html'] = $layout->renderHeader();
             $vars['email_footer_html'] = $layout->renderFooter();
             $vars['support_email']     = $layout->getSupportEmail();
+            $vars['contact_page_url']  = $layout->getContactUrl();
             $vars['store_name']        = $layout->getStoreName();
             $vars['store_url']         = $store->getBaseUrl();
 

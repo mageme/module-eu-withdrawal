@@ -5,6 +5,7 @@
     "var consumer_name":"Consumer name",
     "var denial_reason":"Denial reason",
     "var support_email":"Support email",
+    "var contact_page_url":"Contact page URL (falls back to a support email link when empty)",
     "var email_header_html":"Branded email header",
     "var email_footer_html":"Branded email footer"
 } @-->
@@ -16,7 +17,7 @@
         <div style="display:inline-block;width:64px;height:64px;line-height:64px;background:#f59e0b;color:#ffffff;border-radius:50%;font-size:34px;font-weight:700;text-align:center;font-family:Helvetica,Arial,sans-serif;">!</div>
         <h1 class="hero-title" style="margin:18px 0 8px;font-size:24px;font-weight:700;color:#78350f;line-height:1.25;">{{trans "We can't process this withdrawal"}}</h1>
         <p style="margin:0 auto 24px;color:#475569;font-size:14px;line-height:1.55;max-width:440px;">{{trans "Hi %name, after reviewing your withdrawal request we're unable to approve it." name=$consumer_name}}</p>
-        <a href="mailto:{{var support_email}}" style="display:inline-block;background:#1e293b;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">{{trans "Contact support"}}</a>
+        <a href="{{if contact_page_url}}{{var contact_page_url}}{{else}}mailto:{{var support_email}}{{/if}}" style="display:inline-block;background:#1e293b;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">{{trans "Contact support"}}</a>
     </td></tr>
 </table>
 

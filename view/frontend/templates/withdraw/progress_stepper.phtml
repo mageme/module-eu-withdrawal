@@ -6,16 +6,44 @@
 /** @var \MageMe\EUWithdrawal\Block\Withdraw\ProgressStepper $block */
 /** @var \Magento\Framework\Escaper $escaper */
 $steps = $block->getSteps();
+$searchUrl = $block->getOrderSearchUrl();
 ?>
 <nav class="mm-eu-w-stepper" aria-label="<?= $escaper->escapeHtmlAttr(__('Withdrawal progress')) ?>">
     <ol class="mm-eu-w-stepper-list">
         <?php foreach ($steps as $s): ?>
-            <li class="mm-eu-w-step mm-eu-w-step--<?= $escaper->escapeHtmlAttr($s['status']) ?>">
-                <span class="mm-eu-w-step-number" aria-hidden="true"><?php if ($s['status'] === 'done'): ?><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg><?php else: ?><?= (int) $s['number'] ?><?php endif; ?></span>
-                <span class="mm-eu-w-step-body">
-                    <span class="mm-eu-w-step-title"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
-                    <span class="mm-eu-w-step-subtitle"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>
-                </span>
+            <?php
+            $n = (int) $s['number'];
+            // Step 1 leaves the single-page flow, so it is a link; steps 2 and 3 switch panels in place and
+            // stay in the DOM as buttons the script enables once they are behind the customer. Step 4 is the
+            // submitted request and is never a target.
+            $tag = match (true) {
+                $n === 1 => 'a',
+                $n === 4 => 'span',
+                default  => 'button',
+            };
+            ?>
+            <li class="mm-eu-w-step mm-eu-w-step--<?= $escaper->escapeHtmlAttr($s['status']) ?>"
+                <?= $s['status'] === 'active' ? 'aria-current="step"' : '' ?>>
+                <?php if ($tag === 'a' && $s['navigable']): ?>
+                    <a class="mm-eu-w-step-inner" href="<?= $escaper->escapeUrl($searchUrl) ?>" data-step-target="1">
+                <?php elseif ($tag === 'button'): ?>
+                    <button type="button" class="mm-eu-w-step-inner" data-step-target="<?= /* @noEscape */ $n ?>"
+                        <?= $s['navigable'] ? '' : 'disabled' ?>>
+                <?php else: ?>
+                    <span class="mm-eu-w-step-inner">
+                <?php endif; ?>
+                    <span class="mm-eu-w-step-number" aria-hidden="true"><?php if ($s['status'] === 'done'): ?><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg><?php else: ?><?= (int) $s['number'] ?><?php endif; ?></span>
+                    <span class="mm-eu-w-step-body">
+                        <span class="mm-eu-w-step-title"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
+                        <span class="mm-eu-w-step-subtitle"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>
+                    </span>
+                <?php if ($tag === 'a' && $s['navigable']): ?>
+                    </a>
+                <?php elseif ($tag === 'button'): ?>
+                    </button>
+                <?php else: ?>
+                    </span>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ol>

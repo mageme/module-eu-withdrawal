@@ -77,7 +77,30 @@ class WaiverEmailRenderer
     public function renderMerchantBcc(WaiverConfirmationDto $dto, int $storeId, string $to): TransportInterface
     {
         $vars = $this->buildVars($dto, $storeId);
+        // The merchant copy is an audit record — its timestamps keep the seconds
+        // the customer-facing format drops.
+        $vars['waiver']['consent_at_formatted'] = $this->formatUtcExact($dto->consentAt);
+        $vars['waiver']['ack_at_formatted'] = $this->formatUtcExact($dto->ackAt);
         return $this->build(self::TPL_MERCHANT, $storeId, $to, $vars, []);
+    }
+
+    /**
+     * Second-precise UTC stamp for the merchant archive copy.
+     *
+     * @param string $mysqlDate
+     * @return string
+     */
+    private function formatUtcExact(string $mysqlDate): string
+    {
+        if ($mysqlDate === '') {
+            return '';
+        }
+        try {
+            $dt = new \DateTimeImmutable($mysqlDate, new \DateTimeZone('UTC'));
+            return $dt->format('M j, Y H:i:s') . ' UTC';
+        } catch (\Throwable) {
+            return $mysqlDate;
+        }
     }
 
     /**
@@ -102,11 +125,14 @@ class WaiverEmailRenderer
         // Reference shows e.g. "WV-7-1730131989" — order id + epoch from consent_at
         $waiver['ip'] = $waiver['ip'] ?? '—';
         $waiver['text_hash_short'] = $this->shortHash($dto);
+        $waiver['text_hash_full'] = $this->fullHash($dto);
 
         return [
             'subject_text'     => (string) __('Digital content waiver confirmation — Order %1', (string) ($waiver[WaiverConfirmationDto::ORDER_INCREMENT_ID] ?? '')),
             'waiver'           => $waiver,
             'view_url'         => $orderUrl,
+            // The order page needs an account; a guest gets no button rather than a login wall.
+            'view_is_personal' => $dto->customerId > 0,
             'email_header_html' => $layout->renderHeader(),
             'email_footer_html' => $layout->renderFooter(),
         ];
@@ -150,9 +176,20 @@ class WaiverEmailRenderer
         // Display-only badge: abbreviated SHA-256 of the accepted legal-text
         // snapshots. Not the stored waiver_text_hash, which also covers
         // locale + jurisdiction (WaiverTextHasher) — never compare the two.
-        $payload = $dto->consentSnapshot . "\n\n---\n\n" . $dto->ackSnapshot;
-        $hash = hash('sha256', $payload);
+        $hash = $this->fullHash($dto);
         return substr($hash, 0, 8) . '…' . substr($hash, -5);
+    }
+
+    /**
+     * Complete SHA-256 of the accepted legal-text snapshots, usable for
+     * verification against a kept copy of this email.
+     *
+     * @param WaiverConfirmationDto $dto
+     * @return string
+     */
+    private function fullHash(WaiverConfirmationDto $dto): string
+    {
+        return hash('sha256', $dto->consentSnapshot . "\n\n---\n\n" . $dto->ackSnapshot);
     }
 
     /**

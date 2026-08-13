@@ -15,6 +15,22 @@ $storeAddress = $block->getStoreAddress();
 $uspItems     = $block->getUspItems();
 $socialUrls   = $block->getSocialUrls();
 $year         = $block->getCurrentYear();
+
+// Quick links render only when their destination is configured; an unconfigured
+// link is dropped rather than pointed at the homepage. "Contact us" prefers the
+// configured contact/helpdesk page and falls back to emailing support.
+$quickLinks = [];
+if ($block->getContactUrl() !== '') {
+    $quickLinks[] = ['href' => $block->getContactUrl(), 'label' => (string) __('Contact us')];
+} elseif ($supportEmail !== '') {
+    $quickLinks[] = ['href' => 'mailto:' . $supportEmail, 'label' => (string) __('Contact us')];
+}
+if ($block->getReturnsUrl() !== '') {
+    $quickLinks[] = ['href' => $block->getReturnsUrl(), 'label' => (string) __('Returns')];
+}
+if ($block->getFaqUrl() !== '') {
+    $quickLinks[] = ['href' => $block->getFaqUrl(), 'label' => (string) __('FAQs')];
+}
 ?>
             </td></tr>
             <?php if ($uspItems !== []): ?>
@@ -36,19 +52,15 @@ $year         = $block->getCurrentYear();
                 </table>
             </td></tr>
             <?php endif; ?>
+            <?php if ($quickLinks !== [] || $socialUrls !== []): ?>
             <tr><td style="padding:18px 32px 24px;">
                 <table role="presentation" class="footer-row" width="100%" cellpadding="0" cellspacing="0" border="0">
                     <tr>
                         <td align="left" valign="middle" style="font-size:12px;color:#6b7280;">
-                            <?php if ($supportEmail !== ''): ?>
-                                <a href="mailto:<?= $escaper->escapeUrl($supportEmail) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml(__('Contact us')) ?></a>
-                            <?php else: ?>
-                                <span><?= $escaper->escapeHtml(__('Contact us')) ?></span>
-                            <?php endif; ?>
-                            <span style="margin:0 8px;color:#d1d5db;">·</span>
-                            <a href="<?= $escaper->escapeUrl($storeUrl) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml(__('Returns')) ?></a>
-                            <span style="margin:0 8px;color:#d1d5db;">·</span>
-                            <a href="<?= $escaper->escapeUrl($storeUrl) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml(__('FAQs')) ?></a>
+                            <?php foreach ($quickLinks as $i => $link): ?>
+                                <?php if ($i > 0): ?><span style="margin:0 8px;color:#d1d5db;">·</span><?php endif; ?>
+                                <a href="<?= $escaper->escapeUrl($link['href']) ?>" style="color:#6b7280;text-decoration:none;"><?= $escaper->escapeHtml($link['label']) ?></a>
+                            <?php endforeach; ?>
                         </td>
                         <?php if ($socialUrls !== []): ?>
                         <td align="right" valign="middle">
@@ -77,9 +89,10 @@ $year         = $block->getCurrentYear();
                     </tr>
                 </table>
             </td></tr>
+            <?php endif; ?>
         </table>
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin-top:16px;">
-            <tr><td align="center" style="padding:8px 24px;font-size:11px;color:#9ca3af;line-height:1.6;">
+            <tr><td align="center" style="padding:8px 24px;font-size:12px;color:#667085;line-height:1.6;">
                 <?= $escaper->escapeHtml($block->getDisclaimer()) ?><br />
                 <?php if ($storeAddress !== ''): ?>
                     <?= $escaper->escapeHtml($storeAddress) ?><br />

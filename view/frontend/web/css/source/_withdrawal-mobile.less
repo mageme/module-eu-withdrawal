@@ -107,7 +107,7 @@
     }
     .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-thumb {
         grid-area: thumb;
-        width: 64px;
+        width: 64px; min-width: 0;
     }
     .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-thumb img {
         width: 64px; height: 64px;
@@ -127,7 +127,7 @@
     .mm-eu-w-items-table .mm-eu-w-item-row td.mm-eu-w-col-qty:nth-of-type(4) {
         display: block;
         grid-area: purchased;
-        width: auto;
+        width: auto; min-width: 0;
         text-align: right;
         font-size: 14px;
         font-weight: 600;
@@ -137,18 +137,18 @@
         white-space: nowrap;
     }
     .mm-eu-w-items-table .mm-eu-w-item-row td.mm-eu-w-col-qty:nth-of-type(4)::before {
-        content: 'Qty: ';
+        content: attr(data-mm-label);
         color: @mm-eu-w-text-muted;
         font-weight: 400;
     }
     .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-rqty {
         grid-area: controls;
-        width: auto;
+        width: auto; min-width: 0;
         text-align: left;
     }
     .mm-eu-w-items-table .mm-eu-w-item-row .mm-eu-w-col-total {
         grid-area: total;
-        width: auto;
+        width: auto; min-width: 0;
         text-align: right;
         align-self: center;
         font-weight: 600;
@@ -239,7 +239,7 @@
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-thumb {
         grid-area: thumb;
-        width: 56px;
+        width: 56px; min-width: 0;
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-thumb img {
         width: 56px; height: 56px;
@@ -248,12 +248,12 @@
         grid-area: info; width: auto;
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-qty {
-        grid-area: qty; width: auto;
+        grid-area: qty; width: auto; min-width: 0;
         text-align: right; font-weight: 500;
         color: @mm-eu-w-text-muted;
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-qty::before {
-        content: 'Qty: '; color: @mm-eu-w-text-muted; font-weight: 400;
+        content: attr(data-mm-label); color: @mm-eu-w-text-muted; font-weight: 400;
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-reason {
         grid-area: reason; width: auto;
@@ -262,10 +262,10 @@
         margin-top: 4px;
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-reason::before {
-        content: 'Reason: '; font-weight: 500; color: @mm-eu-w-text;
+        content: attr(data-mm-label); font-weight: 500; color: @mm-eu-w-text;
     }
     .mm-eu-w-items-table--review tbody tr .mm-eu-w-col-total {
-        grid-area: total; width: auto;
+        grid-area: total; width: auto; min-width: 0;
         text-align: right; font-weight: 600; font-size: 15px;
         padding-top: 4px;
     }

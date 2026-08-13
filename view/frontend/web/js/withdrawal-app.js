@@ -166,6 +166,14 @@
 
         const stepperSteps = document.querySelectorAll('.mm-eu-w-step');
 
+        // A step can be revisited once it is behind the customer, and never once the request is submitted.
+        const SUBMITTED_STEP = 4;
+        const isNavigable = (n, activeN) => n < activeN && activeN < SUBMITTED_STEP;
+        // Matches the server-rendered marker in progress_stepper.phtml.
+        const STEP_DONE_MARK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"'
+            + ' stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'
+            + '<polyline points="5 13 9 17 19 7"/></svg>';
+
         const setStepper = (activeN) => {
             stepperSteps.forEach((el, idx) => {
                 const n = idx + 1;
@@ -173,6 +181,26 @@
                 if (n < activeN) el.classList.add('mm-eu-w-step--done');
                 else if (n === activeN) el.classList.add('mm-eu-w-step--active');
                 else el.classList.add('mm-eu-w-step--upcoming');
+                if (n === activeN) el.setAttribute('aria-current', 'step');
+                else el.removeAttribute('aria-current');
+
+                const marker = el.querySelector('.mm-eu-w-step-number');
+                if (marker) marker.innerHTML = n < activeN ? STEP_DONE_MARK : String(n);
+
+                const target = el.querySelector('[data-step-target]');
+                if (!target) return;
+                const open = isNavigable(n, activeN);
+                if (target.tagName === 'A') {
+                    if (open) {
+                        target.removeAttribute('aria-disabled');
+                        target.removeAttribute('tabindex');
+                    } else {
+                        target.setAttribute('aria-disabled', 'true');
+                        target.setAttribute('tabindex', '-1');
+                    }
+                } else {
+                    target.disabled = !open;
+                }
             });
         };
 
@@ -410,13 +438,17 @@
                 if (reviewParts) nameTd.appendChild(bundlePartsNode(reviewParts));
                 tr.appendChild(nameTd);
 
+                // Below the table breakpoint the row becomes a stacked grid whose cells lose their
+                // column header, so each one carries its own label for the CSS to print.
                 const qtyTd = document.createElement('td');
                 qtyTd.className = 'mm-eu-w-col-qty';
+                qtyTd.dataset.mmLabel = (boot.i18n && boot.i18n.qtyPrefix) || 'Qty: ';
                 qtyTd.textContent = String(data.qty);
                 tr.appendChild(qtyTd);
 
                 const reasonTd = document.createElement('td');
                 reasonTd.className = 'mm-eu-w-col-reason';
+                reasonTd.dataset.mmLabel = (boot.i18n && boot.i18n.reasonPrefix) || 'Reason: ';
                 reasonTd.textContent = reasonDisplayFor(itemId) || '—';
                 tr.appendChild(reasonTd);
 
@@ -649,6 +681,18 @@
                 showPanel('2');
             });
         }
+
+        // Clicking a completed step in the progress bar goes back to it. Step 1 keeps its href and leaves
+        // the page, so only the in-page panels are handled here.
+        stepperSteps.forEach((el, idx) => {
+            const target = el.querySelector('button[data-step-target]');
+            if (!target) return;
+            target.addEventListener('click', () => {
+                const n = idx + 1;
+                if (!isNavigable(n, Number(state.step))) return;
+                showPanel(String(n));
+            });
+        });
 
         const submitBtn = panels['3'].querySelector('[data-role="submit-request"]');
         const submitErr = panels['3'].querySelector('[data-role="submit-error"]');

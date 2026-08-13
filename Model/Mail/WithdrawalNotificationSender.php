@@ -32,7 +32,7 @@ use Psr\Log\LoggerInterface;
  */
 class WithdrawalNotificationSender
 {
-    private const CONTACT_ADDRESS_PATH = 'trans_email/ident_general/email';
+    private const CONTACT_ADDRESS_PATH = 'trans_email/ident_support/email';
 
     /**
      * Constructor.
@@ -158,6 +158,13 @@ class WithdrawalNotificationSender
                 }
             }
 
+            $viewUrl = $this->customerViewUrl->resolveForCustomer(
+                $orderEntityId,
+                $customerId,
+                $resolvedStoreId,
+                $store->getBaseUrl(),
+            );
+
             $vars = [
                 'subject_text'            => (string) __('Your withdrawal request has been submitted — Order #%1', $orderIncrementId),
                 'order_increment_id'      => $orderIncrementId,
@@ -168,14 +175,11 @@ class WithdrawalNotificationSender
                 'email_footer_html'       => $layout->renderFooter(),
                 'items_html'              => $itemsHtml,
                 'support_email'           => $layout->getSupportEmail(),
+                'contact_page_url'        => $layout->getContactUrl(),
                 'store_name'              => $layout->getStoreName(),
                 'store_url'               => $store->getBaseUrl(),
-                'view_url'                => $this->customerViewUrl->resolveForCustomer(
-                    $orderEntityId,
-                    $customerId,
-                    $resolvedStoreId,
-                    $store->getBaseUrl(),
-                ),
+                'view_url'                => $viewUrl,
+                'view_is_personal'        => $this->customerViewUrl->isPersonalView($viewUrl, $customerId),
                 'submitted_at_formatted'  => $submittedAt,
                 'refund_method'           => $refundMethod,
                 'request_increment_id'    => $requestIncrementId,

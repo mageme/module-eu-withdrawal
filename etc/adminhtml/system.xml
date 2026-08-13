@@ -639,6 +639,21 @@
                             <label>YouTube URL</label>
                         </field>
                     </group>
+                    <field id="footer_contact_url" translate="label comment" type="text" sortOrder="55" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Contact Page URL</label>
+                        <comment>Shown as the "Contact us" link in the footer of every customer email — point it at your contact form or helpdesk. Full address including https://. Leave blank to fall back to an email link to the Customer Support sender address; the link is hidden when neither is set.</comment>
+                        <validate>validate-url</validate>
+                    </field>
+                    <field id="footer_returns_url" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>Returns Page URL</label>
+                        <comment>Shown as the "Returns" link in the footer of every customer email. Full address including https://. Leave blank to hide the link.</comment>
+                        <validate>validate-url</validate>
+                    </field>
+                    <field id="footer_faq_url" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                        <label>FAQ Page URL</label>
+                        <comment>Shown as the "FAQs" link in the footer of every customer email. Full address including https://. Leave blank to hide the link.</comment>
+                        <validate>validate-url</validate>
+                    </field>
                 </group>
             </group>
 

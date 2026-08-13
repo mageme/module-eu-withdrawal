@@ -1,3 +1,27 @@
+## 1.1.3
+
++ New: The steps at the top of the withdrawal page can now be clicked to go back to a step already completed, instead of only the link at the bottom of each step.
++ New: The "Contact us", "Returns" and "FAQs" links in the email footer now come from three new settings under Customer Notifications → Branding — point them at your contact form, returns page and FAQ, or leave them blank and the links disappear. "Returns" and "FAQs" used to lead to the shop's homepage; "Contact us" still falls back to emailing your support address when no contact page is set, and hides when there is neither.
++ New: The admin new-request alert is now a proper summary card — customer name, store, submission time, and the requested refund clearly labelled as requested.
+- Fix: Column headings on the item and review tables no longer run into the neighbouring column on storefronts whose language uses longer words than English.
+- Fix: The line above the refund total in the return summary is now one unbroken rule instead of two pieces with a gap between them.
+- Fix: On phones the "Qty" and "Reason" labels beside each item now follow the storefront's language instead of always reading in English.
+- Fix: The return-shipping notice on the review step now appears in the storefront's language when the default wording is kept — it used to stay in English on every translated store. Wording you type in yourself is still shown exactly as entered.
+- Fix: The "Visit our help center" link in the request-submitted email started a new email instead of opening a page; it now says it writes to support, which is what it does.
+- Fix: The button in the request-submitted email now matches where it leads — shoppers who can open their request straight away still get "View my returns", while a guest who has to look the order up first is sent to "Find your order".
+- Fix: The buttons in the approval, refund-initiated and cancellation-confirmed emails now do the same — a guest who has to look their order up first is invited to find it instead of being promised a personal page.
+- Fix: The approval and refund-initiated emails now arrive fully in the language of the store the order was placed on — their headline, summary and subject line used to stay in English.
+- Fix: The digital-content waiver confirmation no longer shows a "View order" button to a guest — it led to a login page a guest cannot pass. Customers with an account keep the button.
+- Fix: The merchant's copy of the waiver confirmation listed its items as raw template code instead of the actual products; the item list now renders, and the whole copy is a tidy summary card instead of loose lines of text.
+- Fix: The "if you did not initiate this request" warning in the submitted email invited customers to write to the store's no-reply address; it now uses the support address.
+- Fix: An item with no return reason now says "Not provided" in the customer's language instead of showing a bare dash.
+- Fix: Two German phrasings tidied up: "Storniert durch" for the cancelled-by row and a natural wording for the security notice.
+* Other: The "Need help?" panel and every "Contact support" link and button inside the emails follow the same Contact Page URL setting — with a contact page configured they open it, without one they keep offering an email to your support address.
+* Other: The withdrawal receipt now carries the withdrawal number, so a single order with several requests stays unambiguous.
+* Other: The digital-content waiver confirmation prints the full SHA-256 fingerprint of the accepted text instead of a shortened one, so it can actually be verified.
+* Other: Small print across the emails — item labels, the security notice, the legal footer — is slightly larger and darker for readability, long addresses wrap instead of overflowing on phones, and the store address in the footer follows the European street-postcode-city order.
+* Other: Every completed step in the progress bar now shows a tick, so finished steps look the same wherever the customer is in the flow.
+
 ## 1.1.2
 
 - Fix: The withdrawal receipt email is now sent in the language the withdrawal was made in, instead of always arriving in English.

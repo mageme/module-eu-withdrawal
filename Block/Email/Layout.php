@@ -27,6 +27,9 @@ class Layout extends Template
 {
     private const CONFIG_USP_BASE    = 'mageme_eu_withdrawal/notifications/branding/usp_';
     private const CONFIG_SOCIAL_BASE = 'mageme_eu_withdrawal/notifications/branding/social/social_';
+    private const CONFIG_FOOTER_CONTACT_URL = 'mageme_eu_withdrawal/notifications/branding/footer_contact_url';
+    private const CONFIG_FOOTER_RETURNS_URL = 'mageme_eu_withdrawal/notifications/branding/footer_returns_url';
+    private const CONFIG_FOOTER_FAQ_URL     = 'mageme_eu_withdrawal/notifications/branding/footer_faq_url';
 
     /**
      * Get store name.
@@ -105,18 +108,66 @@ class Layout extends Template
     }
 
     /**
+     * URL behind the footer "Contact us" quick link — a contact form or helpdesk
+     * page. Empty falls back to a mailto: for the support address.
+     *
+     * @return string
+     */
+    public function getContactUrl(): string
+    {
+        return $this->readFooterUrl(self::CONFIG_FOOTER_CONTACT_URL);
+    }
+
+    /**
+     * URL behind the footer "Returns" quick link; empty hides the link.
+     *
+     * @return string
+     */
+    public function getReturnsUrl(): string
+    {
+        return $this->readFooterUrl(self::CONFIG_FOOTER_RETURNS_URL);
+    }
+
+    /**
+     * URL behind the footer "FAQs" quick link; empty hides the link.
+     *
+     * @return string
+     */
+    public function getFaqUrl(): string
+    {
+        return $this->readFooterUrl(self::CONFIG_FOOTER_FAQ_URL);
+    }
+
+    /**
+     * An email link has no page to resolve a relative path against, so only an
+     * absolute http(s) URL renders; anything else hides the link.
+     *
+     * @param string $path
+     * @return string
+     */
+    private function readFooterUrl(string $path): string
+    {
+        $url = trim((string) $this->_scopeConfig->getValue(
+            $path,
+            ScopeInterface::SCOPE_STORE,
+            $this->resolveStoreId(),
+        ));
+        return preg_match('#^https?://#i', $url) === 1 ? $url : '';
+    }
+
+    /**
      * Get store address.
      *
      * @return string
      */
     public function getStoreAddress(): string
     {
-        $parts = array_filter([
-            (string) $this->_scopeConfig->getValue('general/store_information/street_line1', ScopeInterface::SCOPE_STORE, $this->resolveStoreId()),
-            (string) $this->_scopeConfig->getValue('general/store_information/city', ScopeInterface::SCOPE_STORE, $this->resolveStoreId()),
-            (string) $this->_scopeConfig->getValue('general/store_information/postcode', ScopeInterface::SCOPE_STORE, $this->resolveStoreId()),
-        ]);
-        return implode(', ', $parts);
+        $street = (string) $this->_scopeConfig->getValue('general/store_information/street_line1', ScopeInterface::SCOPE_STORE, $this->resolveStoreId());
+        $city = (string) $this->_scopeConfig->getValue('general/store_information/city', ScopeInterface::SCOPE_STORE, $this->resolveStoreId());
+        $postcode = (string) $this->_scopeConfig->getValue('general/store_information/postcode', ScopeInterface::SCOPE_STORE, $this->resolveStoreId());
+        // European convention: street, then "postcode city" as one locality part.
+        $locality = trim($postcode . ' ' . $city);
+        return implode(', ', array_filter([$street, $locality]));
     }
 
     /**

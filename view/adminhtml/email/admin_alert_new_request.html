@@ -2,15 +2,51 @@
 <!--@vars {
     "var request_increment_id":"Withdrawal request increment",
     "var order_increment_id":"Order increment",
+    "var customer_name":"Customer name",
     "var customer_email":"Customer email",
-    "var refund_total_formatted":"Formatted refund total"
+    "var refund_total_formatted":"Formatted requested refund",
+    "var submitted_at_utc":"Submission timestamp (UTC)",
+    "var store_name":"Store the order was placed on"
 } @-->
-
-<h1>{{trans "New Withdrawal Request"}}</h1>
-
-<p>{{trans "A new withdrawal request was just submitted."}}</p>
-
-<p><strong>{{trans "Request:"}}</strong> {{var request_increment_id}}</p>
-<p><strong>{{trans "Order:"}}</strong> #{{var order_increment_id}}</p>
-<p><strong>{{trans "Customer:"}}</strong> <a href="mailto:{{var customer_email}}">{{var customer_email}}</a></p>
-<p><strong>{{trans "Refund Total:"}}</strong> {{var refund_total_formatted}}</p>
+<html><body style="margin:0;padding:24px;background:#f5f6f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1a;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
+    <tr><td style="padding:20px 24px 12px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#6b7280;margin-bottom:6px;">{{trans "Internal alert"}}</div>
+        <div style="font-size:22px;font-weight:700;color:#1a1a1a;line-height:1.3;">{{trans "New withdrawal request"}}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px;">{{trans "A new withdrawal request was submitted and is awaiting review."}}</div>
+    </td></tr>
+    <tr><td style="padding:2px 24px 4px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;line-height:1.5;">
+            <tr>
+                <td style="padding:5px 0;width:160px;color:#6b7280;vertical-align:top;">{{trans "Request"}}</td>
+                <td style="padding:5px 0;font-weight:600;">{{var request_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:5px 0;color:#6b7280;vertical-align:top;">{{trans "Order"}}</td>
+                <td style="padding:5px 0;font-weight:600;">#{{var order_increment_id}}</td>
+            </tr>
+            <tr>
+                <td style="padding:5px 0;color:#6b7280;vertical-align:top;">{{trans "Customer"}}</td>
+                <td style="padding:5px 0;">{{var customer_name}} &lt;<a href="mailto:{{var customer_email}}" style="color:#1d4ed8;text-decoration:none;overflow-wrap:anywhere;">{{var customer_email}}</a>&gt;</td>
+            </tr>
+            {{depend store_name}}
+            <tr>
+                <td style="padding:5px 0;color:#6b7280;vertical-align:top;">{{trans "Store"}}</td>
+                <td style="padding:5px 0;">{{var store_name}}</td>
+            </tr>
+            {{/depend}}
+            {{depend submitted_at_utc}}
+            <tr>
+                <td style="padding:5px 0;color:#6b7280;vertical-align:top;">{{trans "Submitted at"}}</td>
+                <td style="padding:5px 0;">{{var submitted_at_utc}}</td>
+            </tr>
+            {{/depend}}
+            <tr>
+                <td style="padding:5px 0;color:#6b7280;vertical-align:top;">{{trans "Requested refund"}}</td>
+                <td style="padding:5px 0;font-weight:600;">{{var refund_total_formatted}}</td>
+            </tr>
+        </table>
+    </td></tr>
+    <tr><td style="padding:0 24px 20px;"></td></tr>
+</table>
+</body></html>

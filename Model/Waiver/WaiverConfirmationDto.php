@@ -39,6 +39,7 @@ class WaiverConfirmationDto
         public readonly string $waiverReference,
         public readonly string $locale,
         public readonly ?string $downloadUrl,
+        public readonly int $customerId = 0,
     ) {
     }
 
