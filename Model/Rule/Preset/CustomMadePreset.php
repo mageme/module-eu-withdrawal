@@ -9,12 +9,30 @@ namespace MageMe\EUWithdrawal\Model\Rule\Preset;
 
 use MageMe\EUWithdrawal\Api\Data\EligibilityDecisionInterface;
 use MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface;
+use MageMe\EUWithdrawal\Model\Item\PersonalisedOptionDetector;
+use MageMe\EUWithdrawal\Model\Item\ProductFlagReader;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 
-class CustomMadePreset extends AbstractPreset
+class CustomMadePreset extends AbstractProductFlagPreset
 {
     public const CODE = 'preset_custom';
     public const CONFIG_PATH = 'mageme_eu_withdrawal/eligibility/preset_custom';
     public const ATTRIBUTE = 'is_custom_made';
+
+    /**
+     * Constructor.
+     *
+     * @param ScopeConfigInterface $scopeConfig
+     * @param ProductFlagReader $flagReader
+     * @param PersonalisedOptionDetector $optionDetector
+     */
+    public function __construct(
+        ScopeConfigInterface $scopeConfig,
+        ProductFlagReader $flagReader,
+        private readonly PersonalisedOptionDetector $optionDetector,
+    ) {
+        parent::__construct($scopeConfig, $flagReader);
+    }
 
     /**
      * Get code.
@@ -48,12 +66,10 @@ class CustomMadePreset extends AbstractPreset
         EligibilityDecisionInterface $current,
     ): EligibilityDecisionInterface {
         $decision = $current->withApplied(self::CODE);
-        $product = $request->getCurrentProduct();
-        if ($product === null) {
-            return $decision;
+        if ($this->isFlagSet($request, self::ATTRIBUTE)) {
+            return $decision->withDeny('art_16_c_custom_made', 'Art. 16(c)');
         }
-        $attr = $product->getCustomAttribute(self::ATTRIBUTE);
-        if ($attr !== null && (int) $attr->getValue() === 1) {
+        if ($this->optionDetector->isPersonalised($request->getCurrentItem(), $request->getCurrentProduct())) {
             return $decision->withDeny('art_16_c_custom_made', 'Art. 16(c)');
         }
         return $decision;

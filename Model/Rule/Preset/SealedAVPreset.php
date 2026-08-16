@@ -10,7 +10,7 @@ namespace MageMe\EUWithdrawal\Model\Rule\Preset;
 use MageMe\EUWithdrawal\Api\Data\EligibilityDecisionInterface;
 use MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface;
 
-class SealedAVPreset extends AbstractPreset
+class SealedAVPreset extends AbstractProductFlagPreset
 {
     public const CODE = 'preset_sealed_av';
     public const CONFIG_PATH = 'mageme_eu_withdrawal/eligibility/preset_sealed_av';
@@ -49,12 +49,7 @@ class SealedAVPreset extends AbstractPreset
         EligibilityDecisionInterface $current,
     ): EligibilityDecisionInterface {
         $decision = $current->withApplied(self::CODE);
-        $product = $request->getCurrentProduct();
-        if ($product === null) {
-            return $decision;
-        }
-        $attr = $product->getCustomAttribute(self::ATTRIBUTE);
-        $isSealed = $attr !== null && (int) $attr->getValue() === 1;
+        $isSealed = $this->isFlagSet($request, self::ATTRIBUTE);
         $opened = $request->getCustomerDeclaration(self::DECLARATION) === true;
         if ($isSealed && $opened) {
             return $decision->withDeny('art_16_i_sealed_av', 'Art. 16(i)');

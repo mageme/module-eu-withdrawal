@@ -20,6 +20,11 @@ $noEligibleItems = method_exists($block, 'hasAnyEligibleItem') && !$block->hasAn
 $returnSummaryChild = $block->getChildBlock('return_summary');
 if ($returnSummaryChild !== false) {
     $returnSummaryChild->setData('no_eligible_items', $noEligibleItems);
+    $returnSummaryChild->setData(
+        'has_pending_requests',
+        method_exists($block, 'getPendingRequestsByOrderItemId')
+            && $block->getPendingRequestsByOrderItemId() !== [],
+    );
 }
 
 // Push pending-request map + cancel URL into item_selector so each row can

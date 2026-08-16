@@ -10,7 +10,7 @@ namespace MageMe\EUWithdrawal\Model\Rule\Preset;
 use MageMe\EUWithdrawal\Api\Data\EligibilityDecisionInterface;
 use MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface;
 
-class SealedHygienePreset extends AbstractPreset
+class SealedHygienePreset extends AbstractProductFlagPreset
 {
     public const CODE = 'preset_sealed_hygiene';
     public const CONFIG_PATH = 'mageme_eu_withdrawal/eligibility/preset_sealed_hygiene';
@@ -49,12 +49,7 @@ class SealedHygienePreset extends AbstractPreset
         EligibilityDecisionInterface $current,
     ): EligibilityDecisionInterface {
         $decision = $current->withApplied(self::CODE);
-        $product = $request->getCurrentProduct();
-        if ($product === null) {
-            return $decision;
-        }
-        $attr = $product->getCustomAttribute(self::ATTRIBUTE);
-        $isSealed = $attr !== null && (int) $attr->getValue() === 1;
+        $isSealed = $this->isFlagSet($request, self::ATTRIBUTE);
         $opened = $request->getCustomerDeclaration(self::DECLARATION) === true;
         if ($isSealed && $opened) {
             return $decision->withDeny('art_16_e_sealed_hygiene', 'Art. 16(e)');

@@ -16,4 +16,14 @@
         <plugin name="mageme_eu_withdrawal_guard_creditmemo_refund"
                 type="MageMe\EUWithdrawal\Plugin\Sales\GuardCreditmemoRefund"/>
     </type>
+    <virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool">
+        <arguments>
+            <argument name="modifiers" xsi:type="array">
+                <item name="mageme_eu_withdrawal_personalised_options" xsi:type="array">
+                    <item name="class" xsi:type="string">MageMe\EUWithdrawal\Ui\DataProvider\Product\Form\Modifier\PersonalisedOptions</item>
+                    <item name="sortOrder" xsi:type="number">150</item>
+                </item>
+            </argument>
+        </arguments>
+    </virtualType>
 </config>

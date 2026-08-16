@@ -10,7 +10,7 @@ namespace MageMe\EUWithdrawal\Model\Rule\Preset;
 use MageMe\EUWithdrawal\Api\Data\EligibilityDecisionInterface;
 use MageMe\EUWithdrawal\Api\Data\EligibilityRequestInterface;
 
-class PerishablePreset extends AbstractPreset
+class PerishablePreset extends AbstractProductFlagPreset
 {
     public const CODE = 'preset_perishable';
     public const CONFIG_PATH = 'mageme_eu_withdrawal/eligibility/preset_perishable';
@@ -48,12 +48,7 @@ class PerishablePreset extends AbstractPreset
         EligibilityDecisionInterface $current,
     ): EligibilityDecisionInterface {
         $decision = $current->withApplied(self::CODE);
-        $product = $request->getCurrentProduct();
-        if ($product === null) {
-            return $decision;
-        }
-        $attr = $product->getCustomAttribute(self::ATTRIBUTE);
-        if ($attr !== null && (int) $attr->getValue() === 1) {
+        if ($this->isFlagSet($request, self::ATTRIBUTE)) {
             return $decision->withDeny('art_16_d_perishable', 'Art. 16(d)');
         }
         return $decision;

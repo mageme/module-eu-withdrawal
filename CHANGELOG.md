@@ -1,3 +1,9 @@
+## 1.1.4
+
++ New: A product can now count as custom-made only in the orders where the customer actually asked for the personalisation. On a product with customisable options, tick the choices that mean personalisation under "Options That Make It Custom-Made" — a keyring sold plain and engraved stays one product with one stock figure, and only the engraved orders lose the right of withdrawal.
++ New: The Article 16 exclusions (custom-made, perishable, sealed hygiene, sealed A/V) can now be set on a single variant of a configurable product or on a bundle component — until now only the flag on the product itself counted, so a shop selling a plain and a personalised version of the same item had to list them as two separate products.
+- Fix: When an order has nothing left to withdraw, the note in the summary no longer tells every customer that the items are already being processed — it says that only when a request really is pending, and otherwise points at the reason shown beside each item.
+
 ## 1.1.3
 
 + New: The steps at the top of the withdrawal page can now be clicked to go back to a step already completed, instead of only the link at the bottom of each step.

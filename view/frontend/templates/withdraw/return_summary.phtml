@@ -63,7 +63,11 @@ $t = $block->getInitialTotals();
         <?php if ($block->getData('no_eligible_items')): ?>
             <div class="mm-eu-w-sidebar-notice mm-eu-w-sidebar-notice--muted">
                 <?= $escaper->escapeHtml(__('No items in this order are currently eligible for withdrawal.')) ?>
-                <?= $escaper->escapeHtml(__('Each line is either already being processed, pending confirmation, or has been fully withdrawn. Check the existing requests section above for status or to cancel.')) ?>
+                <?php if ($block->getData('has_pending_requests')): ?>
+                    <?= $escaper->escapeHtml(__('Each line is either already being processed, pending confirmation, or has been fully withdrawn. Check the existing requests section above for status or to cancel.')) ?>
+                <?php else: ?>
+                    <?= $escaper->escapeHtml(__('The reason is shown next to each item above.')) ?>
+                <?php endif; ?>
             </div>
         <?php else: ?>
             <p class="mm-eu-w-empty-hint" data-role="items-empty">
