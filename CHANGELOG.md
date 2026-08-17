@@ -1,3 +1,7 @@
+## 1.1.5
+
+- Fix: The withdrawal request page in the admin now opens on shops that run with Magento's HTML minification switched on; it used to fail with a template error.
+
 ## 1.1.4
 
 + New: A product can now count as custom-made only in the orders where the customer actually asked for the personalisation. On a product with customisable options, tick the choices that mean personalisation under "Options That Make It Custom-Made" — a keyring sold plain and engraved stays one product with one stock figure, and only the engraved orders lose the right of withdrawal.
