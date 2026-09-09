@@ -7,11 +7,15 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Observer;
 
+use MageMe\EUWithdrawal\Model\ModuleConfig;
 use MageMe\EUWithdrawal\Model\Queue\WaiverConfirmationPublisher;
 use MageMe\EUWithdrawal\Model\Queue\WaiverConfirmationStateRepository;
+use MageMe\EUWithdrawal\Plugin\Sales\OrderPlacementGuard;
 use MageMe\EUWithdrawal\Service\DigitalContentDetector;
 use Magento\Framework\Event\Observer;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Store\Model\ScopeInterface;
 use Psr\Log\LoggerInterface;
 
 class PublishWaiverConfirmationOnOrderPlace implements ObserverInterface
@@ -23,12 +27,16 @@ class PublishWaiverConfirmationOnOrderPlace implements ObserverInterface
      * @param WaiverConfirmationPublisher $publisher
      * @param WaiverConfirmationStateRepository $stateRepo
      * @param LoggerInterface $logger
+     * @param ModuleConfig $moduleConfig
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
         private readonly DigitalContentDetector $detector,
         private readonly WaiverConfirmationPublisher $publisher,
         private readonly WaiverConfirmationStateRepository $stateRepo,
         private readonly LoggerInterface $logger,
+        private readonly ModuleConfig $moduleConfig,
+        private readonly ScopeConfigInterface $scopeConfig,
     ) {
     }
 
@@ -42,6 +50,13 @@ class PublishWaiverConfirmationOnOrderPlace implements ObserverInterface
     {
         $order = $observer->getEvent()->getOrder();
         if (!$order || !$order->getEntityId()) {
+            return;
+        }
+        $storeId = (int) $order->getStoreId();
+        $scopeId = $storeId > 0 ? $storeId : null;
+        if (!$this->moduleConfig->isEnabled($scopeId)
+            || !$this->scopeConfig->isSetFlag(OrderPlacementGuard::XML_DIGITAL_ENABLED, ScopeInterface::SCOPE_STORE, $scopeId)
+        ) {
             return;
         }
         $digital = $this->detector->filterDigitalItems($order->getAllVisibleItems());

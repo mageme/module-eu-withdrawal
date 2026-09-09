@@ -208,3 +208,106 @@
     font-size: 12px;
     white-space: nowrap;
 }
+
+/* Vendor announcement: one muted caption line under the page title. */
+.mm-eu-w-news {
+    align-items: center;
+    color: #6b7278;
+    display: flex;
+    font-size: 13px;
+    gap: 8px;
+    line-height: 18px;
+    margin-top: 6px;
+    min-width: 0;
+}
+
+.mm-eu-w-news::before {
+    border-radius: 50%;
+    content: '';
+    flex: 0 0 auto;
+    height: 7px;
+    width: 7px;
+}
+
+.mm-eu-w-news__title {
+    color: #41362f;
+    flex: 0 1 auto;
+    font-weight: 600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mm-eu-w-news__link {
+    align-items: center;
+    color: #6b7278;
+    display: inline-flex;
+    flex: 0 0 auto;
+    gap: 4px;
+    text-decoration: underline;
+    white-space: nowrap;
+}
+
+.mm-eu-w-news__link:hover,
+.mm-eu-w-news__link:focus {
+    color: #41362f;
+}
+
+.mm-eu-w-news__link svg {
+    height: 12px;
+    width: 12px;
+}
+
+/* Announces the new tab to screen readers without crowding the line. */
+.mm-eu-w-news__ext {
+    clip: rect(0 0 0 0);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    width: 1px;
+}
+
+.mm-eu-w-news__dismiss {
+    background: none;
+    border: 0;
+    color: #9aa1a6;
+    cursor: pointer;
+    display: inline-flex;
+    flex: 0 0 auto;
+    margin: 0 0 0 20px;
+    padding: 5px;
+}
+
+.mm-eu-w-news__dismiss svg {
+    display: block;
+    height: 16px;
+    width: 16px;
+}
+
+.mm-eu-w-news__dismiss:hover {
+    color: #41362f;
+}
+
+.mm-eu-w-news__dismiss:focus-visible {
+    color: #41362f;
+    outline: 2px solid #007bdb;
+    outline-offset: 1px;
+}
+
+/* Dot colour follows the inbox severity: critical, major, minor, notice. */
+.mm-eu-w-news--severity-1::before {
+    background: #e22626;
+}
+
+.mm-eu-w-news--severity-2::before {
+    background: #eb5202;
+}
+
+.mm-eu-w-news--severity-3::before {
+    background: #f2a900;
+}
+
+.mm-eu-w-news--severity-4::before {
+    background: #1db954;
+}

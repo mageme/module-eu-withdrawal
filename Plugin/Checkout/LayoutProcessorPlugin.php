@@ -7,11 +7,15 @@ declare(strict_types=1);
 
 namespace MageMe\EUWithdrawal\Plugin\Checkout;
 
+use MageMe\EUWithdrawal\Model\ModuleConfig;
 use MageMe\EUWithdrawal\Model\Scope\WithdrawalScope;
+use MageMe\EUWithdrawal\Plugin\Sales\OrderPlacementGuard;
 use MageMe\EUWithdrawal\Service\DigitalContentDetector;
 use Magento\Checkout\Block\Checkout\LayoutProcessor as Subject;
 use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Framework\UrlInterface;
+use Magento\Store\Model\ScopeInterface;
 
 class LayoutProcessorPlugin
 {
@@ -27,12 +31,16 @@ class LayoutProcessorPlugin
      * @param CheckoutSession $checkoutSession
      * @param DigitalContentDetector $detector
      * @param WithdrawalScope $withdrawalScope
+     * @param ModuleConfig $moduleConfig
+     * @param ScopeConfigInterface $scopeConfig
      */
     public function __construct(
         private readonly UrlInterface $url,
         private readonly CheckoutSession $checkoutSession,
         private readonly DigitalContentDetector $detector,
         private readonly WithdrawalScope $withdrawalScope,
+        private readonly ModuleConfig $moduleConfig,
+        private readonly ScopeConfigInterface $scopeConfig,
     ) {
     }
 
@@ -45,6 +53,12 @@ class LayoutProcessorPlugin
      */
     public function afterProcess(Subject $subject, array $jsLayout): array
     {
+        if (!$this->isWaiverStepEnabled()) {
+            unset($jsLayout['components']['checkout']['children']['steps']['children']['eu-withdrawal-waiver-step']);
+
+            return $jsLayout;
+        }
+
         $step = &$jsLayout['components']['checkout']['children']['steps']['children']['eu-withdrawal-waiver-step'];
         $step['config'] ??= [];
         // Controllers live under Controller/Withdraw/Waiver/*, so Magento routes
@@ -69,6 +83,18 @@ class LayoutProcessorPlugin
         }
 
         return $jsLayout;
+    }
+
+    /**
+     * Same gate as OrderPlacementGuard: both the module master switch and the
+     * checkout waiver switch must be on for the step to exist in the layout.
+     *
+     * @return bool
+     */
+    private function isWaiverStepEnabled(): bool
+    {
+        return $this->moduleConfig->isEnabled()
+            && $this->scopeConfig->isSetFlag(OrderPlacementGuard::XML_DIGITAL_ENABLED, ScopeInterface::SCOPE_STORE);
     }
 
     /**

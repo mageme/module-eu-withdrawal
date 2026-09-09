@@ -127,6 +127,9 @@ class StatusMachine implements StatusMachineInterface
         if (!empty($context['denial_reason'])) {
             $payload['legal_basis'] = (string) $context['denial_reason'];
         }
+        if (!empty($context['decision_id'])) {
+            $payload['decision_id'] = (int) $context['decision_id'];
+        }
         if (!empty($context['ip'])) {
             $payload['ip'] = (string) $context['ip'];
         }

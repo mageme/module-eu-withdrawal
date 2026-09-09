@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace MageMe\EUWithdrawal\Observer\Email;
 
 use MageMe\EUWithdrawal\Api\Email\WithdrawalLinkResolverInterface;
+use MageMe\EUWithdrawal\Model\ModuleConfig;
 use MageMe\EUWithdrawal\Model\Scope\WithdrawalScope;
 use Magento\Framework\DataObject;
 use Magento\Framework\Event\Observer;
@@ -30,11 +31,13 @@ class AppendWithdrawalCtaToOrderEmails implements ObserverInterface
      * @param WithdrawalLinkResolverInterface $linkResolver
      * @param LoggerInterface $logger
      * @param WithdrawalScope $withdrawalScope
+     * @param ModuleConfig $moduleConfig
      */
     public function __construct(
         private readonly WithdrawalLinkResolverInterface $linkResolver,
         private readonly LoggerInterface $logger,
         private readonly WithdrawalScope $withdrawalScope,
+        private readonly ModuleConfig $moduleConfig,
     ) {
     }
 
@@ -61,12 +64,15 @@ class AppendWithdrawalCtaToOrderEmails implements ObserverInterface
             return;
         }
 
+        $storeId = (int) $order->getStoreId();
+        if (!$this->moduleConfig->isEnabled($storeId > 0 ? $storeId : null)) {
+            return;
+        }
         if (!$this->withdrawalScope->orderInScope($order)) {
             return;
         }
 
         try {
-            $storeId = (int) $order->getStoreId();
             $url = $this->linkResolver->resolveForOrder($orderEntityId, $storeId > 0 ? $storeId : null);
             $transport->setData('withdrawal_link_url', $url);
         } catch (\Throwable $e) {

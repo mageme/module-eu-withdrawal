@@ -1,3 +1,12 @@
+## 1.1.6
+
++ New: The request grid shows the newest MageMe announcement, with a dismiss for roles allowed to mark notifications read.
+- Fix: The digital-content waiver step no longer loads in the checkout while the module is disabled.
+- Fix: Order and shipment emails no longer include the withdrawal link while the module is disabled.
+- Fix: The waiver confirmation email is no longer sent while the module or the checkout waiver step is disabled.
+- Fix: A credit memo started from a withdrawal request now keeps the quantities, shipping and adjustment amounts entered on the credit memo form; it used to refund the pre-filled figures instead.
++ New: A status change made by the Auto-Approval add-on can now record the decision behind it in the audit trail.
+
 ## 1.1.5
 
 - Fix: The withdrawal request page in the admin now opens on shops that run with Magento's HTML minification switched on; it used to fail with a template error.

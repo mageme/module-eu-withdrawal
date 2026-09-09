@@ -1,0 +1,78 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+declare(strict_types=1);
+
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+/** @var \MageMe\EUWithdrawal\ViewModel\Adminhtml\FeedNotice $notice */
+
+$notice = $block->getData('feed_notice');
+if (!$notice || !$notice->hasNotice()) {
+    return;
+}
+
+?>
+<div class="mm-eu-w-news mm-eu-w-news--severity-<?= (int) $notice->getSeverity() ?>"
+     data-mm-eu-w-news
+     data-id="<?= (int) $notice->getId() ?>"
+     data-url="<?= $escaper->escapeUrl($block->getUrl('adminhtml/notification/ajaxMarkAsRead')) ?>">
+    <span class="mm-eu-w-news__title"><?= $escaper->escapeHtml($notice->getTitle()) ?></span>
+    <a class="mm-eu-w-news__link"
+       href="<?= $escaper->escapeUrl($notice->getUrl()) ?>"
+       target="_blank"
+       rel="noopener noreferrer">
+        <?= $escaper->escapeHtml($notice->getLinkLabel()) ?>
+        <span class="mm-eu-w-news__ext"><?= $escaper->escapeHtml(__('(opens in a new tab)')) ?></span>
+        <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M5 12h14m-6 6l6-6m-6-6l6 6"/>
+        </svg>
+    </a>
+
+    <?php if ($notice->canDismiss()): ?>
+        <button type="button" class="mm-eu-w-news__dismiss" aria-label="<?= $escaper->escapeHtmlAttr(__('Dismiss announcement')) ?>">
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                <path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94z"/>
+            </svg>
+        </button>
+    <?php endif; ?>
+</div>
+
+<?php
+$scriptString = <<<script
+    {
+        const bar = document.querySelector('[data-mm-eu-w-news]');
+        const button = bar && bar.querySelector('.mm-eu-w-news__dismiss');
+
+        if (button) {
+            button.addEventListener('click', () => {
+                const body = new FormData();
+
+                body.append('id', bar.dataset.id);
+                body.append('form_key', window.FORM_KEY);
+                button.disabled = true;
+
+                fetch(bar.dataset.url, {method: 'POST', body, credentials: 'same-origin'})
+                    .then((response) => (response.ok ? response.json() : Promise.reject(response)))
+                    .then((result) => {
+                        if (result && result.success) {
+                            bar.remove();
+
+                            return;
+                        }
+
+                        return Promise.reject(result);
+                    })
+                    .catch(() => {
+                        button.disabled = false;
+                    });
+            });
+        }
+    }
+script;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>

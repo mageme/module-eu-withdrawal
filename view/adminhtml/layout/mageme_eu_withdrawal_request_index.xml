@@ -6,6 +6,18 @@
         <css src="MageMe_EUWithdrawal::css/withdrawal-admin.css"/>
     </head>
     <body>
+        <referenceContainer name="header.inner.left">
+            <block class="Magento\Backend\Block\Template"
+                   name="mageme_eu_withdrawal_feed_notice"
+                   after="page.title"
+                   template="MageMe_EUWithdrawal::feed-notice.phtml">
+                <arguments>
+                    <argument name="feed_notice" xsi:type="object">
+                        MageMe\EUWithdrawal\ViewModel\Adminhtml\FeedNotice
+                    </argument>
+                </arguments>
+            </block>
+        </referenceContainer>
         <referenceContainer name="content">
             <uiComponent name="mageme_eu_withdrawal_request_listing"/>
         </referenceContainer>

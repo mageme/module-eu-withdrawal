@@ -16,6 +16,10 @@
         <plugin name="mageme_eu_withdrawal_guard_creditmemo_refund"
                 type="MageMe\EUWithdrawal\Plugin\Sales\GuardCreditmemoRefund"/>
     </type>
+    <type name="Magento\Sales\Block\Adminhtml\Order\Creditmemo\Create\Form">
+        <plugin name="mageme_eu_withdrawal_drop_prefill_from_creditmemo_save_url"
+                type="MageMe\EUWithdrawal\Plugin\Sales\DropPrefillFromCreditmemoSaveUrl"/>
+    </type>
     <virtualType name="Magento\Catalog\Ui\DataProvider\Product\Form\Modifier\Pool">
         <arguments>
             <argument name="modifiers" xsi:type="array">

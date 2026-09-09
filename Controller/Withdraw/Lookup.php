@@ -14,7 +14,7 @@ use MageMe\EUWithdrawal\Model\Security\LookupRateLimitGuard;
 use MageMe\EUWithdrawal\Model\Security\ResponseTimer;
 use MageMe\EUWithdrawal\Model\Session as WithdrawalSession;
 use Magento\Framework\App\Action\HttpPostActionInterface;
-use Magento\Framework\App\RequestInterface;
+use Magento\Framework\App\Request\Http as HttpRequest;
 use Magento\Framework\Controller\Result\RedirectFactory;
 use Magento\Framework\Controller\ResultInterface;
 use Magento\Framework\Message\ManagerInterface;
@@ -33,7 +33,7 @@ class Lookup implements HttpPostActionInterface
     /**
      * Constructor.
      *
-     * @param RequestInterface $request
+     * @param HttpRequest $request
      * @param RedirectFactory $redirectFactory
      * @param OrderLookupByIncrementId $orderLookup
      * @param ResponseTimer $responseTimer
@@ -44,7 +44,7 @@ class Lookup implements HttpPostActionInterface
      * @param LookupRateLimitGuard $rateLimitGuard
      */
     public function __construct(
-        private readonly RequestInterface $request,
+        private readonly HttpRequest $request,
         private readonly RedirectFactory $redirectFactory,
         private readonly OrderLookupByIncrementId $orderLookup,
         private readonly ResponseTimer $responseTimer,
@@ -66,8 +66,8 @@ class Lookup implements HttpPostActionInterface
         $this->responseTimer->start();
         $redirect = $this->redirectFactory->create();
 
-        $orderId = trim((string) $this->request->getParam('order_id', ''));
-        $email = trim((string) $this->request->getParam('email', ''));
+        $orderId = trim((string) $this->request->getPost('order_id', ''));
+        $email = trim((string) $this->request->getPost('email', ''));
 
         if ($orderId === '' || $email === '') {
             $this->responseTimer->pad(200);
